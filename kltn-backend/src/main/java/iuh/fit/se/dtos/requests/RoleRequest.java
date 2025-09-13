@@ -1,6 +1,8 @@
 package iuh.fit.se.dtos.requests;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -21,5 +23,7 @@ public class RoleRequest {
 
     String description;
 
+    @NotNull(message = "PERMISSIONS_REQUIRED")
+    @NotEmpty(message = "PERMISSIONS_REQUIRED")
     Set<String> permissions;
 }

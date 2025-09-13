@@ -11,7 +11,7 @@ public interface IRoleService {
 
     List<RoleResponse> getAllRoles();
 
-    void deleteRole(String name);
+    boolean deleteRole(String name);
 
     RoleResponse updateRole(String name, UpdateRoleRequest obj);
 }

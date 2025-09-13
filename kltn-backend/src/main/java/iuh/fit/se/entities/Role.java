@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 
 import lombok.*;
 
+@ToString
 @Entity
 @Getter
 @Setter

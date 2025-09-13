@@ -3,7 +3,8 @@ package iuh.fit.se.controllers;
 import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.PermissionRequest;
 import iuh.fit.se.dtos.responses.PermissionResponse;
-import iuh.fit.se.services.impls.PermissionService;
+import iuh.fit.se.services.impls.PermissionServiceImpl;
+import iuh.fit.se.services.interfaces.IPermissionService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +20,20 @@ import java.util.List;
 @RequestMapping("${api.prefix}/permissions")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PermissionController {
-    PermissionService permissionService;
+    IPermissionService iPermissionService;
 
     @PostMapping("")
     public APIResponse<PermissionResponse> createPermission(@Valid @RequestBody PermissionRequest permissionRequest){
-        return APIResponse.<PermissionResponse>builder().result(permissionService.create(permissionRequest)).message("Permission created successfully !").build();
+        return APIResponse.<PermissionResponse>builder().result(iPermissionService.create(permissionRequest)).message("Permission created successfully !").build();
     }
 
     @GetMapping("")
     public APIResponse<List<PermissionResponse>> getAllPermissions(){
-        return APIResponse.<List<PermissionResponse>>builder().result(permissionService.getAllPermissions()).message("Permissions retrieved successfully !").build();
+        return APIResponse.<List<PermissionResponse>>builder().result(iPermissionService.getAllPermissions()).message("Permissions retrieved successfully !").build();
     }
 
     @DeleteMapping("/{name}")
     public APIResponse<Boolean> deletePermission(@PathVariable String name){
-        return APIResponse.<Boolean>builder().result(permissionService.deletePermission(name)).message("Permission deleted successfully !").build();
+        return APIResponse.<Boolean>builder().result(iPermissionService.deletePermission(name)).message("Permission deleted successfully !").build();
     }
 }

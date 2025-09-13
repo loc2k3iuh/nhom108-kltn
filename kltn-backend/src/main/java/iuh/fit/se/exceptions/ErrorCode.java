@@ -20,7 +20,11 @@ public enum ErrorCode {
     PASSWORD_REQUIRED(1009, "Password cannot empty !", HttpStatus.BAD_REQUEST),
     PASSWORD_INVALID(1010, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
     RETYPE_PASSWORD_REQUIRED(1011, "Retype password cannot be empty", HttpStatus.BAD_REQUEST),
-    PERMISSION_NOT_FOUND(1012, "Permission doesn't exist !", HttpStatus.BAD_REQUEST)
+    PERMISSION_ALREADY_EXIST(1012, "Permission already exists !", HttpStatus.BAD_REQUEST),
+    PERMISSION_NOT_FOUND(1013, "Permission doesn't exist !", HttpStatus.BAD_REQUEST),
+    PERMISSIONS_REQUIRED(1014, "Permissions cannot be empty !", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_FOUND(1014, "Role doesn't exist !", HttpStatus.BAD_REQUEST),
+    ROLE_ALREADY_EXIST(1015, "Role already exists !", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

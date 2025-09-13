@@ -18,15 +18,17 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class PermissionService implements IPermissionService {
+public class PermissionServiceImpl implements IPermissionService {
 
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
 
     @Override
     public PermissionResponse create(PermissionRequest permissionRequest) {
+        if(permissionRepository.findByName(permissionRequest.getName()).isPresent()){
+            throw new AppException(ErrorCode.PERMISSION_ALREADY_EXIST);
+        }
         return permissionMapper.toPermissionResponse(permissionRepository.save(permissionMapper.toPermissionEntity(permissionRequest)));
-
     }
 
     @Override
