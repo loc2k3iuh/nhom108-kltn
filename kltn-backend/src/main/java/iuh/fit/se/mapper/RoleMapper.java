@@ -2,6 +2,7 @@ package iuh.fit.se.mapper;
 
 import iuh.fit.se.dtos.requests.RoleRequest;
 import iuh.fit.se.dtos.responses.RoleResponse;
+import iuh.fit.se.entities.Permission;
 import iuh.fit.se.entities.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -12,4 +13,10 @@ public interface RoleMapper {
     Role toRoleEntity(RoleRequest roleRequest);
 
     RoleResponse toRoleResponse(Role role);
+
+    default Permission map(String permissionName) {
+        Permission p = new Permission();
+        p.setName(permissionName);
+        return p;
+    }
 }

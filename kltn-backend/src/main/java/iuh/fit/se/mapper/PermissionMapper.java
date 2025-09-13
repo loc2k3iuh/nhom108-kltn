@@ -16,4 +16,6 @@ public interface PermissionMapper {
     PermissionResponse toPermissionResponse(Permission permission);
 
     List<PermissionResponse> toResponseList(List<Permission> permissions);
+
+
 }
