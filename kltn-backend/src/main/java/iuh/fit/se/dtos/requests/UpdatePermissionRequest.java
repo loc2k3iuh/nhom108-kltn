@@ -1,6 +1,5 @@
 package iuh.fit.se.dtos.requests;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,10 +10,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PermissionRequest {
-
-  @NotBlank(message = "NAME_REQUIRED")
-  String name;
+public class UpdatePermissionRequest {
 
   String description;
 }

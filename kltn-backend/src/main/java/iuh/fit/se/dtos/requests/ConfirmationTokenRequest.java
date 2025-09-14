@@ -5,16 +5,14 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@Builder
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PermissionRequest {
+public class ConfirmationTokenRequest {
 
-  @NotBlank(message = "NAME_REQUIRED")
-  String name;
-
-  String description;
+  @NotBlank(message = "TOKEN_REQUIRED")
+  String token;
 }

@@ -6,36 +6,31 @@ import iuh.fit.se.entities.Permission;
 import iuh.fit.se.entities.Role;
 import iuh.fit.se.enums.RoleType;
 import iuh.fit.se.repositories.PermissionRepository;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RoleMapper {
 
-    @Mapping(target = "permissions", source = "permissions")
-    @Mapping(target = "name", source = "name")
-    Role toRoleEntity(RoleRequest dto, @Context PermissionRepository permissionRepository);
+  @Mapping(target = "permissions", source = "permissions")
+  @Mapping(target = "name", source = "name")
+  Role toRoleEntity(RoleRequest dto, @Context PermissionRepository permissionRepository);
 
-    // Map String → RoleType
-    default RoleType map(String roleName) {
-        if (roleName == null) return null;
-        return RoleType.valueOf(roleName.toUpperCase()); // tránh lỗi case sensitive
-    }
+  // Map String → RoleType
+  default RoleType map(String roleName) {
+    if (roleName == null) return null;
+    return RoleType.valueOf(roleName.toUpperCase()); // tránh lỗi case sensitive
+  }
 
-    default Set<Permission> mapPermissions(Set<String> ids, @Context PermissionRepository repo) {
-        return new HashSet<>(repo.findAllById(ids));
-    }
+  default Set<Permission> mapPermissions(Set<String> ids, @Context PermissionRepository repo) {
+    return new HashSet<>(repo.findAllById(ids));
+  }
 
+  RoleResponse toRoleResponse(Role role);
 
-    RoleResponse toRoleResponse(Role role);
-
-    List<RoleResponse> toListRoleResponse(List<Role> roles);
-
-
+  List<RoleResponse> toListRoleResponse(List<Role> roles);
 }
