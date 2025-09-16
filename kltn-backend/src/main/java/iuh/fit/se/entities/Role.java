@@ -4,6 +4,7 @@ import iuh.fit.se.enums.RoleType;
 import jakarta.persistence.*;
 import java.util.Set;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @ToString
 @Entity
@@ -13,12 +14,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "roles")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role {
   @Id
   @Enumerated(EnumType.STRING)
-  private RoleType name;
+  RoleType name;
 
-  private String description;
+  String description;
 
   @ManyToMany Set<Permission> permissions;
 }

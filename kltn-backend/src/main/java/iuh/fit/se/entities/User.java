@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Set;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Getter
@@ -15,59 +16,60 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  Long id;
 
   @Column(
       name = "username",
       unique = true,
       columnDefinition = "varchar(255) COLLATE utf8mb4_general_ci")
-  private String username;
+  String username;
 
   @Column(
       name = "email",
       unique = true,
       columnDefinition = "varchar(255) COLLATE utf8mb4_general_ci",
       nullable = false)
-  private String email;
+  String email;
 
   @Column(name = "phone_number", unique = true)
-  private String phoneNumber;
+  String phoneNumber;
 
   @Column(name = "password")
-  private String password;
+  String password;
 
   @Column(name = "full_name")
-  private String fullName;
+  String fullName;
 
   @Column(name = "address")
-  private String address;
+  String address;
 
   @Column(name = "date_of_birth")
-  private LocalDate dateOfBirth;
+  LocalDate dateOfBirth;
 
   @Column(name = "is_active")
-  private Boolean isActive;
+  Boolean isActive;
 
   @Column(name = "enabled")
-  private Boolean enabled = false;
+  Boolean enabled = false;
 
   @Column(name = "avatar_url", length = 300)
-  private String avatarUrl;
+  String avatarUrl;
 
   @Column(name = "created_date")
-  private Date createdDate;
+  Date createdDate;
 
   @Column(name = "updated_date")
-  private Date updatedDate;
+  Date updatedDate;
 
   @Enumerated(EnumType.STRING)
-  private UserStatus status;
+  UserStatus status;
 
   @Column(name = "last_login")
-  private Date lastLogin = new Date();
+  Date lastLogin = new Date();
 
   @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @ToString.Exclude

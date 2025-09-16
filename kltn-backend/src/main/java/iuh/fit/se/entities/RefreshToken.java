@@ -8,25 +8,23 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Getter
 @Setter
-@ToString
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "confirmation_tokens")
+@Table(name = "refresh_tokens")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ConfirmationToken {
+public class RefreshToken {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
 
+  @Column(nullable = false, unique = true)
   String token;
 
   @ManyToOne
-  @JoinColumn(nullable = false, name = "user_id")
+  @JoinColumn(name = "user_id")
   User user;
 
-  Date createdAt;
-  Date expiresAt;
-  Date confirmedAt;
+  @Column(name = "expiry_date")
+  Date expiryDate;
 }

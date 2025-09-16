@@ -22,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -55,6 +56,7 @@ public class UserServiceImpl implements IUserService {
   }
 
   @Override
+  @Transactional
   public boolean createUser(RegisterUserRequest request) throws Exception {
 
     Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());

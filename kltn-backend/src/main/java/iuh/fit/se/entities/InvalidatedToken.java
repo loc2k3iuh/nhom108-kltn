@@ -1,8 +1,10 @@
 package iuh.fit.se.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.Date;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,10 +15,12 @@ import lombok.experimental.FieldDefaults;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "permissions")
+@Table(name = "invalidated_tokens")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Permission {
-  @Id String name;
+public class InvalidatedToken {
 
-  String description;
+  @Id String id;
+
+  @Column(name = "expiry_time")
+  Date expiryTime;
 }
