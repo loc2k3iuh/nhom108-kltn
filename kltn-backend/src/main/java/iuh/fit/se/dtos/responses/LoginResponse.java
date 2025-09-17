@@ -1,5 +1,6 @@
 package iuh.fit.se.dtos.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,8 +14,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginResponse {
   boolean authenticated;
-  String token;
 
-  @JsonProperty("refresh_token")
-  String refreshToken;
+  @JsonProperty("access_token")
+  String accessToken;
+
+
 }

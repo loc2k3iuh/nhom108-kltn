@@ -21,6 +21,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3ServiceImpl implements IS3Service {
 
   @Value("${aws.s3.bucket.name}")
+
   String bucketName;
 
   final S3Client s3Client;

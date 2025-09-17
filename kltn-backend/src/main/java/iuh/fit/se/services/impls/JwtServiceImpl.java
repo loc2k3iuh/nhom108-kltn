@@ -48,7 +48,7 @@ public class JwtServiceImpl implements IJwtService {
     JWTClaimsSet jwtClaimsSet =
         new JWTClaimsSet.Builder()
             .subject(user.getUsername())
-            .issuer("luther.com")
+            .issuer("https://luther.com")
             .issueTime(new Date())
             .expirationTime(
                 new Date(
@@ -85,7 +85,6 @@ public class JwtServiceImpl implements IJwtService {
       Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
       boolean verified = signedJWT.verify(verifier);
 
-      log.info("Decoded Token: {}", String.valueOf(signedJWT));
 
       if (!(verified && expiryTime.after(new Date()))) {
         throw new AppException(ErrorCode.UNAUTHENTICATED);

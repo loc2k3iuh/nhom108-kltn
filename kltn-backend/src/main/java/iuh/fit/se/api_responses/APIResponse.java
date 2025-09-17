@@ -1,4 +1,4 @@
-package iuh.fit.se.api_responses;
+  package iuh.fit.se.api_responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -17,4 +17,8 @@ public class APIResponse<T> {
   String message;
 
   T result;
+
+  private String path;
+  private String requestId;
+  private String timestamp;
 }

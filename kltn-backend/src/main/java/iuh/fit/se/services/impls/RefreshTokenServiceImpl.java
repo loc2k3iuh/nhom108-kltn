@@ -12,6 +12,9 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -70,5 +73,15 @@ public class RefreshTokenServiceImpl implements IRefreshTokenService {
   @Override
   public boolean deleteAllByUser(User user) {
     return refreshTokenRepository.deleteAllByUser(user) > 0;
+  }
+
+  @Override
+  public void createRefreshTokenCookie(HttpServletResponse httpServletResponse, String refreshToken) {
+    Cookie cookie = new Cookie("refresh_token", refreshToken);
+    cookie.setHttpOnly(true);
+    cookie.setSecure(true);
+    cookie.setPath("/");
+    cookie.setMaxAge(VALID_REFRESH_TOKEN_DURATION);
+    httpServletResponse.addCookie(cookie);
   }
 }

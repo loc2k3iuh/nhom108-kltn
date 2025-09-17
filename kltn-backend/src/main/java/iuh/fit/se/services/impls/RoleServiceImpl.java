@@ -18,6 +18,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -40,6 +41,7 @@ public class RoleServiceImpl implements IRoleService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('APPROVE_POS')")
   public List<RoleResponse> getAllRoles() {
     return roleMapper.toListRoleResponse(roleRepository.findAll());
   }

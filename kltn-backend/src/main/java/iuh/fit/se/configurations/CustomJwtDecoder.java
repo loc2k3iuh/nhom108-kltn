@@ -8,7 +8,9 @@ import iuh.fit.se.exceptions.AppException;
 import iuh.fit.se.exceptions.ErrorCode;
 import iuh.fit.se.services.interfaces.IAuthenticationService;
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -22,14 +24,17 @@ import java.text.ParseException;
 import java.util.Objects;
 
 @Component
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CustomJwtDecoder implements JwtDecoder {
 
+    @NonFinal
     @Value("${jwt.signer.key}")
     String signerKey;
 
     IAuthenticationService iAuthenticationService;
 
+    @NonFinal
     NimbusJwtDecoder nimbusJwtDecoder = null;
 
     @Override
