@@ -15,7 +15,7 @@ public enum ErrorCode {
   EMAIL_REQUIRED(1005, "Email cannot be empty !", HttpStatus.BAD_REQUEST),
   EMAIL_INVALID(1006, "Email must be in the format example@gmail.com !", HttpStatus.BAD_REQUEST),
   FULLNAME_REQUIRED(1007, "Full name cannot be empty !", HttpStatus.BAD_REQUEST),
-  FULLNAME_INVALID(1008, "Full name must be at least {min} characters !", HttpStatus.BAD_REQUEST),
+  FULLNAME_INVALID(1008, "Full name must be at least {min} characters and not contain special characters !", HttpStatus.BAD_REQUEST),
   PASSWORD_REQUIRED(1009, "Password cannot empty !", HttpStatus.BAD_REQUEST),
   PASSWORD_INVALID(1010, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
   RETYPE_PASSWORD_REQUIRED(1011, "Retype password cannot be empty", HttpStatus.BAD_REQUEST),
@@ -36,7 +36,12 @@ public enum ErrorCode {
   USER_INACTIVATED(1025, "User inactivated !", HttpStatus.FORBIDDEN),
   ACCESS_DENIED(1026, "You don't have permission !", HttpStatus.FORBIDDEN),
   FILE_TOO_LARGE(1027, "Your file is too large !", HttpStatus.BAD_REQUEST),
-  TOKEN_INVALID(1028, "Token invalid !", HttpStatus.UNAUTHORIZED);
+  TOKEN_INVALID(1028, "Token invalid !", HttpStatus.UNAUTHORIZED),
+  USER_ALREADY_CONFIRMED(1029, "User already confirmed !", HttpStatus.UNAUTHORIZED),
+  UNAUTHORIZED(1030, "Unauthorized !", HttpStatus.UNAUTHORIZED),
+  UPLOAD_ERROR(1031, "Error in uploading image of user", HttpStatus.BAD_REQUEST)
+
+  ;
 
   int code;
   String message;

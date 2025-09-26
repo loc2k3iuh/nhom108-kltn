@@ -12,4 +12,6 @@ public interface IConfirmationTokenService {
   void setConfirmedAt(String token);
 
   void deleteTokensByUser(User user);
+
+  String createConfirmationToken(User user);
 }

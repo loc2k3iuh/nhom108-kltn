@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-
 @Getter
 @Setter
 @ToString
@@ -15,22 +14,21 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "reviews")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Review {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  Long id;
 
-    @Column(name = "rating")
-    Long rating;
+  @Column(name = "rating")
+  Long rating;
 
-    @Column(name = "comment")
-    String comment;
+  @Column(name = "comment")
+  String comment;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    Product product;
+  @ManyToOne
+  @JoinColumn(name = "product_id")
+  Product product;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    User user;
-
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  User user;
 }

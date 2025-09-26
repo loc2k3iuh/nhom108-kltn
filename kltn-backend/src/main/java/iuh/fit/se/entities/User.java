@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Set;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Getter
@@ -62,9 +65,11 @@ public class User {
   String avatarUrl;
 
   @Column(name = "created_date")
+  @CreationTimestamp
   Date createdDate;
 
   @Column(name = "updated_date")
+  @UpdateTimestamp
   Date updatedDate;
 
   @Enumerated(EnumType.STRING)
@@ -73,9 +78,9 @@ public class User {
   @Column(name = "last_login")
   Date lastLogin = new Date();
 
-  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-  @ToString.Exclude
-  Set<Role> roles;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @ToString.Exclude
+    Set<Role> roles;
 
   @OneToMany(
       mappedBy = "user",

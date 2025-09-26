@@ -1,9 +1,8 @@
 package iuh.fit.se.enums;
 
-
 public enum EventPriority {
-    LOW,
-    MEDIUM,
-    HIGH,
-    CRITICAL
+  LOW,
+  MEDIUM,
+  HIGH,
+  CRITICAL
 }

@@ -36,11 +36,11 @@ public class JwtServiceImpl implements IJwtService {
 
   @NonFinal
   @Value("${jwt.signer.key}")
-  protected String SIGNER_KEY;
+  protected String signerKey;
 
   @NonFinal
   @Value("${jwt.token.expiration-in-s}")
-  protected int VALID_TOKEN_DURATION;
+  protected int validTokenExpiration;
 
   @Override
   public String generateToken(User user) throws JOSEException {
@@ -52,14 +52,14 @@ public class JwtServiceImpl implements IJwtService {
             .issueTime(new Date())
             .expirationTime(
                 new Date(
-                    Instant.now().plus(VALID_TOKEN_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                    Instant.now().plus(validTokenExpiration, ChronoUnit.SECONDS).toEpochMilli()))
             .jwtID(UUID.randomUUID().toString())
             .claim("scope", buildScope(user))
             .claim("userId", user.getId())
             .build();
     Payload payload = new Payload(jwtClaimsSet.toJSONObject());
     JWSObject jwsObject = new JWSObject(jwsHeader, payload);
-    jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+    jwsObject.sign(new MACSigner(signerKey.getBytes()));
     return jwsObject.serialize();
   }
 
@@ -79,7 +79,7 @@ public class JwtServiceImpl implements IJwtService {
   @Override
   public SignedJWT verifyToken(String token) {
     try {
-      JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+      JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
       SignedJWT signedJWT = SignedJWT.parse(token);
 
       Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();

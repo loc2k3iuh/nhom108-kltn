@@ -4,8 +4,10 @@ import iuh.fit.se.entities.ConfirmationToken;
 import iuh.fit.se.entities.User;
 import iuh.fit.se.repositories.ConfirmationTokenRepository;
 import iuh.fit.se.services.interfaces.IConfirmationTokenService;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -41,5 +43,24 @@ public class ConfirmationTokenServiceImpl implements IConfirmationTokenService {
   @Override
   public void deleteTokensByUser(User user) {
     confirmationTokenRepository.deleteAllByUser(user);
+  }
+
+  @Override
+  public String createConfirmationToken(User user) {
+    String token = UUID.randomUUID().toString();
+    Date now = new Date();
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(now);
+    calendar.add(Calendar.MINUTE, 15);
+
+    ConfirmationToken confirmationToken =
+        ConfirmationToken.builder()
+            .token(token)
+            .user(user)
+            .createdAt(now)
+            .expiresAt(calendar.getTime())
+            .build();
+    confirmationTokenRepository.save(confirmationToken);
+    return token;
   }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
@@ -27,7 +28,7 @@ public class MessageRoom {
 
   String imageURL;
 
-  @CreatedDate
+  @CreationTimestamp
   @Column(name = "created_date")
   LocalDateTime createDate;
 

@@ -1,6 +1,9 @@
 package iuh.fit.se.services.impls;
 
 import iuh.fit.se.dtos.requests.RegisterUserRequest;
+import iuh.fit.se.dtos.requests.ResendTokenRequest;
+import iuh.fit.se.dtos.requests.TokenRequest;
+import iuh.fit.se.dtos.requests.UpdateUserRequest;
 import iuh.fit.se.dtos.responses.UserResponse;
 import iuh.fit.se.entities.ConfirmationToken;
 import iuh.fit.se.entities.Role;
@@ -15,16 +18,25 @@ import iuh.fit.se.services.interfaces.IConfirmationTokenService;
 import iuh.fit.se.services.interfaces.IEmailService;
 import iuh.fit.se.services.interfaces.IS3Service;
 import iuh.fit.se.services.interfaces.IUserService;
+
+import java.io.IOException;
 import java.util.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -37,23 +49,9 @@ public class UserServiceImpl implements IUserService {
   IConfirmationTokenService iConfirmationTokenService;
   UserMapper userMapper;
 
-  private String createConfirmationToken(User user) {
-    String token = UUID.randomUUID().toString();
-    Date now = new Date();
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(now);
-    calendar.add(Calendar.MINUTE, 15);
-
-    ConfirmationToken confirmationToken =
-        ConfirmationToken.builder()
-            .token(token)
-            .user(user)
-            .createdAt(now)
-            .expiresAt(calendar.getTime())
-            .build();
-    iConfirmationTokenService.saveToken(confirmationToken);
-    return token;
-  }
+  @NonFinal
+  @Value("${client.url}")
+  String clientUrl;
 
   @Override
   @Transactional
@@ -89,8 +87,8 @@ public class UserServiceImpl implements IUserService {
       iConfirmationTokenService.deleteTokensByUser(existingUser);
 
       userRepository.save(existingUser);
-      String token = createConfirmationToken(existingUser);
-      String link = "http://localhost:5173/user/register-success?token=" + token;
+      String token = iConfirmationTokenService.createConfirmationToken(existingUser);
+      String link = clientUrl + "/user/register-success?token=" + token;
       iEmailService.sendEmail(request.getEmail(), link);
       return true;
     }
@@ -102,7 +100,7 @@ public class UserServiceImpl implements IUserService {
 
     Role defaultRole =
         roleRepository
-            .findByName(RoleType.USER)
+            .findByName(RoleType.CUSTOMER)
             .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
     PasswordEncoder encoder = new BCryptPasswordEncoder(10);
@@ -115,7 +113,6 @@ public class UserServiceImpl implements IUserService {
             .password(encodedPassword)
             .fullName(request.getFullName())
             .roles(Set.of(defaultRole))
-            .createdDate(new Date())
             .isActive(false)
             .enabled(false)
             .build();
@@ -128,22 +125,18 @@ public class UserServiceImpl implements IUserService {
 
     userRepository.save(user);
 
-    String token = createConfirmationToken(user);
-    String link = "http://localhost:5173/user/register-success?token=" + token;
+    String token = iConfirmationTokenService.createConfirmationToken(user);
+    String link = clientUrl + "/user/register-success?token=" + token;
     iEmailService.sendEmail(request.getEmail(), link);
     return false;
   }
 
   @Override
-  public UserResponse confirmToken(String token) {
-
-    if (token == null || token.isBlank()) {
-      throw new AppException(ErrorCode.TOKEN_REQUIRED);
-    }
+  public UserResponse confirmToken(TokenRequest tokenRequest) {
 
     ConfirmationToken confirmationToken =
         iConfirmationTokenService
-            .getToken(token)
+            .getToken(tokenRequest.getToken())
             .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOT_FOUND));
 
     if (confirmationToken.getConfirmedAt() != null) {
@@ -163,5 +156,70 @@ public class UserServiceImpl implements IUserService {
     user.setIsActive(true);
     userRepository.save(user);
     return userMapper.toUserResponse(user);
+  }
+
+  @Override
+  public void resendConfirmationToken(ResendTokenRequest resendTokenRequest) {
+    User existUser =
+        userRepository
+            .findByEmail(resendTokenRequest.getEmail())
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    if (existUser.getEnabled()) {
+      throw new AppException(ErrorCode.USER_ALREADY_CONFIRMED);
+    }
+
+    iConfirmationTokenService.deleteTokensByUser(existUser);
+
+    String token = iConfirmationTokenService.createConfirmationToken(existUser);
+
+    String link = clientUrl + "/user/register-success?token=" + token;
+    iEmailService.sendEmail(resendTokenRequest.getEmail(), link);
+  }
+
+  @Override
+  public UserResponse getUserDetailsFromToken() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+    String username = authentication.getName();
+
+    User user =
+        userRepository
+            .findByUsername(username)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    return userMapper.toUserResponse(user);
+  }
+
+  @Override
+  public UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) {
+    User existUser = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    Optional.ofNullable(updateUserRequest.getFullName())
+            .ifPresent(existUser::setFullName);
+
+    Optional.ofNullable(updateUserRequest.getPhoneNumber())
+            .ifPresent(existUser::setPassword);
+
+    Optional.ofNullable(updateUserRequest.getDateOfBirth())
+            .ifPresent(existUser::setDateOfBirth);
+
+    Optional.ofNullable(updateUserRequest.getFile())
+            .filter(f -> !f.isEmpty())
+            .map(f -> safeUpload(f, existUser.getUsername()))
+            .ifPresent(existUser::setAvatarUrl);
+
+    return userMapper.toUserResponse(existUser);
+  }
+
+  private String safeUpload(MultipartFile file, String username){
+    try {
+        return is3Service.uploadFile(file, username);
+    } catch (IOException e) {
+       log.error("Error in Upload Image of user:", e);
+       throw new AppException(ErrorCode.UPLOAD_ERROR);
+    }
   }
 }

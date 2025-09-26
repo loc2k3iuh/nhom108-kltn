@@ -2,6 +2,8 @@ package iuh.fit.se.controllers;
 
 import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.RegisterUserRequest;
+import iuh.fit.se.dtos.requests.ResendTokenRequest;
+import iuh.fit.se.dtos.requests.TokenRequest;
 import iuh.fit.se.dtos.responses.UserResponse;
 import iuh.fit.se.services.interfaces.IUserService;
 import jakarta.validation.Valid;
@@ -33,11 +35,25 @@ public class UserController {
         .build();
   }
 
-  @GetMapping("/confirm_user")
-  public APIResponse<UserResponse> confirmUser(@RequestParam("token") String token) {
+  @PostMapping("/confirm_user")
+  public APIResponse<UserResponse> confirmUser(@Valid @RequestBody TokenRequest tokenRequest) {
     return APIResponse.<UserResponse>builder()
-        .result(iUserService.confirmToken(token))
+        .result(iUserService.confirmToken(tokenRequest))
         .message("Your account has been confirmed !")
         .build();
+  }
+
+  @GetMapping("/my-information")
+  public APIResponse<UserResponse> getUserDetailsFromToken() {
+    return APIResponse.<UserResponse>builder()
+        .result(iUserService.getUserDetailsFromToken())
+        .message("User retrieved successfully !")
+        .build();
+  }
+
+  @PostMapping("/resend-token")
+  public APIResponse<Void> resendToken(@Valid @RequestBody ResendTokenRequest resendTokenRequest) {
+    iUserService.resendConfirmationToken(resendTokenRequest);
+    return APIResponse.<Void>builder().message("We sent a token to your mail again !").build();
   }
 }

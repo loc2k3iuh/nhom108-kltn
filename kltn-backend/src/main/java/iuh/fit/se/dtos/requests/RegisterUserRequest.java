@@ -1,6 +1,7 @@
 package iuh.fit.se.dtos.requests;
 
-import iuh.fit.se.validators.passwords.PasswordMatch;
+
+import iuh.fit.se.validators.users.passwords.PasswordMatch;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
