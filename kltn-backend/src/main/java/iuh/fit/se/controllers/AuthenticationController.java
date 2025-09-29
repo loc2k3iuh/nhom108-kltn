@@ -5,8 +5,10 @@ import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.IntrospectRequest;
 import iuh.fit.se.dtos.requests.LoginRequest;
 import iuh.fit.se.dtos.requests.LogoutRequest;
+import iuh.fit.se.dtos.requests.VerifyOtpRequestion;
 import iuh.fit.se.dtos.responses.LoginResponse;
 import iuh.fit.se.services.interfaces.IAuthenticationService;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.text.ParseException;
@@ -29,12 +31,20 @@ public class AuthenticationController {
   IAuthenticationService iAuthenticationService;
 
   @PostMapping("/login")
-  public APIResponse<LoginResponse> login(
-      @Valid @RequestBody LoginRequest loginRequest, HttpServletResponse httpServletResponse)
+  public APIResponse<Void> login(@Valid @RequestBody LoginRequest loginRequest)
+      throws JOSEException, MessagingException {
+    iAuthenticationService.authenticate(loginRequest);
+    return APIResponse.<Void>builder().message("We sent an OTP CODE to your email !").build();
+  }
+
+  @PostMapping("/verify-otp")
+  public APIResponse<LoginResponse> verifyToken(
+      @Valid @RequestBody VerifyOtpRequestion verifyOtpRequestion,
+      HttpServletResponse httpServletResponse)
       throws JOSEException {
     return APIResponse.<LoginResponse>builder()
-        .result(iAuthenticationService.authenticate(loginRequest, httpServletResponse))
-        .message("Log in successfully !")
+        .result(iAuthenticationService.verifyOtp(verifyOtpRequestion, httpServletResponse))
+        .message("Login successfully !")
         .build();
   }
 

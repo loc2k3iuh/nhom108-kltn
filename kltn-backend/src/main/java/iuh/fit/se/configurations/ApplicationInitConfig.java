@@ -10,7 +10,6 @@ import iuh.fit.se.repositories.UserRepository;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -51,12 +50,11 @@ public class ApplicationInitConfig {
                 .enabled(true)
                 .roles(roles)
                 .build());
-      }else{
-        if(passwordEncoder.matches("admin", existUser.get().getPassword())){
+      } else {
+        if (passwordEncoder.matches("admin", existUser.get().getPassword())) {
           log.warn("User admin created with default password: admin, please change it !!!");
         }
       }
-
     };
   }
 }

@@ -15,7 +15,10 @@ public enum ErrorCode {
   EMAIL_REQUIRED(1005, "Email cannot be empty !", HttpStatus.BAD_REQUEST),
   EMAIL_INVALID(1006, "Email must be in the format example@gmail.com !", HttpStatus.BAD_REQUEST),
   FULLNAME_REQUIRED(1007, "Full name cannot be empty !", HttpStatus.BAD_REQUEST),
-  FULLNAME_INVALID(1008, "Full name must be at least {min} characters and not contain special characters !", HttpStatus.BAD_REQUEST),
+  FULLNAME_INVALID(
+      1008,
+      "Full name must be at least {min} characters and not contain special characters !",
+      HttpStatus.BAD_REQUEST),
   PASSWORD_REQUIRED(1009, "Password cannot empty !", HttpStatus.BAD_REQUEST),
   PASSWORD_INVALID(1010, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
   RETYPE_PASSWORD_REQUIRED(1011, "Retype password cannot be empty", HttpStatus.BAD_REQUEST),
@@ -39,7 +42,10 @@ public enum ErrorCode {
   TOKEN_INVALID(1028, "Token invalid !", HttpStatus.UNAUTHORIZED),
   USER_ALREADY_CONFIRMED(1029, "User already confirmed !", HttpStatus.UNAUTHORIZED),
   UNAUTHORIZED(1030, "Unauthorized !", HttpStatus.UNAUTHORIZED),
-  UPLOAD_ERROR(1031, "Error in uploading image of user", HttpStatus.BAD_REQUEST)
+  UPLOAD_ERROR(1031, "Error in uploading image of user", HttpStatus.BAD_REQUEST),
+  OTP_NOT_FOUND(1032, "Otp code not found", HttpStatus.BAD_REQUEST),
+  OTP_REQUIRED(1033, "Otp cannot be empty !", HttpStatus.BAD_REQUEST),
+  OTP_INVALID(1034, "Otp must be 6 integers!", HttpStatus.BAD_REQUEST),
 
   ;
 

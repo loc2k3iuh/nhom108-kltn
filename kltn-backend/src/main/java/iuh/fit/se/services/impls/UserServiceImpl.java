@@ -18,7 +18,6 @@ import iuh.fit.se.services.interfaces.IConfirmationTokenService;
 import iuh.fit.se.services.interfaces.IEmailService;
 import iuh.fit.se.services.interfaces.IS3Service;
 import iuh.fit.se.services.interfaces.IUserService;
-
 import java.io.IOException;
 import java.util.*;
 import lombok.AccessLevel;
@@ -33,8 +32,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.swing.text.html.Option;
 
 @Slf4j
 @Service
@@ -195,31 +192,29 @@ public class UserServiceImpl implements IUserService {
 
   @Override
   public UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) {
-    User existUser = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    User existUser =
+        userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    Optional.ofNullable(updateUserRequest.getFullName())
-            .ifPresent(existUser::setFullName);
+    Optional.ofNullable(updateUserRequest.getFullName()).ifPresent(existUser::setFullName);
 
-    Optional.ofNullable(updateUserRequest.getPhoneNumber())
-            .ifPresent(existUser::setPassword);
+    Optional.ofNullable(updateUserRequest.getPhoneNumber()).ifPresent(existUser::setPassword);
 
-    Optional.ofNullable(updateUserRequest.getDateOfBirth())
-            .ifPresent(existUser::setDateOfBirth);
+    Optional.ofNullable(updateUserRequest.getDateOfBirth()).ifPresent(existUser::setDateOfBirth);
 
     Optional.ofNullable(updateUserRequest.getFile())
-            .filter(f -> !f.isEmpty())
-            .map(f -> safeUpload(f, existUser.getUsername()))
-            .ifPresent(existUser::setAvatarUrl);
+        .filter(f -> !f.isEmpty())
+        .map(f -> safeUpload(f, existUser.getUsername()))
+        .ifPresent(existUser::setAvatarUrl);
 
     return userMapper.toUserResponse(existUser);
   }
 
-  private String safeUpload(MultipartFile file, String username){
+  private String safeUpload(MultipartFile file, String username) {
     try {
-        return is3Service.uploadFile(file, username);
+      return is3Service.uploadFile(file, username);
     } catch (IOException e) {
-       log.error("Error in Upload Image of user:", e);
-       throw new AppException(ErrorCode.UPLOAD_ERROR);
+      log.error("Error in Upload Image of user:", e);
+      throw new AppException(ErrorCode.UPLOAD_ERROR);
     }
   }
 }

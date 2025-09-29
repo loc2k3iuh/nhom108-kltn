@@ -35,7 +35,8 @@ public class SecurityConfig {
     "/api/v1/auth/login",
     "/api/v1/auth/login-temporarily",
     "/api/v1/register",
-    "/api/v1/auth/logout"
+    "/api/v1/auth/logout",
+    "/api/v1/auth/verify-otp"
   };
 
   String[] PUBLIC_GET_ENDPOINTS = {};

@@ -11,7 +11,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Getter
@@ -78,9 +77,9 @@ public class User {
   @Column(name = "last_login")
   Date lastLogin = new Date();
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @ToString.Exclude
-    Set<Role> roles;
+  @ManyToMany(fetch = FetchType.EAGER)
+  @ToString.Exclude
+  Set<Role> roles;
 
   @OneToMany(
       mappedBy = "user",

@@ -1,6 +1,5 @@
 package iuh.fit.se.validators.users.passwords;
 
-
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.*;
