@@ -5,6 +5,8 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,12 +33,18 @@ public class SecurityConfig {
 
   CustomJwtDecoder customJwtDecoder;
 
+  @NonFinal
+  @Value("${vite.frontend.admin.urls}")
+  String[] ALLOWED_ORIGINS;
+
   String[] PUBLIC_POST_ENDPOINTS = {
     "/api/v1/auth/login",
     "/api/v1/auth/login-temporarily",
     "/api/v1/register",
     "/api/v1/auth/logout",
-    "/api/v1/auth/verify-otp"
+    "/api/v1/auth/verify-otp",
+    "/api/v1/auth/resend-otp",
+    "/api/v1/auth/refresh-token/{userId}"
   };
 
   String[] PUBLIC_GET_ENDPOINTS = {};
@@ -68,7 +76,7 @@ public class SecurityConfig {
     httpSecurity.cors(
         cors -> {
           CorsConfiguration configuration = new CorsConfiguration();
-          configuration.setAllowedOrigins(List.of("*"));
+          configuration.setAllowedOrigins(List.of(ALLOWED_ORIGINS));
           configuration.setAllowedMethods(
               Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
           configuration.setAllowedHeaders(List.of("*"));

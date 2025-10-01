@@ -46,8 +46,13 @@ public enum ErrorCode {
   OTP_NOT_FOUND(1032, "Otp code not found", HttpStatus.BAD_REQUEST),
   OTP_REQUIRED(1033, "Otp cannot be empty !", HttpStatus.BAD_REQUEST),
   OTP_INVALID(1034, "Otp must be 6 integers!", HttpStatus.BAD_REQUEST),
-
-  ;
+  MAX_OTP(
+      1035,
+      "You have sent OTP more than 3 times in 10 minutes. Please try again later !",
+      HttpStatus.BAD_REQUEST),
+  REFRESH_TOKEN_NOT_FOUND(1036, "Refresh token not found !", HttpStatus.BAD_REQUEST),
+  REFRESH_TOKEN_REQUIRED(1037, "Refresh token cannot be empty !", HttpStatus.BAD_REQUEST),
+  REFRESH_TOKEN_INVALID(1038, "Refresh already expired !", HttpStatus.BAD_REQUEST);
 
   int code;
   String message;

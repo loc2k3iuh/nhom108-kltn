@@ -191,6 +191,7 @@ public class UserServiceImpl implements IUserService {
   }
 
   @Override
+  @Transactional
   public UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) {
     User existUser =
         userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));

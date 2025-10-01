@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 public interface IRefreshTokenService {
-  RefreshToken createRefreshToken(Long userId);
+  RefreshToken createRefreshToken(Long userId, boolean isChecked);
 
   boolean isTokenExpired(RefreshToken token);
 
@@ -16,5 +16,6 @@ public interface IRefreshTokenService {
 
   boolean deleteAllByUser(User user);
 
-  void createRefreshTokenCookie(HttpServletResponse httpServletResponse, String refreshToken);
+  void createRefreshTokenCookie(
+      HttpServletResponse httpServletResponse, boolean isChecked, String refreshToken);
 }

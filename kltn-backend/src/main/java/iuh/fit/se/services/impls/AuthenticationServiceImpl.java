@@ -1,16 +1,16 @@
 package iuh.fit.se.services.impls;
 
 import com.nimbusds.jose.JOSEException;
-import iuh.fit.se.dtos.requests.IntrospectRequest;
-import iuh.fit.se.dtos.requests.LoginRequest;
-import iuh.fit.se.dtos.requests.LogoutRequest;
-import iuh.fit.se.dtos.requests.VerifyOtpRequestion;
+import iuh.fit.se.dtos.requests.*;
 import iuh.fit.se.dtos.responses.LoginResponse;
+import iuh.fit.se.dtos.responses.PreLoginResponse;
+import iuh.fit.se.dtos.responses.TokenResponse;
 import iuh.fit.se.entities.InvalidatedToken;
 import iuh.fit.se.entities.RefreshToken;
 import iuh.fit.se.entities.User;
 import iuh.fit.se.exceptions.AppException;
 import iuh.fit.se.exceptions.ErrorCode;
+import iuh.fit.se.mapper.UserMapper;
 import iuh.fit.se.repositories.InvalidatedTokenRepository;
 import iuh.fit.se.repositories.UserRepository;
 import iuh.fit.se.services.interfaces.IAuthenticationService;
@@ -28,20 +28,24 @@ import java.util.function.Predicate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationServiceImpl implements IAuthenticationService {
 
+  UserMapper userMapper;
   IJwtService iJwtService;
+  IEmailService iEmailService;
   UserRepository userRepository;
+  StringRedisTemplate stringRedisTemplate;
   IRefreshTokenService iRefreshTokenService;
   InvalidatedTokenRepository invalidatedTokenRepository;
-  IEmailService iEmailService;
 
   private boolean isGmailAddress(String email) {
     String regex = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
@@ -49,7 +53,8 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
   }
 
   @Override
-  public void authenticate(LoginRequest loginRequest) throws JOSEException, MessagingException {
+  public PreLoginResponse authenticate(LoginRequest loginRequest)
+      throws JOSEException, MessagingException {
     User user =
         (!isGmailAddress(loginRequest.getUsername())
                 ? userRepository.findByUsername(loginRequest.getUsername())
@@ -75,11 +80,14 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
             });
 
     iEmailService.sentOtp(user);
+    return userMapper.toPreLoginResponse(user);
   }
 
   @Override
   public LoginResponse verifyOtp(
-      VerifyOtpRequestion verifyOtpRequestion, HttpServletResponse httpServletResponse)
+      VerifyOtpRequestion verifyOtpRequestion,
+      boolean isChecked,
+      HttpServletResponse httpServletResponse)
       throws JOSEException {
     boolean isValidOtp = iEmailService.verifyOtp(verifyOtpRequestion);
     if (!isValidOtp) {
@@ -90,10 +98,16 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
             .findByEmail(verifyOtpRequestion.getEmail())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     String accessToken = iJwtService.generateToken(user);
-    RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(user.getId());
+    RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(user.getId(), isChecked);
 
-    iRefreshTokenService.createRefreshTokenCookie(httpServletResponse, refreshToken.getToken());
+    iRefreshTokenService.createRefreshTokenCookie(
+        httpServletResponse, isChecked, refreshToken.getToken());
     return LoginResponse.builder().authenticated(true).accessToken(accessToken).build();
+  }
+
+  @Override
+  public void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException {
+    iEmailService.resendOtp(resenOtpRequest);
   }
 
   @Override
@@ -110,6 +124,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
   }
 
   @Override
+  @Transactional
   public void logout(LogoutRequest logoutRequest, String refreshToken)
       throws ParseException, JOSEException {
     try {
@@ -124,6 +139,29 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
     } catch (AppException e) {
       throw new AppException(ErrorCode.UNAUTHENTICATED);
+    }
+  }
+
+  @Override
+  public TokenResponse refreshAccessToken(RefreshRequest refreshRequest, Long userId) throws JOSEException {
+    Optional<RefreshToken> refreshToken =
+        iRefreshTokenService
+            .findByToken(refreshRequest.getRefreshToken());
+
+    if(refreshToken.isPresent()) {
+      if (iRefreshTokenService.isTokenExpired(refreshToken.get())) {
+        iRefreshTokenService.deleteByToken(refreshRequest.getRefreshToken());
+        throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
+      }
+      return TokenResponse.builder().token(iJwtService.generateToken(refreshToken.get().getUser())).build();
+    }else{
+      User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+      String refreshTokenRedis = stringRedisTemplate.opsForValue().get(user.getId());
+        assert refreshTokenRedis != null;
+        if(!refreshTokenRedis.equals(refreshRequest.getRefreshToken())){
+          throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
+      }
+        return TokenResponse.builder().token(iJwtService.generateToken(user)).build();
     }
   }
 }
