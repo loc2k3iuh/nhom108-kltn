@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,6 +47,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
   StringRedisTemplate stringRedisTemplate;
   IRefreshTokenService iRefreshTokenService;
   InvalidatedTokenRepository invalidatedTokenRepository;
+  private final RedisTemplate<Object, Object> redisTemplate;
 
   private boolean isGmailAddress(String email) {
     String regex = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
@@ -54,7 +56,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
   @Override
   public PreLoginResponse authenticate(LoginRequest loginRequest)
-      throws JOSEException, MessagingException {
+      throws  MessagingException {
     User user =
         (!isGmailAddress(loginRequest.getUsername())
                 ? userRepository.findByUsername(loginRequest.getUsername())
@@ -137,12 +139,18 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
       Optional.ofNullable(refreshToken).ifPresent(iRefreshTokenService::deleteByToken);
 
+      String userId = String.valueOf(signToken.getJWTClaimsSet().getLongClaim("userId"));
+      if (redisTemplate.opsForValue().get(userId) != null) {
+        redisTemplate.delete(userId);
+      }
+
     } catch (AppException e) {
       throw new AppException(ErrorCode.UNAUTHENTICATED);
     }
   }
 
   @Override
+  @Transactional
   public TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
       throws JOSEException {
     Optional<RefreshToken> refreshToken =
