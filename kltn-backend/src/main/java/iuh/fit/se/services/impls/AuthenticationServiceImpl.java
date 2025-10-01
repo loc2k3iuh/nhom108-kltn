@@ -143,25 +143,31 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
   }
 
   @Override
-  public TokenResponse refreshAccessToken(RefreshRequest refreshRequest, Long userId) throws JOSEException {
+  public TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
+      throws JOSEException {
     Optional<RefreshToken> refreshToken =
-        iRefreshTokenService
-            .findByToken(refreshRequest.getRefreshToken());
+        iRefreshTokenService.findByToken(refreshRequest.getRefreshToken());
 
-    if(refreshToken.isPresent()) {
+    if (refreshToken.isPresent()) {
       if (iRefreshTokenService.isTokenExpired(refreshToken.get())) {
         iRefreshTokenService.deleteByToken(refreshRequest.getRefreshToken());
         throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
       }
-      return TokenResponse.builder().token(iJwtService.generateToken(refreshToken.get().getUser())).build();
-    }else{
-      User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-      String refreshTokenRedis = stringRedisTemplate.opsForValue().get(user.getId());
-        assert refreshTokenRedis != null;
-        if(!refreshTokenRedis.equals(refreshRequest.getRefreshToken())){
-          throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
+      return TokenResponse.builder()
+          .token(iJwtService.generateToken(refreshToken.get().getUser()))
+          .build();
+    } else {
+      User user =
+          userRepository
+              .findById(Long.valueOf(userId))
+              .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+      String refreshTokenRedis =
+          stringRedisTemplate.opsForValue().get(String.valueOf(user.getId()));
+      assert refreshTokenRedis != null;
+      if (!refreshTokenRedis.equals(refreshRequest.getRefreshToken())) {
+        throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
       }
-        return TokenResponse.builder().token(iJwtService.generateToken(user)).build();
+      return TokenResponse.builder().token(iJwtService.generateToken(user)).build();
     }
   }
 }

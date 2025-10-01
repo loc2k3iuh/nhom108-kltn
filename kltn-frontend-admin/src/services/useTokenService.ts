@@ -24,12 +24,19 @@ export const removeToken = (): void => {
   sessionStorage.removeItem(ACCESS_TOKEN_KEY);
 };
 
-export const getUserIdFromToken = (): any => {
+export const getUserIdFromToken = (): number | null => {
   const token = getTokenFromLocalStorage() || getTokenFromSessionStorage();
 
   if (!token) {
-    return;
+    return null;
   }
+  try{
   const userObject: any = jwtDecode(token);
-  return parseInt(userObject?.userId);
+  const id  =Number(userObject?.userId);
+  return Number.isNaN(id) ? null : id;
+  }catch(err){
+    console.log("Invalid token", err);
+    return null;
+  }
+ 
 };

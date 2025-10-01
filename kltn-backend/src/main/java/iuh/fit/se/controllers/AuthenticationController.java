@@ -72,7 +72,8 @@ public class AuthenticationController {
 
   @PostMapping("/refresh-token/{userId}")
   public APIResponse<TokenResponse> refreshToken(
-          @CookieValue(name = "refresh_token", required = false) String refreshToken, @PathVariable Long userId)
+      @CookieValue(name = "refresh_token", required = false) String refreshToken,
+      @PathVariable String userId)
       throws JOSEException {
     if (refreshToken.isBlank()) {
       throw new AppException(ErrorCode.REFRESH_TOKEN_REQUIRED);
