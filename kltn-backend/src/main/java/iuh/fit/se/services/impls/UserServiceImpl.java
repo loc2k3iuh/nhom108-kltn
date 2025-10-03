@@ -31,6 +31,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -192,6 +193,7 @@ public class UserServiceImpl implements IUserService {
 
   @Override
   @Transactional
+  @PostMapping("returnObject.username == authentication.username")
   public UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) {
     User existUser =
         userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
