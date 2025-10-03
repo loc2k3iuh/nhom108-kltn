@@ -6,8 +6,10 @@ import { getTokenFromLocalStorage, getTokenFromSessionStorage, removeToken } fro
 import { useAuthStore } from "@/stores/useAuthStore";
 import { LoginRequest, SignOutRequest } from "@/types/requests/authRequest";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 export default function UserDropdown() {
+  const { authUser } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const { signOut} = useAuthStore();
   const navigate = useNavigate();
@@ -20,7 +22,13 @@ export default function UserDropdown() {
       return;
     }
     removeToken();
-    await signOut(tokenRequest);
+    const isSignedOut = await signOut(tokenRequest);
+
+    if(isSignedOut){
+      toast.success("Logout successfully !");
+    }else{
+      toast.error("Loggout failed !");
+    }
 
     navigate("/");
     
@@ -41,10 +49,10 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src="/images/user/owner.jpg" alt="User" />
+          <img src={authUser?.avatar_url  || "/images/user/7309681.jpg"} alt="User" />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Musharof</span>
+        <span className="block mr-1 font-medium text-theme-sm">{authUser?.username}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -72,10 +80,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Musharof Chowdhury
+            {authUser?.full_name}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+            {authUser?.email}
           </span>
         </div>
 
@@ -158,10 +166,11 @@ export default function UserDropdown() {
         </ul>
         <Button
           onClick={handleSignOut}
-          className="bg-red-500 flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+          className=" bg-error-50 flex items-center gap-3 px-3 py-2 mt-3 font-medium   rounded-lg group text-theme-sm dark:bg-error-500/15 hover:bg-red-600 dark:hover:bg-red-600  "
         >
+         
           <svg
-            className="fill-white group-hover:fill-gray-700 dark:group-hover:fill-gray-300"
+            className="fill-error-600 group-hover:fill-white dark:group-hover:fill-gray-300"
             width="24"
             height="24"
             viewBox="0 0 24 24"
@@ -175,7 +184,7 @@ export default function UserDropdown() {
               fill=""
             />
           </svg>
-         <span className="text-white group-hover:text-gray-700 dark:group-hover:text-white">
+         <span className="text-error-600 group-hover:text-white dark:group-hover:text-white dark:text-error-500">
            Log out
          </span>
         </Button>

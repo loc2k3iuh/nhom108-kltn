@@ -198,15 +198,22 @@ public class UserServiceImpl implements IUserService {
     User existUser =
         userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    Optional.ofNullable(updateUserRequest.getFullName()).ifPresent(existUser::setFullName);
+    Optional.ofNullable(updateUserRequest.getFullName()).filter(fn -> !fn.isBlank()).ifPresent(existUser::setFullName);
 
-    Optional.ofNullable(updateUserRequest.getPhoneNumber()).ifPresent(existUser::setPassword);
+    Optional.ofNullable(updateUserRequest.getPhoneNumber()).filter(pn -> !pn.isBlank()).ifPresent(existUser::setPhoneNumber);
 
     Optional.ofNullable(updateUserRequest.getDateOfBirth()).ifPresent(existUser::setDateOfBirth);
 
+    Optional.ofNullable(updateUserRequest.getAddress()).filter(ad -> !ad.isBlank()).ifPresent(existUser::setAddress);
+
     Optional.ofNullable(updateUserRequest.getFile())
         .filter(f -> !f.isEmpty())
-        .map(f -> safeUpload(f, existUser.getUsername()))
+        .map(f -> {
+          if(!existUser.getAvatarUrl().isBlank()){
+            is3Service.deleteFile(existUser.getAvatarUrl());
+          }
+         return safeUpload(f, existUser.getUsername());
+        })
         .ifPresent(existUser::setAvatarUrl);
 
     return userMapper.toUserResponse(existUser);

@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import Reloading from "@/components/skeletions/Reloading";
 import { OtpTokenRequest, ResendOtpRequest } from "@/types/requests/authRequest";
 import { setAccessTokenToLocalStorage, setAccessTokenToSessionStorage } from "@/services/useTokenService";
+import { toast } from "sonner";
 
 
 
@@ -15,7 +16,7 @@ export default function OtpVerification() {
   const location = useLocation();
   const email = location.state?.email;
   const isChecked = location.state?.isChecked;
-  const {isVerifyingOtp, verifyToken, resendOtp, checkAuth } = useAuthStore();
+  const {isVerifyingOtp, verifyOtp, resendOtp, checkAuth } = useAuthStore();
   const navigate = useNavigate();
 
   const handleVerifyOtp = async (otp: string) => {
@@ -23,7 +24,7 @@ export default function OtpVerification() {
       email: email,
       otp_token: otp,
     }
-    const response = await verifyToken(otpTokenRequest, isChecked);
+    const response = await verifyOtp(otpTokenRequest, isChecked);
 
     if(response != null){
       isChecked ? setAccessTokenToLocalStorage(response.access_token) : setAccessTokenToSessionStorage(response.access_token);
@@ -35,11 +36,16 @@ export default function OtpVerification() {
     }
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
      const resendOtpRequest : ResendOtpRequest ={
       email: email
      }
-     resendOtp(resendOtpRequest);
+     const isResended = await resendOtp(resendOtpRequest);
+     if(isResended){
+      toast.success("Resended successfully !");
+     }else{
+      toast.error("You have sent OTP more than 3 times in 10 minutes. Please try again later !");
+     }
   };
 
   if(isVerifyingOtp){

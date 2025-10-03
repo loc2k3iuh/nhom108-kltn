@@ -8,6 +8,7 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface LoginForm {
   username: string;
@@ -31,6 +32,8 @@ export default function SignInForm() {
       navigate("/otp-verification", {
         state: {email, isChecked}
       });
+    }else{
+      toast.error("Username or password is incorrect !");
     }
    
   

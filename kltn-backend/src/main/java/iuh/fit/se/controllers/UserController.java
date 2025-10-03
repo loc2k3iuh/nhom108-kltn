@@ -4,9 +4,11 @@ import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.RegisterUserRequest;
 import iuh.fit.se.dtos.requests.ResendTokenRequest;
 import iuh.fit.se.dtos.requests.TokenRequest;
+import iuh.fit.se.dtos.requests.UpdateUserRequest;
 import iuh.fit.se.dtos.responses.UserResponse;
 import iuh.fit.se.services.interfaces.IUserService;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -55,5 +57,15 @@ public class UserController {
   public APIResponse<Void> resendToken(@Valid @RequestBody ResendTokenRequest resendTokenRequest) {
     iUserService.resendConfirmationToken(resendTokenRequest);
     return APIResponse.<Void>builder().message("We sent a token to your mail again !").build();
+  }
+
+  @PutMapping("/{userId}")
+  public APIResponse<UserResponse> updateUser(
+      @PathVariable String userId, @Valid @ModelAttribute UpdateUserRequest updateUserRequest)
+      throws IOException {
+    return APIResponse.<UserResponse>builder()
+        .result(iUserService.updateUser(Long.valueOf(userId), updateUserRequest))
+        .message("Updated user successfully !")
+        .build();
   }
 }

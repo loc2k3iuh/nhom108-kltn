@@ -1,16 +1,49 @@
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
+
 import Label from "../form/Label";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { Input } from "../ui/input";
+
+interface NameParts {
+  firstname: string;
+  lastname: string;
+}
 
 export default function UserInfoCard() {
+  const { authUser } = useAuthStore();
   const { isOpen, openModal, closeModal } = useModal();
   const handleSave = () => {
     // Handle save logic here
     console.log("Saving changes...");
     closeModal();
   };
+
+  const getFirstNameAndLastName = (
+    fullName: string | null | undefined
+  ): NameParts => {
+    if (!fullName || fullName.trim().length === 0) {
+      return { firstname: "", lastname: "" };
+    }
+
+    const parts = fullName.trim().split(/\s+/);
+    const firstname = parts[0];
+    const lastname = parts.length > 1 ? parts[parts.length - 1] : "";
+
+    return {
+      firstname,
+      lastname,
+    };
+  };
+
+  const formatPhoneNumber = (phoneNumber: string | null | undefined): string => {
+    if (!phoneNumber) return "";
+    const pattern = /^(\d{2})(\d{3})(\d{3})(\d{2})$/;
+    return phoneNumber.replace(pattern, "$1 $2 $3 $4");
+  };
+
+
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -25,7 +58,7 @@ export default function UserInfoCard() {
                 First Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Musharof
+                {getFirstNameAndLastName(authUser?.full_name).firstname}
               </p>
             </div>
 
@@ -34,7 +67,7 @@ export default function UserInfoCard() {
                 Last Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Chowdhury
+                {getFirstNameAndLastName(authUser?.full_name).lastname}
               </p>
             </div>
 
@@ -43,7 +76,7 @@ export default function UserInfoCard() {
                 Email address
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
+                {authUser?.email}
               </p>
             </div>
 
@@ -52,16 +85,16 @@ export default function UserInfoCard() {
                 Phone
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
+                +{formatPhoneNumber(authUser?.phone_number)}
               </p>
             </div>
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
+                Role
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
+                {authUser?.roles[0]?.name}
               </p>
             </div>
           </div>
@@ -143,12 +176,22 @@ export default function UserInfoCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
                     <Label>First Name</Label>
-                    <Input type="text" value="Musharof" />
+                    <Input
+                      type="text"
+                      value={
+                        getFirstNameAndLastName(authUser?.full_name).firstname
+                      }
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Last Name</Label>
-                    <Input type="text" value="Chowdhury" />
+                    <Input
+                      type="text"
+                      value={
+                        getFirstNameAndLastName(authUser?.full_name).lastname
+                      }
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">

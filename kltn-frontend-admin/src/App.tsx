@@ -30,7 +30,7 @@ import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletions/Reloading";
 
 export default function App() {
-  const { checkAuth, authUser, isCheckingAuth, isSigningOut } = useAuthStore();
+  const { checkAuth, authUser, isCheckingAuth, isSigningOut, isUpdating } = useAuthStore();
  
   useEffect(() => {
      checkAuth();
@@ -38,7 +38,7 @@ export default function App() {
 
     console.log("authUser in App.jsx: ", authUser);
 
-  if (isCheckingAuth || isSigningOut) {
+  if (isCheckingAuth || isSigningOut || isUpdating) {
     return <Reloading />;
   }
 

@@ -183,15 +183,7 @@ export default function OtpForm({
                 </p>
               </div>
 
-              {/* Back to Login Link */}
-              <div className="text-center">
-                <Link
-                  to="/signin"
-                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                >
-                  ← Quay lại đăng nhập
-                </Link>
-              </div>
+            
             </div>
           </form>
         </div>

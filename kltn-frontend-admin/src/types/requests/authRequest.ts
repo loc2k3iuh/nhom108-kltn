@@ -15,3 +15,11 @@ export interface ResendOtpRequest {
 export interface SignOutRequest {
     token: string;
 }
+
+export interface UpdateUserRequest {
+    fullName: string;
+    phoneNumber: string;
+    address: string;
+    dateOfBirth: string;
+    file: File;
+}
