@@ -4,7 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import OtpVerification from "./pages/AuthPages/OtpVerification";
@@ -31,9 +31,17 @@ import Reloading from "./components/skeletions/Reloading";
 
 export default function App() {
   const { checkAuth, authUser, isCheckingAuth, isSigningOut, isUpdating } = useAuthStore();
- 
+  
   useEffect(() => {
-     checkAuth();
+    let response = null;
+    const fetchUser = async() => {
+      response = await checkAuth();
+      if(!response) {
+        toast.error("Error in checking user !", { id: "check-auth-error" });  
+      }
+    }
+    fetchUser();
+     
   }, [checkAuth]);
 
     console.log("authUser in App.jsx: ", authUser);

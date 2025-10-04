@@ -1,22 +1,147 @@
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-
 import Label from "../form/Label";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Input } from "../ui/input";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { UpdateUserRequest } from "@/types/requests/authRequest";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 interface NameParts {
   firstname: string;
   lastname: string;
 }
 
+const updateSchema = yup.object({
+  firstName: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .min(3, "First name must be at least 3 characters !")
+    .max(50, "First name must not exceed 50 characters !"),
+  lastName: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .min(2, "Last name must be at least 3 characters !")
+    .max(50, "Last name must not exceed 50 characters !"),
+
+  phoneNumber: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .matches(
+      /^(09|03|02|07)\d{8}$/,
+      "Phone must start with 09, 03, 02, or 07 and have 10 digits !"
+    ),
+
+  address: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .min(10, "Address must be at least 10 characters !")
+    .max(100, "Address must not exceed 100 character !"),
+
+  dateOfBirth: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .test("is-date", "Invalid date format!", (value) => {
+      if (!value) return true;
+      return !isNaN(Date.parse(value));
+    })
+    .test("is-18", "You must be over 18 years old !", (value) => {
+      if (!value) return true;
+      const dob = new Date(value);
+      const today = new Date();
+      const minDate = new Date(
+        today.getFullYear() - 18,
+        today.getMonth(),
+        today.getDate()
+      );
+      return dob <= minDate;
+    }),
+
+  file: yup
+    .mixed<File>()
+    .nullable()
+    .transform((value: FileList) =>
+      value && value.length > 0 ? value[0] : null
+    )
+    .test("fileSize", "Image must be less than 5MB !", (file) => {
+      if (!file) return true;
+      return file.size <= 5 * 1024 * 1024;
+    })
+    .test("fileType", "Only .png, .jpg, .jpeg, .jfif are allowed", (file) => {
+      if (!file) return true;
+      return ["image/png", "image/jpg", "image/jpeg", "image/jfif"].includes(
+        file.type
+      );
+    }),
+});
+
+type UpdateUserForm = yup.InferType<typeof updateSchema>;
+
 export default function UserInfoCard() {
-  const { authUser } = useAuthStore();
+  const { authUser, updateUser } = useAuthStore();
   const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
+  const [avatarPreview, setAvaterPreview] = useState("");
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<UpdateUserForm>({
+    resolver: yupResolver(updateSchema) as any,
+    defaultValues: {
+      lastName: "",
+      firstName: "",
+      phoneNumber: "",
+      dateOfBirth: "",
+      address: "",
+      file: null,
+    },
+  });
+
+  useEffect(() => {
+    setAvaterPreview(authUser?.avatar_url || "");
+  }, [authUser]);
+
+  useEffect(() => {
+    // Prefill form when opening modal or when user data changes
+    if (authUser) {
+      const { firstname, lastname } = getFirstNameAndLastName(
+        authUser.full_name
+      );
+      reset({
+        firstName: firstname || "",
+        lastName: lastname || "",
+        phoneNumber: authUser.phone_number || "",
+        dateOfBirth: authUser.date_of_birth || "",
+        address: authUser.address || "",
+        file: null,
+      });
+    }
+  }, [authUser, isOpen, reset]);
+
+  const handleSave = async (data: UpdateUserForm) => {
+    const updateData: UpdateUserRequest = {
+      fullName:
+        `${data.firstName || ""} ${data.lastName || ""}`.trim() || undefined,
+      phoneNumber: data.phoneNumber || undefined,
+      address: data.address || undefined,
+      dateOfBirth: data.dateOfBirth || undefined,
+      file: data.file || undefined,
+    };
+
+    const success = await updateUser(updateData);
+    if (success) {
+      toast.success("User information updated successfully!");
+    }
     closeModal();
   };
 
@@ -29,7 +154,7 @@ export default function UserInfoCard() {
 
     const parts = fullName.trim().split(/\s+/);
     const firstname = parts[0];
-    const lastname = parts.length > 1 ? parts[parts.length - 1] : "";
+    const lastname = parts.length > 1 ? parts.slice(1).join(" ") : "";
 
     return {
       firstname,
@@ -37,12 +162,21 @@ export default function UserInfoCard() {
     };
   };
 
-  const formatPhoneNumber = (phoneNumber: string | null | undefined): string => {
+  const formatPhoneNumber = (
+    phoneNumber: string | null | undefined
+  ): string => {
     if (!phoneNumber) return "";
     const pattern = /^(\d{2})(\d{3})(\d{3})(\d{2})$/;
     return phoneNumber.replace(pattern, "$1 $2 $3 $4");
   };
 
+  const convertDate = (dateStr: string | null | undefined) => {
+    if (dateStr == null) {
+      return "";
+    }
+    const [year, month, date] = dateStr.split("-");
+    return `${date}-${month}-${year}`;
+  };
 
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -97,6 +231,15 @@ export default function UserInfoCard() {
                 {authUser?.roles[0]?.name}
               </p>
             </div>
+
+            <div>
+              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                Date of Birth
+              </p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                {convertDate(authUser?.date_of_birth)}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -129,45 +272,9 @@ export default function UserInfoCard() {
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Edit Personal Information
             </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
-            </p>
           </div>
-          <form className="flex flex-col">
-            <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-              <div>
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Social Links
-                </h5>
-
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div>
-                    <Label>Facebook</Label>
-                    <Input
-                      type="text"
-                      value="https://www.facebook.com/PimjoHQ"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>X.com</Label>
-                    <Input type="text" value="https://x.com/PimjoHQ" />
-                  </div>
-
-                  <div>
-                    <Label>Linkedin</Label>
-                    <Input
-                      type="text"
-                      value="https://www.linkedin.com/company/pimjo"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Instagram</Label>
-                    <Input type="text" value="https://instagram.com/PimjoHQ" />
-                  </div>
-                </div>
-              </div>
+          <form className="flex flex-col" onSubmit={handleSubmit(handleSave)}>
+            <div className="custom-scrollbar h-[510px] overflow-y-auto px-2 pb-3">
               <div className="mt-7">
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                   Personal Information
@@ -176,46 +283,93 @@ export default function UserInfoCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
                     <Label>First Name</Label>
-                    <Input
-                      type="text"
-                      value={
-                        getFirstNameAndLastName(authUser?.full_name).firstname
-                      }
-                    />
+                    <Input type="text" {...register("firstName")} />
+                      {errors.firstName && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.firstName.message}
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Last Name</Label>
-                    <Input
-                      type="text"
-                      value={
-                        getFirstNameAndLastName(authUser?.full_name).lastname
-                      }
-                    />
+                    <Input type="text" {...register("lastName")} />
+                     {errors.lastName && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.lastName.message}
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="text" value="randomuser@pimjo.com" />
+                    <Label>Phone Number</Label>
+                    <Input type="text" {...register("phoneNumber")} />
+                      {errors.phoneNumber && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.phoneNumber.message}
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="text" value="+09 363 398 46" />
+                    <Label>Date Of Birth</Label>
+                    <Input type="date" {...register("dateOfBirth")} />
+                    {errors.dateOfBirth && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.dateOfBirth.message}
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" value="Team Manager" />
+                    <Label>Address</Label>
+                    <Input type="text" {...register("address")} />
+                      {errors.address && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.address.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="col-span-2">
+                    <Label>Image</Label>
+                    {(() => {
+                      const { ref, onChange, ...rest } = register("file");
+                      return (
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          {...rest}
+                          ref={ref}
+                          onChange={(e) => {
+                            onChange(e);
+                            const f = e.target.files?.[0];
+                            setAvaterPreview(f ? URL.createObjectURL(f) : "");
+                          }}
+                        />
+                      );
+                    })()}
+                     {errors.file && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.file.message}
+                      </p>
+                    )}
+                    {avatarPreview && (
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar preview"
+                        className="mt-2 h-24 rounded-full border border-gray-500"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+            <div className="flex items-center gap-3 px-2 mt-5 lg:justify-end">
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
+              <Button size="sm" type="submit">
                 Save Changes
               </Button>
             </div>

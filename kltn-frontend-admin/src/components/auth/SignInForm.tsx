@@ -9,11 +9,8 @@ import { Button } from "../ui/button";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { LoginRequest } from "@/types/requests/authRequest";
 
-interface LoginForm {
-  username: string;
-  password: string;
-}
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,10 +20,10 @@ export default function SignInForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginForm>();
+  } = useForm<LoginRequest>();
   const { logIn } = useAuthStore();
 
-  const onSubmit = async (data: LoginForm) => {
+  const onSubmit = async (data: LoginRequest) => {
     const email = await logIn(data);
     if(email != null){
       navigate("/otp-verification", {

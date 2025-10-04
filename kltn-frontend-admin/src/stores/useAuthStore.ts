@@ -17,7 +17,7 @@ import { LoginResponse, UserResponse } from "@/types/responses/authResponse";
 import { checkAuthUser, updateUser } from "@/services/useUserService";
 import { getUserIdFromToken } from "@/services/useTokenService";
 
-type AuthStore = {
+interface AuthStore  {
   isLoggingIn: boolean;
   isSigningOut: boolean;
   isUpdating: boolean;

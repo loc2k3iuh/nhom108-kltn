@@ -15,8 +15,8 @@ export const updateUser = async (userId: number, data: UpdateUserRequest): Promi
   if(data.fullName) formData.append("fullName", data.fullName);
   if(data.phoneNumber) formData.append("phoneNumber", data.phoneNumber);
   if(data.address) formData.append("address", data.address);
-  if(data.dateOfBirth) formData.append("fullName", data.dateOfBirth);
-  if(data.file) formData.append("fullName", data.file);
+  if(data.dateOfBirth) formData.append("dateOfBirth", data.dateOfBirth);
+  if(data.file) formData.append("file", data.file);
   const response = await axiosInstance.put(`/users/${userId}`, formData, {
     headers: {
       "Content-Type" : "multipart/form-data"

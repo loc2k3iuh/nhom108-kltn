@@ -17,9 +17,9 @@ export interface SignOutRequest {
 }
 
 export interface UpdateUserRequest {
-    fullName: string;
-    phoneNumber: string;
-    address: string;
-    dateOfBirth: string;
-    file: File;
+    fullName?: string | null;
+    phoneNumber?: string | null;
+    address?: string | null;
+    dateOfBirth?: string | null;
+    file?: File | null;
 }

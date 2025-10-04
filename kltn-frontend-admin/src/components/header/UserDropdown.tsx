@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getTokenFromLocalStorage, getTokenFromSessionStorage, removeToken } from "@/services/useTokenService";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { LoginRequest, SignOutRequest } from "@/types/requests/authRequest";
+import { SignOutRequest } from "@/types/requests/authRequest";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 
@@ -168,7 +168,6 @@ export default function UserDropdown() {
           onClick={handleSignOut}
           className=" bg-error-50 flex items-center gap-3 px-3 py-2 mt-3 font-medium   rounded-lg group text-theme-sm dark:bg-error-500/15 hover:bg-red-600 dark:hover:bg-red-600  "
         >
-         
           <svg
             className="fill-error-600 group-hover:fill-white dark:group-hover:fill-gray-300"
             width="24"
