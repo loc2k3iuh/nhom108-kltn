@@ -1,0 +1,63 @@
+@startuml cap-nhat-khuyen-mai
+actor "Nhân viên quản lý" as Manager
+participant "Giao diện (UI)" as UI
+participant "Promotion Service" as Promo
+participant "Order Service" as Order
+participant "Database" as DB
+participant "Notification Service" as Notif
+
+Manager -> UI: Tìm khuyến mãi -> Chọn "Sửa khuyến mãi"
+UI -> Promo: GET /promotions/{promotionId}
+Promo -> DB: SELECT promotion WHERE id = promotionId
+alt Khuyến mãi không tồn tại
+  DB --> Promo: Không tìm thấy
+  Promo -> UI: Trả lỗi "Promotion not found"
+  UI -> Manager: Hiển thị "Khuyến mãi không tồn tại"
+else Khuyến mãi tồn tại
+  DB --> Promo: Trả promotion data
+  Promo -> Order: Check if can edit (promotionId)
+  Order -> DB: SELECT COUNT(*) FROM orders WHERE promotion_id = ? AND status IN ('confirmed', 'completed')
+  alt Đang được sử dụng hoặc đã bắt đầu
+    DB --> Order: Trả count > 0 hoặc start_date <= NOW()
+    Order -> Promo: Trả "Cannot edit"
+    Promo -> UI: Trả "Cannot edit"
+    UI -> Manager: Hiển thị "Không thể sửa - khuyến mãi đang hoạt động"
+  else Có thể sửa
+    Order -> Promo: Trả "Can edit"
+    Promo -> UI: Trả promotion details
+    UI -> Manager: Hiển thị form với thông tin hiện tại
+    
+    Manager -> UI: Chỉnh sửa thông tin -> Submit
+    UI -> Promo: PUT /promotions/{promotionId} (updated_data)
+    Promo -> Promo: Validate updated data
+    alt Validation fails
+      Promo -> UI: Trả lỗi validation
+      UI -> Manager: Hiển thị lỗi chi tiết
+    else Validation OK
+      alt Mã code thay đổi
+        Promo -> DB: SELECT COUNT(*) WHERE code = ? AND id != ?
+        alt Mã trùng
+          DB --> Promo: Trả count > 0
+          Promo -> UI: Trả lỗi "Duplicate code"
+          UI -> Manager: Hiển thị "Mã khuyến mãi đã tồn tại"
+        else Mã unique
+          DB --> Promo: Trả count = 0
+        end
+      end
+      
+      Promo -> DB: UPDATE promotions SET ... WHERE id = promotionId
+      alt DB update fails
+        DB --> Promo: Lỗi database
+        Promo -> UI: Trả lỗi "Update failed"
+        UI -> Manager: Hiển thị "Không thể cập nhật khuyến mãi, vui lòng thử lại sau"
+      else DB update success
+        DB --> Promo: Xác nhận cập nhật
+        Promo -> Notif: Gửi thông báo team về khuyến mãi đã cập nhật
+        Notif --> Promo: Xác nhận gửi
+        Promo -> UI: Trả success
+        UI -> Manager: Hiển thị "Cập nhật khuyến mãi thành công"
+      end
+    end
+  end
+end
+@enduml

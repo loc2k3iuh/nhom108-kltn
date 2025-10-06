@@ -1,0 +1,54 @@
+@startuml thong-ke-san-pham
+actor "Nhân viên quản lý" as Manager
+participant "Giao diện (UI)" as UI
+participant "Analytics Service" as Analytics
+participant "Product Service" as Product
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+participant "Export Service" as Export
+
+Manager -> UI: Vào "Thống kê sản phẩm" -> Chọn loại thống kê/filters -> Submit
+UI -> Analytics: GET /analytics/products (type, date_range, filters)
+Analytics -> Analytics: Validate filters and parameters
+alt Invalid parameters
+  Analytics -> UI: Trả lỗi "Invalid parameters"
+  UI -> Manager: Hiển thị "Vui lòng chọn điều kiện lọc hợp lệ"
+else Valid parameters
+  alt Thống kê sản phẩm bán chạy
+    Analytics -> Product: Get best selling products (date_range)
+    Product -> DB: SELECT p.*, SUM(oi.quantity) as sold_qty FROM products p JOIN order_items oi WHERE ...
+  else Thống kê tồn kho
+    Analytics -> Inventory: Get inventory statistics
+    Inventory -> DB: SELECT product_id, available_qty, reserved_qty FROM inventory WHERE ...
+  else Thống kê theo danh mục
+    Analytics -> Product: Get category statistics (category_id, date_range)
+    Product -> DB: SELECT c.name, COUNT(p.id), SUM(oi.quantity) FROM categories c JOIN products p WHERE ...
+  end
+  
+  alt Không có dữ liệu
+    DB --> Product: Trả kết quả rỗng
+    Product -> Analytics: Trả "No data"
+    Analytics -> UI: Trả "No data"
+    UI -> Manager: Hiển thị "Không có dữ liệu để thống kê"
+  else Có dữ liệu
+    DB --> Product: Trả statistics data
+    Product -> Analytics: Trả processed data
+    Analytics -> Analytics: Calculate additional metrics (percentages, trends)
+    Analytics -> UI: Trả product statistics (data + charts)
+    UI -> Manager: Hiển thị thống kê với biểu đồ và bảng số liệu
+    
+    alt Manager muốn xuất báo cáo
+      Manager -> UI: Click "Xuất báo cáo" -> Chọn format (Excel/PDF)
+      UI -> Export: POST /export/product-stats (data, format)
+      Export -> Export: Generate file with charts and tables
+      alt Export fails
+        Export -> UI: Trả lỗi "Export failed"
+        UI -> Manager: Hiển thị "Không thể xuất báo cáo, vui lòng thử lại sau"
+      else Export success
+        Export -> UI: Trả download link
+        UI -> Manager: Hiển thị link tải file báo cáo
+      end
+    end
+  end
+end
+@enduml

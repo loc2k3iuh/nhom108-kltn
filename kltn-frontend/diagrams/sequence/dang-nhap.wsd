@@ -1,0 +1,56 @@
+@startuml
+actor "Người dùng" as User
+participant "Giao diện (UI)" as UI
+participant "Auth Service" as Auth
+participant "Database" as DB
+participant "OAuth Provider" as OAuth
+participant "Storage" as Storage
+participant "Cookie" as Cookie
+
+User -> UI: Truy cập trang đăng nhập
+UI -> User: Hiển thị form (Email/FB/Google)
+
+alt Email/password login
+  User -> UI: Nhập email & mật khẩu + chọn Lưu? (yes/no)
+  UI -> Auth: Gửi credentials
+  Auth -> DB: Kiểm tra credentials
+  alt credentials hợp lệ
+    Auth -> Auth: Tạo JWT Access + Refresh
+    alt Lưu đăng nhập = yes
+      Auth -> Storage: Lưu Access vào localStorage
+      Auth -> Cookie: Lưu Refresh vào cookie (30 ngày)
+    else Lưu đăng nhập = no
+      Auth -> Storage: Lưu Access vào sessionStorage
+      Auth -> Cookie: Lưu Refresh vào session cookie
+    end
+    Auth -> UI: Trả access + chuyển hướng
+    UI -> User: Chuyển đến giao diện chính
+  else credentials sai
+    Auth -> UI: Trả lỗi "Email hoặc mật khẩu không đúng"
+    UI -> User: Hiển thị lỗi
+  end
+else Social OAuth (Facebook/Google)
+  User -> UI: Chọn Facebook/Google
+  UI -> OAuth: Chuyển tới OAuth provider
+  OAuth -> User: Hiển thị màn hình OAuth
+  User -> OAuth: Nhập thông tin OAuth & xác thực
+  alt OAuth xác thực OK
+    OAuth -> UI: Trả thông tin xác thực (token hoặc profile)
+    UI -> Auth: Gửi thông tin OAuth để kiểm tra/ghép user
+    Auth -> DB: Tìm/tao user tương ứng
+    Auth -> Auth: Tạo JWT Access + Refresh
+    alt Lưu đăng nhập = yes
+      Auth -> Storage: Lưu Access vào localStorage
+      Auth -> Cookie: Lưu Refresh vào cookie (30 ngày)
+    else
+      Auth -> Storage: Lưu Access vào sessionStorage
+      Auth -> Cookie: Lưu Refresh vào session cookie
+    end
+    Auth -> UI: Trả token + chuyển hướng
+    UI -> User: Chuyển đến giao diện chính
+  else OAuth fail
+    OAuth -> UI: Trả lỗi OAuth
+    UI -> User: Hiển thị lỗi
+  end
+end
+@enduml

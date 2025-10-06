@@ -1,0 +1,60 @@
+@startuml cap-nhat-tai-khoan
+actor "Nhân viên quản lý" as Admin
+participant "Giao diện (UI)" as UI
+participant "User Service" as UserSvc
+participant "Database" as DB
+participant "Audit Service" as Audit
+participant "Notification Service" as Notif
+
+Admin -> UI: Chọn tài khoản -> Click "Cập nhật thông tin"
+UI -> UserSvc: GET /users/{userId}
+UserSvc -> DB: SELECT user WHERE id = userId
+alt Tài khoản không tồn tại
+  DB --> UserSvc: Không tìm thấy
+  UserSvc -> UI: Trả lỗi
+  UI -> Admin: Hiển thị "Tài khoản không tồn tại"
+else Tài khoản tồn tại
+  DB --> UserSvc: Trả user data
+  UserSvc -> UI: Trả thông tin tài khoản
+  UI -> Admin: Hiển thị form với thông tin hiện tại
+  
+  Admin -> UI: Chỉnh sửa thông tin -> Submit
+  UI -> UserSvc: PUT /users/{userId} (updated_data, adminId)
+  UserSvc -> UserSvc: Validate updated data
+  alt Invalid data
+    UserSvc -> UI: Trả lỗi validation
+    UI -> Admin: Hiển thị lỗi chi tiết
+  else Valid data
+    alt Email thay đổi
+      UserSvc -> DB: SELECT COUNT(*) WHERE email = ? AND id != ?
+      alt Email trùng
+        DB --> UserSvc: Trả count > 0
+        UserSvc -> UI: Trả lỗi "Email exists"
+        UI -> Admin: Hiển thị "Email này đã được sử dụng bởi tài khoản khác"
+      else Email unique
+        DB --> UserSvc: Trả count = 0
+      end
+    end
+    
+    UserSvc -> DB: UPDATE users SET name=?, email=?, phone=?, status=? WHERE id=?
+    alt DB update fails
+      DB --> UserSvc: Lỗi database
+      UserSvc -> UI: Trả lỗi "Update failed"
+      UI -> Admin: Hiển thị "Không thể cập nhật tài khoản, vui lòng thử lại sau"
+    else DB update success
+      DB --> UserSvc: Xác nhận update
+      UserSvc -> Audit: POST /audit (adminId, action='update_user', targetUserId)
+      Audit --> UserSvc: Xác nhận audit log
+      UserSvc -> Notif: Send notification to user (thông báo thay đổi thông tin)
+      alt Notif lỗi
+        Notif --> UserSvc: Lỗi gửi thông báo
+        UserSvc -> UI: Trả "Thành công (không gửi được thông báo)"
+      else Notif OK
+        Notif --> UserSvc: Xác nhận gửi
+        UserSvc -> UI: Trả "Cập nhật tài khoản thành công"
+      end
+      UI -> Admin: Hiển thị kết quả
+    end
+  end
+end
+@enduml

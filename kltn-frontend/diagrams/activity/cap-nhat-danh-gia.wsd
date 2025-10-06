@@ -1,0 +1,35 @@
+@startuml cap-nhat-danh-gia
+|Khách hàng|
+start
+:Chọn đánh giá cần sửa -> Click "Sửa";
+|Hệ Thống|
+:Kiểm tra quyền chỉnh sửa;
+if (Có quyền sửa?) then (Không)
+  |Khách hàng|
+  :Hiển thị "Không có quyền chỉnh sửa";
+  stop
+else (Có)
+  |Khách hàng|
+  :Hiển thị form với thông tin hiện tại;
+  :Chỉnh sửa nội dung/rating/hình ảnh;
+  :Nhấn "Cập nhật";
+  |Hệ Thống|
+  :Validate dữ liệu;
+  if (Dữ liệu hợp lệ?) then (Không)
+    |Khách hàng|
+    :Hiển thị lỗi validation;
+    stop
+  else (Có)
+    if (Có hình ảnh mới?) then (Có)
+      :Upload hình ảnh mới;
+      :Xóa hình ảnh cũ;
+    endif
+    :Cập nhật đánh giá trong DB;
+    :Cập nhật rating trung bình sản phẩm;
+    :Gửi thông báo cho shop;
+    |Khách hàng|
+    :Hiển thị "Cập nhật đánh giá thành công";
+    stop
+  endif
+endif
+@enduml

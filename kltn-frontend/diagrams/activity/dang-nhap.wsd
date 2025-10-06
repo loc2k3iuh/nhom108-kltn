@@ -1,0 +1,77 @@
+@startuml
+|Khách Hàng|
+start
+:Truy cập trang đăng nhập;
+|Hệ Thống|
+:Hiển thị biểu mẫu đăng nhập (Email/FB/Google);
+|Khách Hàng|
+:Chọn phương thức đăng nhập;
+if (Chọn Email?) then (Email)
+  :Nhập email & mật khẩu;
+  |Hệ Thống|
+  :Kiểm tra thông tin với Database;
+  if (Thông tin đúng?) then (Có)
+    :Tạo JWT Access + Refresh;
+    if (Chọn "Lưu đăng nhập"?) then (Có)
+      :Lưu Access vào localStorage;
+      :Lưu Refresh vào cookie (30 ngày);
+    else (Không)
+      :Lưu Access vào sessionStorage;
+      :Lưu Refresh vào session cookie;
+    endif
+    :Chuyển hướng đến giao diện chính;
+    stop
+  else (Không)
+    :Hiển thị "Email hoặc mật khẩu không đúng";
+    |Khách Hàng|
+    :Sửa thông tin và gửi lại;
+    -> [quay lại] -left-> :Chọn phương thức đăng nhập;
+  endif
+else
+  if (Chọn Facebook?) then (Facebook)
+    |Hệ Thống|
+    :Chuyển tới OAuth Facebook;
+    |Facebook|
+    :Người dùng xác thực tại Facebook;
+    if (FB xác thực OK?) then (Có)
+      |Hệ Thống|
+      :Kiểm tra/ghép user với Database;
+      :Tạo JWT Access + Refresh;
+      if (Chọn "Lưu đăng nhập"?) then (Có)
+        :Lưu Access vào localStorage;
+        :Lưu Refresh vào cookie (30 ngày);
+      else (Không)
+        :Lưu Access vào sessionStorage;
+        :Lưu Refresh vào session cookie;
+      endif
+      :Chuyển hướng đến giao diện chính;
+      stop
+    else (Không)
+      :Hiển thị lỗi đăng nhập Facebook;
+      stop
+    endif
+  else (Google)
+    |Hệ Thống|
+    :Chuyển tới OAuth Google;
+    |Google|
+    :Người dùng xác thực tại Google;
+    if (Google xác thực OK?) then (Có)
+      |Hệ Thống|
+      :Kiểm tra/ghép user với Database;
+      :Tạo JWT Access + Refresh;
+      if (Chọn "Lưu đăng nhập"?) then (Có)
+        :Lưu Access vào localStorage;
+        :Lưu Refresh vào cookie (30 ngày);
+      else (Không)
+        :Lưu Access vào sessionStorage;
+        :Lưu Refresh vào session cookie;
+      endif
+      :Chuyển hướng đến giao diện chính;
+      stop
+    else (Không)
+      :Hiển thị lỗi đăng nhập Google;
+      stop
+    endif
+  endif
+endif
+@enduml

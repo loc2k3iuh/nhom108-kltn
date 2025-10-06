@@ -1,0 +1,52 @@
+@startuml tra-cuu-tai-khoan
+actor "Nhân viên quản lý" as Manager
+participant "Giao diện (UI)" as UI
+participant "User Service" as User
+participant "Database" as DB
+participant "Audit Service" as Audit
+
+Manager -> UI: Vào "Tra cứu tài khoản" -> Nhập thông tin -> Submit
+UI -> User: GET /users/search (search_term, search_type)
+User -> User: Validate search parameters
+alt Invalid search parameters
+  User -> UI: Trả lỗi validation
+  UI -> Manager: Hiển thị "Vui lòng nhập thông tin tìm kiếm hợp lệ"
+else Valid search parameters
+  alt Tìm kiếm theo email
+    User -> DB: SELECT * FROM users WHERE email LIKE ?
+  else Tìm kiếm theo phone
+    User -> DB: SELECT * FROM users WHERE phone LIKE ?
+  else Tìm kiếm theo ID
+    User -> DB: SELECT * FROM users WHERE id = ?
+  end
+  
+  alt Không tìm thấy
+    DB --> User: Trả kết quả rỗng
+    User -> UI: Trả "No results found"
+    UI -> Manager: Hiển thị "Không tìm thấy tài khoản với thông tin này"
+  else Tìm thấy tài khoản
+    DB --> User: Trả user data
+    User -> Audit: Log search action (manager_id, search_term, found_user_id)
+    Audit -> DB: INSERT audit_logs
+    Audit --> User: Confirm log
+    User -> UI: Trả user information (filtered sensitive data)
+    UI -> Manager: Hiển thị thông tin tài khoản
+  end
+end
+
+alt Tìm kiếm nâng cao với nhiều tiêu chí
+  Manager -> UI: Chọn "Tìm kiếm nâng cao" -> Nhập multiple criteria
+  UI -> User: GET /users/advanced-search (criteria)
+  User -> DB: Complex SELECT with WHERE conditions
+  User -> UI: Trả danh sách users matching criteria
+  UI -> Manager: Hiển thị danh sách kết quả
+end
+
+alt Xem chi tiết tài khoản từ kết quả tìm kiếm
+  Manager -> UI: Click vào user từ danh sách -> "Xem chi tiết"
+  UI -> User: GET /users/{userId}/details
+  User -> DB: SELECT detailed info WHERE id = userId
+  User -> UI: Trả detailed user information
+  UI -> Manager: Hiển thị thông tin chi tiết tài khoản
+end
+@enduml

@@ -1,0 +1,45 @@
+@startuml danh-gia-binh-luan-san-pham
+actor "Khách Hàng" as User
+participant "Giao diện (UI)" as UI
+participant "Review Service" as Review
+participant "Database" as DB
+participant "Storage" as Storage
+participant "Moderation Service" as Mod
+participant "Notification Service" as Notif
+
+User -> UI: Mở trang sản phẩm / Sản phẩm đã mua
+UI -> Review: Kiểm tra điều kiện (đã mua?)
+Review -> DB: Query orders where user_id/product_id completed
+DB --> Review: Trả kết quả
+alt Không đủ điều kiện
+  Review -> UI: Trả "Không được phép đánh giá"
+  UI -> User: Hiển thị thông báo
+else Đủ điều kiện
+  UI -> User: Hiển thị form đánh giá
+  User -> UI: Chọn rating + content (+ file)
+  UI -> Storage: Upload file (nếu có)
+  alt Storage lỗi
+    Storage --> UI: Lỗi upload
+    UI -> User: Hiển thị lỗi file
+  else Upload OK
+    Storage --> UI: Trả fileRef
+    UI -> Review: Gửi review (rating, content, fileRef, userId)
+    Review -> Review: Kiểm tra nội dung (từ cấm)
+    alt Nội dung vi phạm
+      Review -> Mod: (tùy) gửi để duyệt / flag
+      Mod --> Review: Trả trạng thái "Chờ duyệt" / "Rejected"
+      Review -> DB: Lưu review với status = pending/rejected
+      Review -> UI: Trả kết quả "Chờ duyệt / Bị từ chối"
+      UI -> User: Hiển thị thông báo
+    else Hợp lệ
+      Review -> DB: Insert review
+      DB --> Review: Xác nhận
+      Review -> DB: Cập nhật avg_rating trên product
+      Review -> Notif: Gửi thông báo xác nhận
+      Notif --> User: Gửi email/in-app
+      Review -> UI: Trả success
+      UI -> User: Hiển thị "Gửi đánh giá thành công" và hiển thị review
+    end
+  end
+end
+@enduml

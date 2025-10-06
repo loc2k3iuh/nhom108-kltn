@@ -1,0 +1,35 @@
+@startuml them-khuyen-mai
+actor "Nhân viên quản lý" as Manager
+participant "Giao diện (UI)" as UI
+participant "Promotion Service" as Promo
+participant "Database" as DB
+participant "Notification Service" as Notif
+
+Manager -> UI: Vào "Thêm khuyến mãi" -> Điền form -> Submit
+UI -> Promo: POST /promotions (promotion_data)
+Promo -> Promo: Validate data (required fields, date range, discount value)
+alt Validation fails
+  Promo -> UI: Trả lỗi validation
+  UI -> Manager: Hiển thị lỗi chi tiết
+else Validation OK
+  Promo -> DB: SELECT COUNT(*) WHERE code = ?
+  alt Mã code trùng
+    DB --> Promo: Trả count > 0
+    Promo -> UI: Trả lỗi "Duplicate code"
+    UI -> Manager: Hiển thị "Mã khuyến mãi đã tồn tại"
+  else Mã code unique
+    DB --> Promo: Trả count = 0
+    Promo -> DB: INSERT promotion (name, code, discount_type, value, start_date, end_date)
+    alt DB insert fails
+      DB --> Promo: Lỗi database
+      Promo -> UI: Trả lỗi "Creation failed"
+      UI -> Manager: Hiển thị "Không thể tạo khuyến mãi, vui lòng thử lại sau"
+    else DB insert success
+      DB --> Promo: Trả promotionId
+      Promo -> Notif: Send notification to team
+      Promo -> UI: Trả success + promotionId
+      UI -> Manager: Hiển thị "Tạo khuyến mãi thành công" + link xem chi tiết
+    end
+  end
+end
+@enduml

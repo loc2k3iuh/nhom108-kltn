@@ -1,0 +1,26 @@
+@startuml tra-cuu-tai-khoan
+|Nhân viên quản lý|
+start
+:Vào "Tra cứu tài khoản";
+:Nhập thông tin tìm kiếm (email/phone/ID);
+:Nhấn "Tìm kiếm";
+|Hệ Thống|
+:Validate thông tin tìm kiếm;
+if (Thông tin hợp lệ?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Vui lòng nhập thông tin tìm kiếm hợp lệ";
+  stop
+else (Có)
+  :Tìm kiếm tài khoản trong Database;
+  if (Tìm thấy tài khoản?) then (Không)
+    |Nhân viên quản lý|
+    :Hiển thị "Không tìm thấy tài khoản với thông tin này";
+    stop
+  else (Có)
+    :Ghi log tra cứu;
+    |Nhân viên quản lý|
+    :Hiển thị thông tin tài khoản;
+    stop
+  endif
+endif
+@enduml

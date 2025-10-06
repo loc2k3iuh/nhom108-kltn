@@ -1,0 +1,89 @@
+@startuml gui-danh-gia-binh-luan
+actor "Khách Hàng" as User
+participant "Giao diện (UI)" as UI
+participant "Review Service" as Review
+participant "Order Service" as Order
+participant "Storage Service" as Storage
+participant "Moderation Service" as Mod
+participant "Database" as DB
+participant "Notification Service" as Notif
+participant "Analytics Service" as Analytics
+
+User -> UI: Vào trang sản phẩm -> Click "Viết đánh giá"
+UI -> Review: GET /reviews/eligibility (userId, productId)
+Review -> Order: Check purchase history (userId, productId)
+Order -> DB: SELECT orders WHERE userId AND productId AND status='completed'
+alt Chưa mua sản phẩm
+  DB --> Order: Trả rỗng
+  Order -> Review: Trả "Not eligible"
+  Review -> UI: Trả "No permission"
+  UI -> User: Hiển thị "Bạn cần mua sản phẩm trước khi đánh giá"
+else Đã mua
+  DB --> Order: Trả purchase record
+  Order -> Review: Trả "Eligible"
+  Review -> DB: SELECT existing review (userId, productId)
+  alt Đã có đánh giá
+    DB --> Review: Trả existing review
+    Review -> UI: Trả existing data
+    UI -> User: Hiển thị form chỉnh sửa với data cũ
+  else Chưa có đánh giá
+    Review -> UI: Trả "Can create new"
+    UI -> User: Hiển thị form đánh giá mới
+  end
+  
+  User -> UI: Điền rating + content + chọn files -> Submit
+  UI -> Review: POST /reviews (productId, rating, content, files)
+  Review -> Review: Validate input (rating required, content length)
+  alt Validation fails
+    Review -> UI: Trả lỗi validation
+    UI -> User: Hiển thị lỗi (thiếu rating/nội dung quá dài)
+  else Validation OK
+    alt Có files upload
+      Review -> Storage: POST /upload (files, userId, productId)
+      alt Upload fails
+        Storage --> Review: Trả lỗi (size/format)
+        Review -> UI: Trả lỗi upload
+        UI -> User: Hiển thị lỗi file cụ thể
+      else Upload success
+        Storage --> Review: Trả media URLs
+      end
+    end
+    
+    Review -> Mod: POST /moderate/content (content, userId)
+    alt Content violates policy
+      Mod --> Review: Trả "Rejected" + reason
+      Review -> UI: Trả "Content violation"
+      UI -> User: Hiển thị "Nội dung vi phạm chính sách"
+    else Content OK
+      alt Needs manual review
+        Mod --> Review: Trả "Pending review"
+        Review -> DB: INSERT review (status='pending')
+        DB --> Review: Trả reviewId
+        Review -> Mod: CREATE moderation ticket
+        Review -> UI: Trả "Pending approval"
+        UI -> User: Hiển thị "Đánh giá đang chờ duyệt"
+      else Auto approved
+        Mod --> Review: Trả "Approved"
+        Review -> DB: INSERT review (status='approved')
+        DB --> Review: Trả reviewId
+        Review -> Analytics: UPDATE product rating (productId)
+        Analytics -> DB: UPDATE products SET avg_rating, review_count
+        Analytics --> Review: Confirm update
+        Review -> Notif: Send confirmation (userId, productId, reviewId)
+        Notif --> User: Email/in-app notification
+        Review -> UI: Trả success + review data
+        UI -> User: Hiển thị "Gửi đánh giá thành công" + new review
+      end
+    end
+  end
+end
+
+alt Update existing review
+  User -> UI: Edit existing review -> Submit changes
+  UI -> Review: PUT /reviews/{reviewId} (rating, content, files)
+  Review -> DB: UPDATE review SET ... WHERE id = reviewId
+  Review -> Analytics: Recalculate product rating
+  Review -> UI: Trả update success
+  UI -> User: Hiển thị "Cập nhật đánh giá thành công"
+end
+@enduml

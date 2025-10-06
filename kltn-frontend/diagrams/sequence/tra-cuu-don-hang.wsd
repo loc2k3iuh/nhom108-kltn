@@ -1,0 +1,91 @@
+@startuml tra-cuu-don-hang
+actor "Khách Hàng" as User
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Order Service" as Order
+participant "Database" as DB
+participant "Shipping API" as Shipping
+participant "Export Service" as Export
+participant "Audit Service" as Audit
+
+alt Khách tự tra cứu
+  User -> UI: Mở "Đơn hàng của tôi"
+else Nhân viên tra cứu hộ
+  Staff -> UI: Mở tra cứu đơn hàng -> Nhập mã khách/đơn
+end
+
+UI -> Order: GET /orders (userId hoặc filters)
+Order -> DB: SELECT orders WHERE conditions
+alt DB lỗi
+  DB --> Order: Lỗi kết nối
+  Order -> UI: Trả lỗi "Không thể tải dữ liệu"
+  UI -> User: Hiển thị lỗi + cho phép thử lại
+else DB thành công
+  alt Không có đơn hàng
+    DB --> Order: Trả rỗng
+    Order -> UI: Trả empty list
+    UI -> User: Hiển thị "Bạn chưa có đơn hàng nào" + gợi ý
+  else Có đơn hàng
+    DB --> Order: Trả danh sách đơn
+    Order -> UI: Trả danh sách
+    UI -> User: Hiển thị danh sách đơn hàng
+    
+    alt User muốn lọc
+      User -> UI: Nhập điều kiện lọc (mã/ngày/trạng thái) -> Tìm
+      UI -> Order: GET /orders/search (filters)
+      Order -> DB: SELECT orders WHERE advanced_filters
+      alt Không tìm thấy
+        DB --> Order: Trả rỗng
+        Order -> UI: Trả empty
+        UI -> User: Hiển thị "Không tìm thấy đơn hàng"
+      else Tìm thấy
+        DB --> Order: Trả kết quả lọc
+        Order -> UI: Trả filtered list
+        UI -> User: Hiển thị kết quả lọc
+      end
+    end
+    
+    User -> UI: Chọn đơn để xem chi tiết
+    UI -> Order: GET /orders/{orderId}/details
+    Order -> DB: SELECT order_details WHERE id = ?
+    alt Đơn không tồn tại
+      DB --> Order: Không tìm thấy
+      Order -> UI: Trả lỗi "Đơn hàng không tồn tại"
+      UI -> User: Hiển thị lỗi
+    else Đơn tồn tại
+      DB --> Order: Trả chi tiết đơn
+      alt Có tích hợp shipping
+        Order -> Shipping: GET /tracking/{trackingId}
+        alt Shipping API lỗi/timeout
+          Shipping --> Order: Lỗi/timeout
+          Order -> Audit: Ghi log lỗi shipping API
+          Order -> UI: Trả chi tiết + "Trạng thái vận chuyển tạm thời không có"
+        else Shipping API thành công
+          Shipping --> Order: Trả tracking info
+          Order -> DB: (Optional) Cache tracking info
+          Order -> UI: Trả chi tiết + tracking info mới nhất
+        end
+      else Không tích hợp shipping
+        Order -> UI: Trả chi tiết đơn (status từ DB)
+      end
+      UI -> User: Hiển thị chi tiết đầy đủ
+      
+      alt User muốn export
+        User -> UI: Chọn "Export CSV/PDF"
+        UI -> Export: POST /export/order (orderId, format)
+        Export -> Order: GET order data for export
+        Order --> Export: Trả data
+        Export -> Export: Tạo file CSV/PDF
+        Export -> UI: Trả download link
+        UI -> User: Hiển thị link tải file
+      end
+    end
+  end
+end
+
+alt Staff action logging
+  Staff -> Order: Thao tác với staffId
+  Order -> Audit: Log staff action (staffId, customerId, action, timestamp)
+  Audit --> Order: Xác nhận log
+end
+@enduml

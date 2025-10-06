@@ -1,0 +1,29 @@
+@startuml
+|Người dùng|
+start
+:Mở trang "Hồ sơ cá nhân";
+|Hệ Thống|
+:Hiển thị thông tin hồ sơ hiện tại;
+|Người dùng|
+:Chỉnh sửa thông tin (tên, phone, địa chỉ, ảnh...);
+:Nhấn "Lưu";
+|Hệ Thống|
+:Kiểm tra tính hợp lệ dữ liệu;
+if (Phone hợp lệ?\nẢnh hợp lệ?) then (Có)
+  :Lưu dữ liệu vào Database;
+  :Lưu/ghi ảnh vào Storage nếu có;
+  :Tải lại/hiển thị hồ sơ với thông tin mới;
+  :Hiển thị "Cập nhật thành công";
+  stop
+else (Không)
+  if (Phone không hợp lệ?) then (Có)
+    :Hiển thị lỗi "Số điện thoại không hợp lệ";
+  endif
+  if (Ảnh không hợp lệ?) then (Có)
+    :Hiển thị lỗi "Ảnh không hợp lệ hoặc vượt dung lượng";
+  endif
+  |Người dùng|
+  :Sửa thông tin / chọn ảnh hợp lệ;
+  -> [quay lại] -left-> :Nhấn "Lưu";
+endif
+@enduml

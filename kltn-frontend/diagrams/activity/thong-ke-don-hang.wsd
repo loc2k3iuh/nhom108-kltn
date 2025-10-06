@@ -1,0 +1,31 @@
+@startuml thong-ke-don-hang
+|Nhân viên quản lý|
+start
+:Vào "Thống kê đơn hàng";
+:Chọn khoảng thời gian;
+:(Tùy chọn) Chọn bộ lọc trạng thái;
+:Nhấn "Xem thống kê";
+|Hệ Thống|
+:Validate khoảng thời gian;
+if (Thời gian hợp lệ?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Vui lòng chọn khoảng thời gian hợp lệ";
+  stop
+else (Có)
+  :Truy vấn dữ liệu đơn hàng theo điều kiện;
+  if (Có dữ liệu?) then (Không)
+    |Nhân viên quản lý|
+    :Hiển thị "Không có dữ liệu đơn hàng trong khoảng thời gian này";
+    stop
+  else (Có)
+    :Tính toán thống kê đơn hàng, tạo biểu đồ;
+    |Nhân viên quản lý|
+    :Hiển thị thống kê với biểu đồ và số liệu;
+    if (Muốn xuất báo cáo?) then (Có)
+      |Hệ Thống|
+      :Tạo file Excel/PDF và trả link tải;
+    endif
+    stop
+  endif
+endif
+@enduml

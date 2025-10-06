@@ -1,0 +1,25 @@
+@startuml huy-dat-hang
+|Khách Hàng|
+start
+:Vào "Đơn hàng của tôi";
+:Chọn đơn hàng muốn hủy;
+|Hệ Thống|
+:Kiểm tra trạng thái đơn hàng;
+:Kiểm tra thời gian đặt so với hiện tại;
+if (Đơn hợp lệ để hủy?) then (Có)
+  :Cập nhật trạng thái đơn -> "Đã hủy";
+  if (Đơn đã thanh toán online?) then (Có)
+    :Khởi tạo yêu cầu hoàn tiền (Refund) tới Payment Gateway;
+    :Đánh dấu trạng thái hoàn tiền (Pending/Processing);
+  endif
+  :Cập nhật tồn kho (nếu đã trừ);
+  :Ghi nhận lịch sử hủy và gửi thông báo cho khách;
+  |Khách Hàng|
+  :Hiển thị "Hủy đơn hàng thành công";
+  stop
+else (Không)
+  |Khách Hàng|
+  :Hiển thị lý do không thể hủy (quá thời hạn / đã xử lý);
+  stop
+endif
+@enduml

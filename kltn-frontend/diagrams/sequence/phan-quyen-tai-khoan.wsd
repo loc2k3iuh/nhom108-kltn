@@ -1,0 +1,35 @@
+@startuml phan-quyen-tai-khoan
+actor "Nhân viên quản lý" as Admin
+participant "Giao diện (UI)" as UI
+participant "User Service" as UserSvc
+participant "Database" as DB
+participant "Audit Service" as Audit
+participant "Notification Service" as Notif
+
+Admin -> UI: Mở quản lý tài khoản -> Chọn userId
+UI -> UserSvc: GET /users/{userId}
+UserSvc -> DB: SELECT user by id
+DB --> UserSvc: Trả user data
+UserSvc -> UI: Trả chi tiết -> Hiển thị
+Admin -> UI: Chọn "Phân quyền → NVBH" -> Xác nhận
+UI -> UserSvc: POST /users/{userId}/roles (role=NVBH, adminId)
+UserSvc -> DB: UPDATE users SET role = 'NVBH' WHERE id = ?
+alt DB lỗi
+  DB --> UserSvc: Lỗi
+  UserSvc -> UI: Trả lỗi "Không thể phân quyền"
+  UI -> Admin: Hiển thị lỗi
+else Thành công
+  DB --> UserSvc: Xác nhận update
+  UserSvc -> Audit: POST /audit (adminId, action='assign_role', targetUserId, timestamp)
+  Audit --> UserSvc: Xác nhận
+  UserSvc -> Notif: Send notification to user (email/in-app)
+  alt Notif lỗi
+    Notif --> UserSvc: Lỗi gửi
+    UserSvc -> UI: Trả kết quả "Thành công (không gửi được thông báo, sẽ retry)"
+  else Notif OK
+    Notif --> UserSvc: Xác nhận
+    UserSvc -> UI: Trả kết quả "Phân quyền thành công"
+  end
+  UI -> Admin: Hiển thị kết quả
+end
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+|Người dùng|
+start
+:Chọn "Đăng xuất";
+|Giao diện (Client)|
+:Gửi yêu cầu logout tới Server;
+|Auth Service (Server)|
+if (Kết nối thành công?) then (Có)
+  :Vô hiệu hóa / revoke Refresh Token trên server;
+  |Giao diện (Client)|
+  :Nhận kết quả thành công;
+  :Xóa Access Token (local/session storage) và Refresh Token (cookie);
+  :Hiển thị "Đăng xuất thành công";
+  :Chuyển hướng đến trang đăng nhập;
+  stop
+else (Không)
+  |Giao diện (Client)|
+  :Nhận lỗi (timeout/500);
+  :Xóa token, cookie và thiết lập "Remember me" ở client (đăng xuất cục bộ);
+  :Hiển thị "Đăng xuất có lỗi, nhưng bạn đã được đăng xuất cục bộ";
+  :Chuyển hướng đến trang đăng nhập;
+  stop
+endif
+@enduml

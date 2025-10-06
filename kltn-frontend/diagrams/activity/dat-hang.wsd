@@ -1,0 +1,40 @@
+@startuml
+|Khách Hàng|
+start
+:Mở giỏ hàng và chọn "Thanh toán";
+|Hệ Thống|
+:Hiển thị trang thanh toán (items, phí, tổng);
+|Khách Hàng|
+:Kiểm tra/chỉnh sửa thông tin giao hàng;
+:Chọn phương thức thanh toán (COD / Online);
+:Xác nhận đặt hàng;
+|Hệ Thống|
+:Kiểm tra tồn kho cho từng item;
+if (Tồn kho đủ?) then (Có)
+  if (Phương thức = COD) then (COD)
+    :Tạo đơn (status = "Chờ xác nhận") trong DB;
+    :Gửi email/SMS xác nhận;
+    :Hiển thị "Đặt hàng thành công";
+    stop
+  else (Online)
+    :Chuyển hướng tới cổng thanh toán (Payment Gateway);
+    |Payment Gateway|
+    :Khách thực hiện thanh toán;
+    |Hệ Thống|
+    :Nhận kết quả thanh toán từ cổng;
+    if (Thanh toán OK?) then (Có)
+      :Tạo đơn (status = "Đã thanh toán" hoặc "Chờ xác nhận");
+      :Gửi email/SMS xác nhận;
+      :Hiển thị "Đặt hàng thành công";
+      stop
+    else (Không)
+      :Hiển thị lỗi thanh toán, cho thử lại hoặc chọn COD;
+      stop
+    endif
+  endif
+else (Không)
+  :Hiển thị lỗi "Sản phẩm hết hàng" hoặc gợi ý giảm qty;
+  :Quay lại giỏ hàng để chỉnh sửa;
+  stop
+endif
+@enduml

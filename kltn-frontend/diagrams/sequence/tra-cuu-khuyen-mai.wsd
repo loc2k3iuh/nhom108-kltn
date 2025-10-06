@@ -1,0 +1,59 @@
+@startuml tra-cuu-khuyen-mai
+actor "Khách Hàng" as Customer
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Promotion Service" as Promo
+participant "Database" as DB
+participant "Validation Service" as Val
+
+alt Khách tự tra cứu
+  Customer -> UI: Vào trang khuyến mãi -> Nhập điều kiện tìm kiếm
+else Nhân viên tra cứu hỗ trợ
+  Staff -> UI: Vào tra cứu khuyến mãi -> Nhập điều kiện/mã cụ thể
+end
+UI -> Promo: GET /promotions/search (keyword, filters, active_only)
+Promo -> DB: SELECT promotions WHERE conditions AND status = 'active'
+alt DB lỗi
+  DB --> Promo: Lỗi truy vấn
+  Promo -> UI: Trả lỗi "Không thể tải thông tin"
+  UI -> Customer: Hiển thị lỗi hệ thống
+else Truy vấn thành công
+  alt Không có kết quả
+    DB --> Promo: Trả rỗng
+    Promo -> UI: Trả danh sách rỗng
+    UI -> Customer: Hiển thị "Không có khuyến mãi phù hợp" + gợi ý
+  else Có kết quả
+    DB --> Promo: Trả danh sách promotions
+    Promo -> UI: Trả danh sách -> Hiển thị
+    Customer -> UI: Chọn khuyến mãi để xem chi tiết
+    UI -> Promo: GET /promotions/{id}/details
+    Promo -> DB: SELECT promotion details, conditions, scope
+    DB --> Promo: Trả chi tiết
+    Promo -> UI: Trả chi tiết -> Hiển thị
+    
+    alt Khách muốn kiểm tra áp dụng
+      Customer -> UI: Nhập thông tin đơn hàng/sản phẩm -> Kiểm tra
+      UI -> Promo: POST /promotions/{id}/validate (order_info)
+      Promo -> Val: Validate conditions (min_order, product_scope, user_eligibility)
+      alt Điều kiện không đạt
+        Val --> Promo: Trả lỗi validation
+        Promo -> UI: Trả "Không áp dụng được" + lý do
+        UI -> Customer: Hiển thị lý do + điều kiện cần thiết
+      else Điều kiện đạt
+        Val --> Promo: Trả OK + discount_amount
+        Promo -> UI: Trả "Có thể áp dụng" + giá trị giảm
+        UI -> Customer: Hiển thị "Áp dụng được" + hướng dẫn sử dụng
+      end
+    end
+  end
+end
+
+alt Staff tra cứu mã cụ thể
+  Staff -> UI: Nhập mã khuyến mãi cụ thể
+  UI -> Promo: GET /promotions/code/{code}
+  Promo -> DB: SELECT promotion WHERE code = ? AND check usage
+  DB --> Promo: Trả promotion + usage_info
+  Promo -> UI: Trả chi tiết + trạng thái + lịch sử sử dụng
+  UI -> Staff: Hiển thị đầy đủ thông tin (bao gồm usage count, remaining)
+end
+@enduml

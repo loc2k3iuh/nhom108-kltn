@@ -1,0 +1,44 @@
+@startuml
+|Khách Hàng|
+start
+:Truy cập trang quên mật khẩu;
+|Hệ Thống|
+:Hiển thị biểu mẫu yêu cầu email;
+|Khách Hàng|
+:Nhập email và gửi biểu mẫu;
+|Hệ Thống|
+:Kiểm tra email có tồn tại trong Database?;
+if (Email tồn tại?) then (Có)
+  :Tạo liên kết đặt lại mật khẩu (reset token có thời hạn);
+  :Gửi email chứa liên kết đặt lại;
+  |Khách Hàng|
+  :Nhận email và nhấp vào liên kết;
+  |Hệ Thống|
+  :Kiểm tra token/liên kết hợp lệ?;
+  if (Token hợp lệ?) then (Có)
+    :Hiển thị form nhập mật khẩu mới;
+    |Khách Hàng|
+    :Nhập mật khẩu mới và gửi;
+    |Hệ Thống|
+    :Kiểm tra tính hợp lệ mật khẩu (theo tiêu chí);
+    if (Mật khẩu hợp lệ?) then (Có)
+      :Cập nhật mật khẩu trong Database;
+      :Hiển thị trang đặt lại thành công;
+      stop
+    else (Không)
+      :Hiển thị thông báo "Vui lòng nhập mật khẩu đúng định dạng...";
+      |Khách Hàng|
+      :Nhập lại mật khẩu mới;
+      -> [quay lại] -left-> :Nhập mật khẩu mới và gửi;
+    endif
+  else (Không)
+    :Hiển thị lỗi "Liên kết không hợp lệ hoặc đã hết hạn";
+    stop
+  endif
+else (Không)
+  :Hiển thị thông báo "Email không tồn tại";
+  |Khách Hàng|
+  :Nhập lại email;
+  -> [quay lại] -left-> :Nhập email và gửi biểu mẫu;
+endif
+@enduml

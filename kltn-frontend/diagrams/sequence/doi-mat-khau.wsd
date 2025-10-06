@@ -1,0 +1,28 @@
+@startuml
+actor "Người dùng" as User
+participant "Giao diện (UI)" as UI
+participant "Auth Service" as Auth
+participant "Database" as DB
+
+User -> UI: Truy cập trang cài đặt tài khoản
+UI -> User: Hiển thị form đổi mật khẩu
+User -> UI: Nhập current, new, confirm và gửi
+UI -> Auth: Gửi yêu cầu đổi mật khẩu (current, new)
+Auth -> DB: Kiểm tra mật khẩu hiện tại của user
+alt current sai
+  DB -> Auth: Trả kết quả thất bại
+  Auth -> UI: Trả lỗi "Mật khẩu hiện tại không đúng"
+  UI -> User: Hiển thị lỗi, yêu cầu nhập lại
+else current đúng
+  Auth -> Auth: Kiểm tra độ mạnh và khớp xác nhận của new password
+  alt new invalid
+    Auth -> UI: Trả lỗi định dạng/không khớp
+    UI -> User: Hiển thị lỗi, yêu cầu nhập lại
+  else new valid
+    Auth -> DB: Cập nhật mật khẩu (hash)
+    DB -> Auth: Xác nhận cập nhật
+    Auth -> UI: Trả kết quả thành công
+    UI -> User: Hiển thị "Đổi mật khẩu thành công" và chuyển hướng (đăng nhập)
+  end
+end
+@enduml

@@ -1,0 +1,39 @@
+@startuml tra-cuu-danh-gia-binh-luan
+|Khách Hàng|
+start
+:Vào trang sản phẩm hoặc "Xem đánh giá";
+|Hệ Thống|
+:Lấy danh sách đánh giá/bình luận từ Database;
+if (Có đánh giá?) then (Không)
+  |Khách Hàng|
+  :Hiển thị "Chưa có đánh giá" + khuyến khích đánh giá đầu tiên;
+  stop
+else (Có)
+  |Khách Hàng|
+  :Hiển thị danh sách đánh giá với rating tổng quan;
+  :(Tùy chọn) Chọn bộ lọc (sao/thời gian/có ảnh/verified);
+  if (Có điều kiện lọc?) then (Có)
+    |Hệ Thống|
+    :Truy vấn DB theo bộ lọc và sắp xếp;
+    if (Tìm thấy kết quả?) then (Không)
+      |Khách Hàng|
+      :Hiển thị "Không có đánh giá phù hợp" + gợi ý mở rộng;
+      stop
+    else (Có)
+      :Hiển thị danh sách lọc;
+    endif
+  endif
+  |Khách Hàng|
+  :Xem chi tiết đánh giá (content, ảnh, thông tin user);
+  :Có thể tương tác (like/report/chia sẻ);
+  |Hệ Thống|
+  :Ghi nhận tương tác và cập nhật thống kê;
+  if (Staff muốn quản lý?) then (Có)
+    :Cho phép duyệt/ẩn/phản hồi và ghi log hành động;
+  endif
+  if (Muốn xuất báo cáo?) then (Có)
+    :Tạo báo cáo tổng hợp và xuất file;
+  endif
+  stop
+endif
+@enduml

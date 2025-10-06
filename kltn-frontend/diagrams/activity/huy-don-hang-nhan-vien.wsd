@@ -1,0 +1,42 @@
+@startuml huy-don-hang-nhan-vien
+|Nhân viên bán hàng|
+start
+:Tìm đơn hàng cần hủy;
+:Chọn đơn hàng -> Click "Hủy đơn hàng";
+|Hệ Thống|
+:Kiểm tra đơn hàng tồn tại;
+if (Đơn hàng tồn tại?) then (Không)
+  |Nhân viên bán hàng|
+  :Hiển thị "Đơn hàng không tồn tại";
+  stop
+else (Có)
+  :Kiểm tra trạng thái đơn hàng;
+  if (Có thể hủy?) then (Không)
+    |Nhân viên bán hàng|
+    :Hiển thị "Không thể hủy đơn hàng đã hoàn thành";
+    stop
+  else (Có)
+    |Nhân viên bán hàng|
+    :Hiển thị form nhập lý do hủy;
+    :Nhập lý do và xác nhận;
+    |Hệ Thống|
+    :Validate lý do hủy;
+    if (Lý do hợp lệ?) then (Không)
+      |Nhân viên bán hàng|
+      :Hiển thị "Vui lòng nhập lý do hủy đơn hàng";
+      stop
+    else (Có)
+      :Cập nhật trạng thái đơn -> "Đã hủy";
+      if (Đơn đã thanh toán?) then (Có)
+        :Xử lý hoàn tiền qua Payment Gateway;
+      endif
+      :Cập nhật tồn kho;
+      :Ghi log hành động nhân viên;
+      :Gửi thông báo cho khách hàng;
+      |Nhân viên bán hàng|
+      :Hiển thị "Hủy đơn hàng thành công";
+      stop
+    endif
+  endif
+endif
+@enduml

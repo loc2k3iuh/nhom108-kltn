@@ -1,0 +1,53 @@
+@startuml xoa-san-pham-khoi-gio-hang
+actor "Khách Hàng" as Customer
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Cart Service" as Cart
+participant "Database" as DB
+
+alt Khách tự xóa
+  Customer -> UI: Mở giỏ hàng -> Chọn item -> Xóa/Giảm qty
+else Nhân viên xóa thay
+  Staff -> UI: Chọn khách hàng -> Mở giỏ -> Chọn item -> Xóa/Giảm qty
+end
+UI -> Cart: DELETE /cart/item/{itemId} hoặc PUT /cart/item/{itemId} (newQty)
+Cart -> DB: Kiểm tra item tồn tại trong cart
+alt Item không tồn tại
+  DB --> Cart: Không tìm thấy
+  Cart -> UI: Trả lỗi "Item không có trong giỏ"
+  UI -> Customer: Hiển thị "Sản phẩm không có trong giỏ hàng"
+else Item tồn tại
+  alt Hành động = DELETE
+    Cart -> DB: DELETE cart_item WHERE id = itemId
+    DB --> Cart: Xác nhận xóa
+    Cart -> UI: Trả thành công "Item đã xóa"
+  else Hành động = UPDATE qty
+    alt newQty > 0
+      Cart -> DB: UPDATE cart_item SET qty = newQty WHERE id = itemId
+      DB --> Cart: Xác nhận cập nhật
+      Cart -> UI: Trả thành công "Đã cập nhật số lượng"
+    else newQty = 0
+      Cart -> DB: DELETE cart_item WHERE id = itemId
+      DB --> Cart: Xác nhận xóa
+      Cart -> UI: Trả thành công "Item đã xóa (qty = 0)"
+    end
+  end
+  UI -> Cart: GET /cart (lấy giỏ hàng mới)
+  Cart -> DB: SELECT cart items
+  alt Giỏ rỗng
+    DB --> Cart: Trả rỗng
+    Cart -> UI: Trả cart rỗng
+    UI -> Customer: Hiển thị "Giỏ hàng trống" + gợi ý mua sắm
+  else Giỏ còn items
+    DB --> Cart: Trả cart items
+    Cart -> UI: Trả cart
+    UI -> Customer: Hiển thị giỏ hàng cập nhật + thông báo thành công
+  end
+end
+
+alt Staff action (ghi log)
+  Staff -> Cart: Thao tác với flag staffId
+  Cart -> DB: Ghi log (staffId, action, customerId, itemId)
+  DB --> Cart: Xác nhận log
+end
+@enduml

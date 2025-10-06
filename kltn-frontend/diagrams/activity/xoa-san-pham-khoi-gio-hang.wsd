@@ -1,0 +1,35 @@
+@startuml xoa-san-pham-khoi-gio-hang
+|Khách Hàng|
+start
+:Mở giỏ hàng;
+:Chọn sản phẩm cần xóa;
+:Chọn "Xóa" hoặc "Giảm số lượng";
+:Xác nhận hành động;
+|Hệ Thống|
+:Kiểm tra sản phẩm có trong giỏ?;
+if (Sản phẩm tồn tại?) then (Có)
+  if (Hành động = Xóa hoàn toàn?) then (Có)
+    :Xóa item khỏi giỏ hàng;
+  else (Giảm số lượng)
+    :Giảm số lượng sản phẩm trong giỏ;
+    if (Số lượng = 0?) then (Có)
+      :Tự động xóa item khỏi giỏ;
+    endif
+  endif
+  :Cập nhật giỏ hàng (DB/session);
+  :Trả kết quả thành công;
+  |Khách Hàng|
+  :Hiển thị "Sản phẩm đã được xóa khỏi giỏ hàng";
+  if (Giỏ hàng rỗng?) then (Có)
+    :Hiển thị "Giỏ hàng trống" + gợi ý mua sắm;
+  else (Không)
+    :Hiển thị giỏ hàng cập nhật;
+  endif
+  stop
+else (Không)
+  |Khách Hàng|
+  :Hiển thị "Sản phẩm không có trong giỏ hàng";
+  :Làm mới giỏ hàng;
+  stop
+endif
+@enduml

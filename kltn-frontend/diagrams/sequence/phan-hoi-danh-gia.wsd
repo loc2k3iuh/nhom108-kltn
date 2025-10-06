@@ -1,0 +1,41 @@
+@startuml phan-hoi-danh-gia
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Review Service" as Review
+participant "Database" as DB
+participant "Notification Service" as Notif
+
+Staff -> UI: Chọn đánh giá -> Click "Phản hồi"
+UI -> Review: GET /reviews/{reviewId}
+Review -> DB: SELECT review WHERE id = reviewId
+alt Đánh giá không tồn tại
+  DB --> Review: Không tìm thấy
+  Review -> UI: Trả lỗi
+  UI -> Staff: Hiển thị "Đánh giá không tồn tại"
+else Đánh giá tồn tại
+  DB --> Review: Trả review data
+  Review -> UI: Trả review details
+  UI -> Staff: Hiển thị chi tiết đánh giá + form phản hồi
+  
+  Staff -> UI: Nhập nội dung phản hồi -> Submit
+  UI -> Review: POST /reviews/{reviewId}/reply (reply_content)
+  Review -> Review: Validate reply content
+  alt Invalid content
+    Review -> UI: Trả lỗi validation
+    UI -> Staff: Hiển thị "Vui lòng nhập nội dung phản hồi"
+  else Valid content
+    Review -> DB: INSERT review_replies (review_id, staff_id, content)
+    alt DB insert fails
+      DB --> Review: Lỗi database
+      Review -> UI: Trả lỗi
+      UI -> Staff: Hiển thị "Không thể gửi phản hồi, vui lòng thử lại sau"
+    else DB insert success
+      DB --> Review: Confirm insert
+      Review -> DB: UPDATE reviews SET has_reply = true WHERE id = reviewId
+      Review -> Notif: Send notification to customer
+      Review -> UI: Trả success
+      UI -> Staff: Hiển thị "Gửi phản hồi thành công"
+    end
+  end
+end
+@enduml

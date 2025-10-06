@@ -1,0 +1,27 @@
+@startuml them-khuyen-mai
+|Nhân viên quản lý|
+start
+:Vào chức năng "Thêm khuyến mãi";
+:Điền form (tên, mã code, loại giảm, thời gian);
+:Nhấn "Tạo khuyến mãi";
+|Hệ Thống|
+:Validate dữ liệu đầu vào;
+if (Dữ liệu hợp lệ?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị lỗi validation;
+  stop
+else (Có)
+  :Kiểm tra mã code không trùng;
+  if (Mã code trùng?) then (Có)
+    |Nhân viên quản lý|
+    :Hiển thị "Mã khuyến mãi đã tồn tại";
+    stop
+  else (Không)
+    :Lưu khuyến mãi vào Database;
+    :Gửi thông báo cho team;
+    |Nhân viên quản lý|
+    :Hiển thị "Tạo khuyến mãi thành công";
+    stop
+  endif
+endif
+@enduml

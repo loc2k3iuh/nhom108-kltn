@@ -1,0 +1,39 @@
+@startuml cap-nhat-don-hang
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Order Service" as Order
+participant "Database" as DB
+participant "Notification Service" as Notif
+
+Staff -> UI: Chọn đơn hàng -> Click "Sửa"
+UI -> Order: GET /orders/{orderId}
+Order -> DB: SELECT order WHERE id = orderId
+alt Đơn không tồn tại
+  DB --> Order: Không tìm thấy
+  Order -> UI: Trả lỗi
+  UI -> Staff: Hiển thị "Đơn hàng không tồn tại"
+else Đơn tồn tại
+  DB --> Order: Trả order data
+  alt Status != "Pending"
+    Order -> UI: Trả "Cannot edit"
+    UI -> Staff: Hiển thị "Không thể chỉnh sửa"
+  else Status = "Pending"
+    Order -> UI: Trả order details
+    UI -> Staff: Hiển thị form chỉnh sửa
+    
+    Staff -> UI: Sửa thông tin -> Submit
+    UI -> Order: PUT /orders/{orderId} (new_data)
+    Order -> Order: Validate data
+    alt Invalid data
+      Order -> UI: Trả lỗi validation
+      UI -> Staff: Hiển thị lỗi
+    else Valid data
+      Order -> DB: UPDATE orders SET ... WHERE id = orderId
+      DB --> Order: Confirm update
+      Order -> Notif: Send notification to customer
+      Order -> UI: Trả success
+      UI -> Staff: Hiển thị "Cập nhật thành công"
+    end
+  end
+end
+@enduml

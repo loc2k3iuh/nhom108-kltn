@@ -1,0 +1,30 @@
+@startuml
+|Người dùng|
+start
+:Truy cập trang cài đặt tài khoản;
+|Hệ Thống|
+:Hiển thị biểu mẫu đổi mật khẩu\n(current, new, confirm);
+|Người dùng|
+:Nhập mật khẩu hiện tại, mật khẩu mới, xác nhận;\nGửi biểu mẫu;
+|Hệ Thống|
+:Kiểm tra mật khẩu hiện tại với Database;
+if (Mật khẩu hiện tại đúng?) then (Có)
+  :Kiểm tra tính hợp lệ mật khẩu mới (độ mạnh, khớp xác nhận);
+  if (Mật khẩu mới hợp lệ?) then (Có)
+    :Cập nhật mật khẩu mới vào Database;
+    :Hiển thị "Đổi mật khẩu thành công.";
+    :Chuyển hướng tới trang đăng nhập;
+    stop
+  else (Không)
+    :Hiển thị lỗi định dạng/khớp mật khẩu;
+    |Người dùng|
+    :Nhập lại mật khẩu mới và xác nhận;
+    -> [quay lại] -left-> :Gửi biểu mẫu;
+  endif
+else (Không)
+  :Hiển thị "Mật khẩu hiện tại không đúng.";
+  |Người dùng|
+  :Nhập lại mật khẩu hiện tại và mật khẩu mới;
+  -> [quay lại] -left-> :Gửi biểu mẫu;
+endif
+@enduml

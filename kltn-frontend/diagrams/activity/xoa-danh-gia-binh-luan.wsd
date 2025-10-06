@@ -1,0 +1,36 @@
+@startuml xoa-danh-gia-binh-luan
+|Khách Hàng|
+start
+:Vào "Đánh giá của tôi" hoặc trang sản phẩm;
+:Chọn đánh giá muốn xóa;
+:Click "Xóa đánh giá";
+|Hệ Thống|
+:Kiểm tra quyền sở hữu đánh giá;
+if (Có quyền xóa?) then (Không)
+  |Khách Hàng|
+  :Hiển thị "Bạn không có quyền xóa đánh giá này";
+  stop
+else (Có)
+  :Hiển thị xác nhận xóa;
+  |Khách Hàng|
+  :Xác nhận xóa đánh giá;
+  |Hệ Thống|
+  if (Đánh giá có media files?) then (Có)
+    :Xóa media files từ Storage;
+    if (Xóa media thành công?) then (Không)
+      :Ghi log lỗi storage, tạo cleanup task;
+    endif
+  endif
+  if (Xóa mềm hay vĩnh viễn?) then (Mềm)
+    :Cập nhật status="deleted", giữ record;
+  else (Vĩnh viễn)
+    :Xóa record khỏi Database;
+  endif
+  :Cập nhật rating trung bình sản phẩm;
+  :Ghi audit log (userId, action, reviewId);
+  :Gửi notification xác nhận;
+  |Khách Hàng|
+  :Hiển thị "Đánh giá đã được xóa thành công";
+  stop
+endif
+@enduml

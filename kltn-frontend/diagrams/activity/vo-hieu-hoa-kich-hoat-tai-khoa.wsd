@@ -1,0 +1,25 @@
+@startuml vo-hieu-hoa-kich-hoat-tai-khoan
+|Nhân viên quản lý|
+start
+:Truy cập "Quản lý tài khoản";
+:Chọn tài khoản cần thay đổi;
+|Hệ Thống|
+:Hiển thị chi tiết tài khoản;
+|Nhân viên quản lý|
+:Chọn Vô hiệu hóa / Kích hoạt;
+:Nhấn "Xác nhận hành động";
+|Hệ Thống|
+:Kiểm tra quyền (admin);
+if (Quyền hợp lệ?) then (Có)
+  :Cập nhật trạng thái tài khoản trong Database;
+  :Ghi audit entry (adminId, action, targetUserId, timestamp);
+  :Gửi thông báo tới user (email/in-app) (nếu cấu hình);
+  |Nhân viên quản lý|
+  :Hiển thị "Thao tác thành công";
+  stop
+else (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Bạn không có quyền thực hiện thao tác này";
+  stop
+endif
+@enduml

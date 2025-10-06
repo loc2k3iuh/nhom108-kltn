@@ -1,0 +1,37 @@
+@startuml tra-cuu-san-pham
+|Khách Hàng|
+start
+:Vào trang tìm kiếm hoặc nhập từ khóa;
+:Nhập từ khóa tìm kiếm;
+:(Tùy chọn) Chọn bộ lọc (danh mục, giá, thương hiệu);
+:Nhấn "Tìm kiếm";
+|Hệ Thống|
+:Kiểm tra từ khóa hợp lệ (độ dài, ký tự);
+if (Từ khóa hợp lệ?) then (Không)
+  |Khách Hàng|
+  :Hiển thị "Vui lòng nhập ít nhất 2 ký tự";
+  stop
+else (Có)
+  :Truy vấn Product Service với điều kiện tìm kiếm;
+  :Áp dụng bộ lọc và sắp xếp;
+  if (Có kết quả?) then (Có)
+    |Khách Hàng|
+    :Hiển thị danh sách sản phẩm (tên, giá, ảnh, tồn kho);
+    if (Quá nhiều kết quả?) then (Có)
+      :Hiển thị phân trang và gợi ý thu hẹp tìm kiếm;
+    endif
+    :Chọn sản phẩm để xem chi tiết;
+    |Hệ Thống|
+    :Lấy thông tin chi tiết sản phẩm;
+    :Kiểm tra tồn kho hiện tại;
+    |Khách Hàng|
+    :Hiển thị chi tiết (mô tả, đặc tả, đánh giá, ảnh, tồn kho);
+    stop
+  else (Không)
+    |Khách Hàng|
+    :Hiển thị "Không tìm thấy sản phẩm nào";
+    :Gợi ý từ khóa khác hoặc sản phẩm phổ biến;
+    stop
+  endif
+endif
+@enduml

@@ -1,0 +1,31 @@
+@startuml thong-ke-khuyen-mai
+|Nhân viên quản lý|
+start
+:Vào "Thống kê khuyến mãi";
+:Chọn khoảng thời gian;
+:(Tùy chọn) Chọn mã khuyến mãi cụ thể;
+:Nhấn "Xem thống kê";
+|Hệ Thống|
+:Validate khoảng thời gian;
+if (Thời gian hợp lệ?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Vui lòng chọn khoảng thời gian hợp lệ";
+  stop
+else (Có)
+  :Truy vấn dữ liệu khuyến mãi và usage;
+  if (Có dữ liệu?) then (Không)
+    |Nhân viên quản lý|
+    :Hiển thị "Không có dữ liệu khuyến mãi trong khoảng thời gian này";
+    stop
+  else (Có)
+    :Tính toán thống kê hiệu quả, tạo biểu đồ;
+    |Nhân viên quản lý|
+    :Hiển thị thống kê với biểu đồ và số liệu;
+    if (Muốn xuất báo cáo?) then (Có)
+      |Hệ Thống|
+      :Tạo file Excel/PDF và trả link tải;
+    endif
+    stop
+  endif
+endif
+@enduml

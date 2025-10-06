@@ -1,0 +1,30 @@
+@startuml xoa-khuyen-mai
+|Nhân viên quản lý|
+start
+:Tìm khuyến mãi cần xóa;
+:Nhấn "Xóa khuyến mãi";
+|Hệ Thống|
+:Kiểm tra khuyến mãi tồn tại;
+if (Khuyến mãi tồn tại?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Khuyến mãi không tồn tại";
+  stop
+else (Có)
+  :Kiểm tra có đơn hàng đang sử dụng;
+  if (Đang được sử dụng?) then (Có)
+    |Nhân viên quản lý|
+    :Hiển thị "Không thể xóa - đang được sử dụng";
+    stop
+  else (Không)
+    :Hiển thị xác nhận xóa;
+    |Nhân viên quản lý|
+    :Xác nhận xóa;
+    |Hệ Thống|
+    :Vô hiệu hóa khuyến mãi trong DB;
+    :Gửi thông báo cho team;
+    |Nhân viên quản lý|
+    :Hiển thị "Xóa khuyến mãi thành công";
+    stop
+  endif
+endif
+@enduml

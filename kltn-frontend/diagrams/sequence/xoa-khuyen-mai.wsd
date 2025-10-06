@@ -1,0 +1,44 @@
+@startuml xoa-khuyen-mai
+actor "Nhân viên quản lý" as Manager
+participant "UI" as UI
+participant "Promotion Service" as Promo
+participant "Order Service" as Order
+participant "Database" as DB
+participant "Notification Service" as Notif
+
+Manager -> UI: Tìm khuyến mãi -> Chọn "Xóa khuyến mãi"
+UI -> Promo: DELETE /promotions/{promotionId}
+Promo -> DB: SELECT promotion WHERE id = promotionId
+alt Khuyến mãi không tồn tại
+  DB --> Promo: Không tìm thấy
+  Promo -> UI: Trả lỗi "Promotion not found"
+  UI -> Manager: Hiển thị "Khuyến mãi không tồn tại"
+else Khuyến mãi tồn tại
+  DB --> Promo: Trả promotion data
+  Promo -> Order: Check active usage (promotionId)
+  Order -> DB: SELECT COUNT(*) FROM orders WHERE promotion_id = ? AND status IN ('pending', 'confirmed')
+  alt Đang được sử dụng
+    DB --> Order: Trả count > 0
+    Order -> Promo: Trả "In use" + order list
+    Promo -> UI: Trả lỗi "Cannot delete - in use"
+    UI -> Manager: Hiển thị "Không thể xóa - khuyến mãi đang được sử dụng" + danh sách đơn
+  else Không được sử dụng
+    Order -> Promo: Trả "Safe to delete"
+    UI -> Manager: Hiển thị dialog xác nhận
+    Manager -> UI: Xác nhận xóa
+    UI -> Promo: Confirm delete
+    Promo -> DB: UPDATE promotions SET status='DELETED', deleted_at=NOW() WHERE id = ?
+    alt DB update fails
+      DB --> Promo: Lỗi database
+      Promo -> UI: Trả lỗi "Delete failed"
+      UI -> Manager: Hiển thị "Không thể xóa khuyến mãi, vui lòng thử lại sau"
+    else DB update success
+      DB --> Promo: Xác nhận xóa
+      Promo -> Notif: Gửi thông báo team về khuyến mãi đã xóa
+      Notif --> Promo: Xác nhận gửi
+      Promo -> UI: Trả success
+      UI -> Manager: Hiển thị "Xóa khuyến mãi thành công"
+    end
+  end
+end
+@enduml

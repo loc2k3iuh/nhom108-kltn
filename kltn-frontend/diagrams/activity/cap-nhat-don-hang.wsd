@@ -1,0 +1,28 @@
+@startuml cap-nhat-don-hang
+|Nhân viên bán hàng|
+start
+:Chọn đơn hàng cần sửa;
+|Hệ Thống|
+:Hiển thị thông tin đơn hàng;
+if (Trạng thái = "Pending"?) then (Không)
+  |Nhân viên bán hàng|
+  :Hiển thị "Không thể chỉnh sửa";
+  stop
+else (Có)
+  |Nhân viên bán hàng|
+  :Chỉnh sửa địa chỉ/ghi chú/trạng thái;
+  :Nhấn "Lưu";
+  |Hệ Thống|
+  :Validate dữ liệu;
+  if (Hợp lệ?) then (Có)
+    :Cập nhật đơn hàng;
+    :Gửi thông báo khách hàng;
+    |Nhân viên bán hàng|
+    :Hiển thị "Cập nhật thành công";
+  else (Không)
+    |Nhân viên bán hàng|
+    :Hiển thị lỗi validation;
+  endif
+  stop
+endif
+@enduml

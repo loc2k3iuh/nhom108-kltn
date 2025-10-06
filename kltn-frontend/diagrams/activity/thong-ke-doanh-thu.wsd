@@ -1,0 +1,41 @@
+@startuml thong-ke-doanh-thu
+' skinparam swimlaneWidth same
+' skinparam swimlaneWrapTitle false
+' skinparam activity {
+'   BackgroundColor LightBlue
+'   BorderColor Black
+'   FontName Arial
+' }
+
+|Nhân viên quản lý|
+start
+:Vào "Thống kê doanh thu";
+:Chọn khoảng thời gian (ngày/tháng/năm);
+:(Tùy chọn) Chọn bộ lọc (sản phẩm/danh mục);
+:Nhấn "Xem báo cáo";
+|Hệ Thống|
+:Validate khoảng thời gian;
+if (Thời gian hợp lệ?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Vui lòng chọn khoảng thời gian hợp lệ";
+  stop
+else (Có)
+  :Truy vấn dữ liệu đơn hàng theo điều kiện;
+  if (Có dữ liệu?) then (Không)
+    |Nhân viên quản lý|
+    :Hiển thị "Không có dữ liệu trong khoảng thời gian này";
+    stop
+  else (Có)
+    :Tính toán doanh thu, tạo biểu đồ;
+    |Nhân viên quản lý|
+    :Hiển thị báo cáo với biểu đồ và số liệu;
+    if (Muốn xuất báo cáo?) then (Có)
+      |Hệ Thống|
+      :Tạo file Excel/PDF và trả link tải;
+      |Nhân viên quản lý|
+      :Tải file báo cáo;
+    endif
+    stop
+  endif
+endif
+@enduml

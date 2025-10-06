@@ -1,0 +1,82 @@
+@startuml huy-don-hang-nhan-vien
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Order Service" as Order
+participant "Payment Gateway" as PG
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+participant "Notification Service" as Notif
+participant "Audit Service" as Audit
+
+Staff -> UI: Tìm đơn hàng -> Chọn "Hủy đơn hàng"
+UI -> Order: POST /orders/{orderId}/staff-cancel (staffId, reason)
+Order -> DB: SELECT order WHERE id = orderId
+alt Đơn hàng không tồn tại
+  DB --> Order: Không tìm thấy
+  Order -> UI: Trả lỗi "Order not found"
+  UI -> Staff: Hiển thị "Đơn hàng không tồn tại"
+else Đơn hàng tồn tại
+  DB --> Order: Trả order data (status, payment_status, customer_id)
+  Order -> Order: Kiểm tra trạng thái có thể hủy
+  alt Không thể hủy
+    Order -> UI: Trả lỗi "Cannot cancel - order completed/delivered"
+    UI -> Staff: Hiển thị "Không thể hủy đơn hàng đã hoàn thành"
+  else Có thể hủy
+    UI -> Staff: Hiển thị form nhập lý do hủy
+    Staff -> UI: Nhập lý do -> Xác nhận hủy
+    UI -> Order: Confirm cancellation (reason)
+    Order -> Order: Validate cancellation reason
+    alt Lý do không hợp lệ
+      Order -> UI: Trả lỗi "Invalid reason"
+      UI -> Staff: Hiển thị "Vui lòng nhập lý do hủy đơn hàng"
+    else Lý do hợp lệ
+      Order -> DB: BEGIN TRANSACTION
+      Order -> DB: UPDATE orders SET status='cancelled_by_staff', cancelled_at=NOW(), cancel_reason=?
+      
+      alt Đơn đã thanh toán
+        Order -> PG: POST /refunds (orderId, amount, reason='staff_cancellation')
+        alt Refund fails
+          PG --> Order: Lỗi hoàn tiền
+          Order -> DB: UPDATE orders SET refund_status='failed'
+          Order -> Audit: Log refund failure for manual processing
+        else Refund success
+          PG --> Order: Trả refund_id
+          Order -> DB: UPDATE orders SET refund_status='processing', refund_id=?
+        end
+      end
+      
+      Order -> Inventory: POST /inventory/restore (orderId, items[])
+      Inventory -> DB: UPDATE inventory SET available_qty = available_qty + cancelled_qty
+      Inventory --> Order: Confirm inventory restored
+      
+      Order -> DB: COMMIT TRANSACTION
+      Order -> Audit: Log staff cancellation (staffId, orderId, reason)
+      Audit --> Order: Confirm audit log
+      
+      Order -> Notif: Send cancellation notification (customer_id, order_id, reason, refund_info)
+      Notif -> DB: INSERT notifications + send email
+      Notif --> Order: Confirm notification sent
+      
+      Order -> UI: Trả success + cancellation_details
+      UI -> Staff: Hiển thị "Hủy đơn hàng thành công" + refund status
+    end
+  end
+end
+
+alt Staff hủy hàng loạt nhiều đơn
+  Staff -> UI: Chọn nhiều đơn -> "Hủy hàng loạt"
+  UI -> Order: POST /orders/bulk-cancel (orderIds[], staffId, reason)
+  Order -> Order: Process từng đơn với validation
+  Order -> DB: Batch operations với transaction
+  Order -> UI: Trả batch result (success_count, failed_count, details[])
+  UI -> Staff: Hiển thị kết quả hủy hàng loạt
+end
+
+alt Staff xem lịch sử đơn đã hủy
+  Staff -> UI: Vào "Đơn hàng đã hủy"
+  UI -> Order: GET /orders/cancelled (date_range, staff_filter)
+  Order -> DB: SELECT cancelled orders với staff info
+  Order -> UI: Trả danh sách đơn đã hủy
+  UI -> Staff: Hiển thị danh sách với lý do hủy và staff thực hiện
+end
+@enduml

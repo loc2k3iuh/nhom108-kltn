@@ -1,0 +1,41 @@
+@startuml
+|Khách Hàng|
+start
+:Truy cập trang đăng ký;
+|Hệ Thống|
+:Hiển thị biểu mẫu đăng ký;
+|Khách Hàng|
+:Nhập thông tin và gửi biểu mẫu;
+|Hệ Thống|
+:Kiểm tra tính hợp lệ của thông tin;
+if (Thông tin hợp lệ?) then (Có)
+  :Kiểm tra email đã tồn tại?;
+  if (Email đã tồn tại?) then (Có)
+    :Hiển thị lỗi "Email đã được sử dụng";
+    |Khách Hàng|
+    :Nhập lại email;
+    -[#red]-> Nhập thông tin và gửi biểu mẫu;
+  else (Không)
+    :Tạo bản ghi KH mới và lưu vào Database;
+    :Gửi mã xác nhận qua email, yêu cầu nhập mã xác nhận;
+    |Khách Hàng|
+    :Nhập mã xác nhận;
+    |Hệ Thống|
+    :Kiểm tra mã xác nhận;
+    if (Mã xác nhận đúng?) then (Có)
+      :Chuyển hướng đến trang đăng nhập;
+      stop
+    else (Không)
+      :Hiển thị thông báo yêu cầu nhập lại mã xác nhận;
+      |Khách Hàng|
+      :Nhập lại mã xác nhận;
+      -[#red]-> Kiểm tra mã xác nhận;
+    endif
+  endif
+else (Không)
+  :Làm nổi bật trường lỗi, hiển thị thông báo;
+  |Khách Hàng|
+  :Sửa thông tin và gửi lại;
+  -[#red]-> Nhập thông tin và gửi biểu mẫu;
+endif
+@enduml
