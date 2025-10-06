@@ -34,7 +34,7 @@ public class SecurityConfig {
   CustomJwtDecoder customJwtDecoder;
 
   @NonFinal
-  @Value("${vite.frontend.admin.urls}")
+  @Value("${vite.frontend.urls}")
   String[] ALLOWED_ORIGINS;
 
   String[] PUBLIC_POST_ENDPOINTS = {
@@ -44,7 +44,9 @@ public class SecurityConfig {
     "/api/v1/auth/logout",
     "/api/v1/auth/verify-otp",
     "/api/v1/auth/resend-otp",
-    "/api/v1/auth/refresh-token/{userId}"
+    "/api/v1/auth/refresh-token/{userId}",
+    "/api/v1/auth/send-forgot-password",
+    "/api/v1/auth/verify-reset-token"
   };
 
   String[] PUBLIC_GET_ENDPOINTS = {};

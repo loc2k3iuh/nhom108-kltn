@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class VerifyOtpRequestion {
+public class VerifyOtpRequest {
 
   @NotBlank(message = "EMAIL_REQUIRED")
   String email;

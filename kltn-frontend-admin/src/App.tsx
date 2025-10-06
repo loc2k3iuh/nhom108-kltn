@@ -1,5 +1,4 @@
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -8,6 +7,8 @@ import { toast, Toaster } from "sonner";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import OtpVerification from "./pages/AuthPages/OtpVerification";
+import ForgotPassword from "./pages/AuthPages/ForgotPassword";
+import ResetPassword from "./pages/AuthPages/ResetPassword";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
@@ -28,60 +29,109 @@ import Home from "./pages/Dashboard/Home";
 import { useEffect } from "react";
 import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletions/Reloading";
+import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
 
 export default function App() {
-  const { checkAuth, authUser, isCheckingAuth, isSigningOut, isUpdating } = useAuthStore();
-  
+  const { checkAuth, authUser, isLoading } =
+    useAuthStore();
+
   useEffect(() => {
-    let response = null;
-    const fetchUser = async() => {
-      response = await checkAuth();
-      if(!response) {
-        toast.error("Error in checking user !", { id: "check-auth-error" });  
-      }
-    }
-    fetchUser();
-     
+      checkAuth();
   }, [checkAuth]);
+  console.log("authUser in App.jsx: ", authUser);
 
-    console.log("authUser in App.jsx: ", authUser);
+  useEffect(() => {
+    const handleUnload = async () => {
+        await deleteRefreshTokenFromRedis();
+    };
 
-  if (isCheckingAuth || isSigningOut || isUpdating) {
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+      handleUnload();
+    };
+  }, []);
+  
+  if (isLoading) {
     return <Reloading />;
   }
 
   return (
     <>
       <Toaster />
-      <Router>
+     
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route index path="/" element={authUser ? <Home /> : <Navigate to="/signin"/>} />
+            <Route
+              index
+              path="/"
+              element={authUser ? <Home /> : <Navigate to="/signin" />}
+            />
 
             {/* Others Page */}
-            <Route path="/profile" element={authUser ? <UserProfiles/> : <Navigate to="/signin"/>} />
-            <Route path="/calendar" element={authUser ?  <Calendar /> : <Navigate to="/signin"/>} />
-            <Route path="/blank" element={authUser ?  <Blank /> : <Navigate to="/signin"/>} />
+            <Route
+              path="/profile"
+              element={authUser ? <UserProfiles /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/calendar"
+              element={authUser ? <Calendar /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/blank"
+              element={authUser ? <Blank /> : <Navigate to="/signin" />}
+            />
 
             {/* Forms */}
-            <Route path="/form-elements" element={authUser ?  <FormElements /> : <Navigate to="/signin"/>} />
+            <Route
+              path="/form-elements"
+              element={authUser ? <FormElements /> : <Navigate to="/signin" />}
+            />
 
             {/* Tables */}
-            <Route path="/basic-tables" element={authUser ?  <BasicTables /> : <Navigate to="/signin"/>} />
+            <Route
+              path="/basic-tables"
+              element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
+            />
 
             {/* Ui Elements */}
-            <Route path="/alerts" element={authUser ? <Alerts /> : <Navigate to="/signin"/>} />
-            <Route path="/avatars" element={authUser ? <Avatars /> : <Navigate to="/signin"/>} />
-            <Route path="/badge" element={authUser ? <Badges /> : <Navigate to="/signin"/>} />
-            <Route path="/buttons" element={authUser ? <Buttons /> : <Navigate to="/signin"/>} />
-            <Route path="/images" element={authUser ? <Images /> : <Navigate to="/signin"/>} />
-            <Route path="/videos" element={authUser ? <Videos />  : <Navigate to="/signin"/>} />
+            <Route
+              path="/alerts"
+              element={authUser ? <Alerts /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/avatars"
+              element={authUser ? <Avatars /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/badge"
+              element={authUser ? <Badges /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/buttons"
+              element={authUser ? <Buttons /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/images"
+              element={authUser ? <Images /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/videos"
+              element={authUser ? <Videos /> : <Navigate to="/signin" />}
+            />
 
             {/* Charts */}
-            <Route path="/line-chart" element={authUser ? <LineChart /> : <Navigate to="/signin"/>} />
-            <Route path="/bar-chart" element={authUser ? <BarChart /> : <Navigate to="/signin"/>} />
+            <Route
+              path="/line-chart"
+              element={authUser ? <LineChart /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/bar-chart"
+              element={authUser ? <BarChart /> : <Navigate to="/signin" />}
+            />
           </Route>
 
           {/* Auth Layout */}
@@ -97,11 +147,19 @@ export default function App() {
             path="/otp-verification"
             element={!authUser ? <OtpVerification /> : <Navigate to="/" />}
           />
+          <Route
+            path="/forgot-password"
+            element={!authUser ? <ForgotPassword /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/reset-password"
+            element={!authUser ? <ResetPassword /> : <Navigate to="/" />}
+          />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Router>
+   
     </>
   );
 }

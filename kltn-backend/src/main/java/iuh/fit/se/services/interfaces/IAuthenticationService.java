@@ -14,9 +14,7 @@ public interface IAuthenticationService {
   PreLoginResponse authenticate(LoginRequest loginRequest) throws JOSEException, MessagingException;
 
   LoginResponse verifyOtp(
-      VerifyOtpRequestion verifyOtpRequestion,
-      boolean isChecked,
-      HttpServletResponse httpServletResponse)
+      VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
       throws JOSEException;
 
   void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException;
@@ -28,4 +26,10 @@ public interface IAuthenticationService {
 
   TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
       throws JOSEException;
+
+  void deleteRefreshTokenFromRedis(String userId);
+
+  void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException;
+
+  void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest);
 }

@@ -84,17 +84,15 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
   @Override
   public LoginResponse verifyOtp(
-      VerifyOtpRequestion verifyOtpRequestion,
-      boolean isChecked,
-      HttpServletResponse httpServletResponse)
+      VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
       throws JOSEException {
-    boolean isValidOtp = iEmailService.verifyOtp(verifyOtpRequestion);
+    boolean isValidOtp = iEmailService.verifyOtp(verifyOtpRequest);
     if (!isValidOtp) {
       throw new AppException(ErrorCode.OTP_NOT_FOUND);
     }
     User user =
         userRepository
-            .findByEmail(verifyOtpRequestion.getEmail())
+            .findByEmail(verifyOtpRequest.getEmail())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     String accessToken = iJwtService.generateToken(user);
     RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(user.getId(), isChecked);
@@ -136,7 +134,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
       Optional.ofNullable(refreshToken).ifPresent(iRefreshTokenService::deleteByToken);
 
-      String userId = String.valueOf(signToken.getJWTClaimsSet().getLongClaim("userId"));
+      String userId = "refresh-token: " + signToken.getJWTClaimsSet().getLongClaim("userId");
       if (stringRedisTemplate.opsForValue().get(userId) != null) {
         stringRedisTemplate.delete(userId);
       }
@@ -174,5 +172,40 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
       }
       return TokenResponse.builder().token(iJwtService.generateToken(user)).build();
     }
+  }
+
+  @Override
+  public void deleteRefreshTokenFromRedis(String userId) {
+    String userIdKey = "refresh-token: " + userId;
+    if (stringRedisTemplate.opsForValue().get(userIdKey) != null) {
+      stringRedisTemplate.delete(userIdKey);
+    }
+  }
+
+  @Override
+  public void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException {
+    iEmailService.sendForgotPasswordToken(email, isAdminPage);
+  }
+
+  @Override
+  @Transactional
+  public void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest) {
+    User existUser =
+        userRepository
+            .findByEmail(verifyResetTokenRequest.getEmail())
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    String resetToken = stringRedisTemplate.opsForValue().get("reset-token: " + existUser.getId());
+
+    if (resetToken == null || resetToken.isBlank()) {
+      throw new AppException(ErrorCode.TOKEN_EXPIRED);
+    }
+    if (!resetToken.equals(verifyResetTokenRequest.getResetToken())) {
+      throw new AppException(ErrorCode.TOKEN_INVALID);
+    }
+    PasswordEncoder encoder = new BCryptPasswordEncoder(10);
+    existUser.setPassword(encoder.encode(verifyResetTokenRequest.getPassword()));
+    userRepository.save(existUser);
+    
+    stringRedisTemplate.delete("reset-token: " + existUser.getId());
   }
 }

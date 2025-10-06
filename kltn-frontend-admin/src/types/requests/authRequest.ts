@@ -23,3 +23,10 @@ export interface UpdateUserRequest {
     dateOfBirth?: string | null;
     file?: File | null;
 }
+
+export interface VerifyResetTokenRequest {
+    email: string;
+    reset_token: string;
+    password: string;
+    retype_password: string;
+}

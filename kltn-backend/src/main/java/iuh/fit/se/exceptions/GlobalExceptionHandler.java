@@ -27,34 +27,50 @@ public class GlobalExceptionHandler {
 
   static String MIN_ATTRIBUTE = "min";
 
-  @ExceptionHandler(value = MethodArgumentNotValidException.class)
-  ResponseEntity<APIResponse> handleMethodArgumentNotValidException(
-      MethodArgumentNotValidException e, HttpServletRequest httpServletRequest) {
-    String keyenum = e.getBindingResult().getFieldError().getDefaultMessage();
-    ErrorCode errorCode = ErrorCode.valueOf(keyenum);
-    var constraintViolations =
-        e.getBindingResult().getAllErrors().get(0).unwrap(ConstraintViolation.class);
-    Map<String, Object> attributes = constraintViolations.getConstraintDescriptor().getAttributes();
-    log.info(attributes.toString());
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<APIResponse> handleMethodArgumentNotValidException(
+          MethodArgumentNotValidException e,
+          HttpServletRequest request) {
+
+
+    var error = e.getBindingResult().getAllErrors().get(0);
+    String keyEnum = error.getDefaultMessage();
+
+    ErrorCode errorCode;
+    try {
+      errorCode = ErrorCode.valueOf(keyEnum);
+    } catch (IllegalArgumentException ex) {
+      errorCode = ErrorCode.INVALID_INPUT;
+    }
+
+    ConstraintViolation<?> violation = null;
+    try {
+      violation = error.unwrap(ConstraintViolation.class);
+    } catch (Exception ignored) {}
+
+    Map<String, Object> attributes = violation != null
+            ? violation.getConstraintDescriptor().getAttributes()
+            : Map.of();
+
+    log.info("Validation attributes: {}", attributes);
+
     APIResponse apiResponse = new APIResponse();
     apiResponse.setCode(errorCode.getCode());
     apiResponse.setMessage(
-        Objects.nonNull(attributes)
-            ? mapAttributeToMessage(errorCode.getMessage(), attributes)
-            : errorCode.getMessage());
-    apiResponse.setPath(httpServletRequest.getRequestURI());
+            (attributes != null && !attributes.isEmpty())
+                    ? mapAttributeToMessage(errorCode.getMessage(), attributes)
+                    : errorCode.getMessage());
+    apiResponse.setPath(request.getRequestURI());
     apiResponse.setRequestId(UUID.randomUUID().toString());
     apiResponse.setTimestamp(
-        ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
-            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-    log.error(
-        "MethodArgumentNotValidException: requestId={}, path={}, code={}, message={}",
-        apiResponse.getRequestId(),
-        apiResponse.getRequestId(),
-        apiResponse.getPath(),
-        apiResponse.getMessage());
+            ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+
+    log.error("Validation error [{}]: {}", errorCode.name(), apiResponse.getMessage());
+
     return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
   }
+
 
   private String mapAttributeToMessage(String message, Map<String, Object> attributes) {
     String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
@@ -68,6 +84,7 @@ public class GlobalExceptionHandler {
     APIResponse apiResponse = new APIResponse();
     apiResponse.setCode(errorCode.getCode());
     apiResponse.setMessage(errorCode.getMessage());
+    apiResponse.setMessage(appException.getMessage());
     apiResponse.setPath(httpServletRequest.getRequestURI());
     apiResponse.setRequestId(UUID.randomUUID().toString());
     apiResponse.setTimestamp(

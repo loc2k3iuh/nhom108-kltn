@@ -55,7 +55,7 @@ public class RefreshTokenServiceImpl implements IRefreshTokenService {
       refreshToken.setToken(token);
       return refreshTokenRepository.save(refreshToken);
     } else {
-      stringRedisTemplate.opsForValue().set(String.valueOf(userId), token);
+      stringRedisTemplate.opsForValue().set("refresh-token: " + userId, token);
       return RefreshToken.builder().token(token).build();
     }
   }

@@ -43,12 +43,11 @@ public class AuthenticationController {
   @PostMapping("/verify-otp")
   public APIResponse<LoginResponse> verifyToken(
       @RequestParam("isChecked") boolean isChecked,
-      @Valid @RequestBody VerifyOtpRequestion verifyOtpRequestion,
+      @Valid @RequestBody VerifyOtpRequest verifyOtpRequest,
       HttpServletResponse httpServletResponse)
       throws JOSEException {
     return APIResponse.<LoginResponse>builder()
-        .result(
-            iAuthenticationService.verifyOtp(verifyOtpRequestion, isChecked, httpServletResponse))
+        .result(iAuthenticationService.verifyOtp(verifyOtpRequest, isChecked, httpServletResponse))
         .message("Login successfully !")
         .build();
   }
@@ -101,5 +100,30 @@ public class AuthenticationController {
     return ResponseEntity.ok()
         .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
         .body(APIResponse.<Void>builder().message("Logged out successfully !").build());
+  }
+
+  @PostMapping("/delete-refresh-token-from-redis/{userId}")
+  public APIResponse<Void> deleteReFreshTokenFromRedis(@PathVariable String userId) {
+    iAuthenticationService.deleteRefreshTokenFromRedis(userId);
+    return APIResponse.<Void>builder()
+        .message("Deleted refresh token from redis successfully !")
+        .build();
+  }
+
+  @PostMapping("/send-forgot-password")
+  public APIResponse<Void> sendForgotPassword(
+      @RequestParam("email") String email, @RequestParam("is_admin") boolean isAdminPage)
+      throws MessagingException {
+    iAuthenticationService.sendForgotPassword(email, isAdminPage);
+    return APIResponse.<Void>builder()
+        .message("We sent a forgot password token to your email !")
+        .build();
+  }
+
+  @PostMapping("/verify-reset-token")
+  public APIResponse<Void> verifyResetToken(
+      @Valid @RequestBody VerifyResetTokenRequest verifyResetTokenRequest) {
+    iAuthenticationService.verifyResetToken(verifyResetTokenRequest);
+    return APIResponse.<Void>builder().message("Your password changed successfully !").build();
   }
 }
