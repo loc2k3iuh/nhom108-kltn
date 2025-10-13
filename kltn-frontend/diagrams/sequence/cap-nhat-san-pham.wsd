@@ -1,0 +1,112 @@
+@startuml cap-nhat-san-pham
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Product Service" as Product
+participant "Validation Service" as Validation
+participant "Storage (AWS S3)" as S3
+participant "Database" as DB
+participant "Search Service" as Search
+participant "Audit Service" as Audit
+participant "Notification Service" as Notif
+
+Staff -> UI: Tìm sản phẩm -> Chọn "Sửa sản phẩm"
+UI -> Product: GET /products/{productId}
+Product -> DB: SELECT product WHERE id = productId
+alt Sản phẩm không tồn tại
+  DB --> Product: Không tìm thấy
+  Product -> UI: Trả lỗi "Product not found"
+  UI -> Staff: Hiển thị "Sản phẩm không tồn tại"
+else Sản phẩm tồn tại
+  DB --> Product: Trả product data
+  Product -> UI: Trả thông tin sản phẩm
+  UI -> Staff: Hiển thị form với data hiện tại
+  
+  Staff -> UI: Chỉnh sửa fields + (optional) upload media mới -> Submit
+  UI -> Product: PUT /products/{productId} (updated_data + new_files)
+  Product -> Validation: Validate updated data
+  alt Validation fails
+    Validation --> Product: Trả lỗi validation
+    Product -> UI: Trả validation errors
+    UI -> Staff: Hiển thị lỗi cụ thể
+  else Validation OK
+    alt Tên sản phẩm thay đổi
+      Product -> DB: SELECT COUNT(*) WHERE name = ? AND id != ?
+      alt Tên trùng
+        DB --> Product: Trả count > 0
+        Product -> UI: Trả lỗi "Duplicate name"
+        UI -> Staff: Hiển thị "Tên sản phẩm đã tồn tại"
+      else Tên unique
+        DB --> Product: Trả count = 0
+      end
+    end
+    
+    alt Có media files mới
+      Product -> S3: POST /upload (new_files, folder=products)
+      alt Upload fails
+        S3 --> Product: Trả lỗi upload
+        Product -> UI: Trả lỗi "Upload failed"
+        UI -> Staff: Hiển thị lỗi upload + cho phép thử lại
+      else Upload success
+        S3 --> Product: Trả new_media_urls
+      end
+    end
+    
+    Product -> DB: BEGIN TRANSACTION
+    Product -> DB: UPDATE product SET ... WHERE id = productId
+    alt DB update fails
+      DB --> Product: Lỗi database
+      Product -> DB: ROLLBACK
+      alt Media mới đã upload
+        Product -> S3: DELETE new_media_files (cleanup)
+      end
+      Product -> UI: Trả lỗi "Update failed"
+      UI -> Staff: Hiển thị "Lỗi hệ thống, vui lòng thử lại"
+    else DB update success
+      DB --> Product: Confirm update + old_media_urls
+      Product -> DB: COMMIT TRANSACTION
+      
+      alt Có media cũ cần xóa
+        Product -> S3: DELETE old_media_files
+        alt Delete old media fails
+          S3 --> Product: Lỗi xóa files cũ
+          Product -> Audit: Log storage cleanup error + create task
+        else Delete success
+          S3 --> Product: Confirm old files deleted
+        end
+      end
+      
+      Product -> Audit: Log update (staffId, productId, before_data, after_data)
+      Audit --> Product: Confirm audit log
+      
+      Product -> Search: PUT /index/products/{productId} (updated_searchable_data)
+      Search --> Product: Confirm index update
+      
+      Product -> Notif: Notify team về sản phẩm đã cập nhật
+      Notif --> Staff: Confirmation sent
+      
+      Product -> UI: Trả success + updated_product_data
+      UI -> Staff: Hiển thị "Cập nhật sản phẩm thành công"
+    end
+  end
+end
+
+alt Batch update (nhiều sản phẩm)
+  Staff -> UI: Chọn nhiều sản phẩm -> "Cập nhật hàng loạt"
+  UI -> Product: PUT /products/batch (productIds[], update_fields)
+  Product -> DB: Batch UPDATE operations (transactions)
+  Product -> Search: Batch index updates
+  Product -> Audit: Log batch update action
+  Product -> UI: Trả batch result (success_count, failed_count, errors[])
+  UI -> Staff: Hiển thị kết quả batch update chi tiết
+end
+
+alt Cập nhật trạng thái (draft -> active)
+  Staff -> UI: Chọn sản phẩm draft -> "Kích hoạt"
+  UI -> Product: PUT /products/{productId}/activate
+  Product -> Validation: Full validation như sản phẩm mới
+  Product -> DB: UPDATE status = 'active'
+  Product -> Search: Add to search index
+  Product -> UI: Trả success
+  UI -> Staff: Hiển thị "Sản phẩm đã được kích hoạt"
+end
+@enduml

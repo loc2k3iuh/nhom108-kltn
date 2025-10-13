@@ -1,0 +1,31 @@
+@startuml phan-hoi-danh-gia
+|Nhân viên bán hàng|
+start
+:Chọn đánh giá -> Click "Phản hồi";
+|Hệ Thống|
+:Hiển thị chi tiết đánh giá;
+if (Đánh giá tồn tại?) then (Không)
+  |Nhân viên bán hàng|
+  :Hiển thị "Đánh giá không tồn tại";
+  stop
+else (Có)
+  |Nhân viên bán hàng|
+  :Hiển thị form phản hồi;
+  :Nhập nội dung phản hồi;
+  :Nhấn "Gửi phản hồi";
+  |Hệ Thống|
+  :Validate nội dung;
+  if (Nội dung hợp lệ?) then (Không)
+    |Nhân viên bán hàng|
+    :Hiển thị "Vui lòng nhập nội dung phản hồi";
+    stop
+  else (Có)
+    :Lưu phản hồi vào DB;
+    :Gửi thông báo cho khách hàng;
+    :Cập nhật trạng thái đánh giá;
+    |Nhân viên bán hàng|
+    :Hiển thị "Gửi phản hồi thành công";
+    stop
+  endif
+endif
+@enduml

@@ -1,0 +1,46 @@
+@startuml tra-cuu-don-hang
+|Khách Hàng|
+start
+:Mở "Đơn hàng của tôi" hoặc Tra cứu đơn;
+|Hệ Thống|
+:Lấy danh sách đơn hàng từ Database theo userId;
+if (Có đơn hàng?) then (Không)
+  |Khách Hàng|
+  :Hiển thị "Bạn chưa có đơn hàng nào" + gợi ý mua sắm;
+  stop
+else (Có)
+  |Khách Hàng|
+  :Hiển thị danh sách đơn hàng;
+  :(Tùy chọn) Nhập mã đơn/lọc theo thời gian/trạng thái;
+  if (Có điều kiện lọc?) then (Có)
+    |Hệ Thống|
+    :Truy vấn DB theo điều kiện lọc;
+    if (Tìm thấy kết quả?) then (Không)
+      |Khách Hàng|
+      :Hiển thị "Không tìm thấy đơn hàng" + gợi ý;
+      stop
+    else (Có)
+      :Hiển thị danh sách lọc;
+    endif
+  endif
+  |Khách Hàng|
+  :Chọn đơn để xem chi tiết;
+  |Hệ Thống|
+  :Lấy chi tiết đơn từ DB;
+  if (Có tích hợp vận chuyển?) then (Có)
+    :Gọi Shipping API để lấy tracking info;
+    if (API thành công?) then (Có)
+      :Cập nhật trạng thái vận chuyển mới nhất;
+    else (Không)
+      :Ghi log lỗi, hiển thị trạng thái từ DB;
+    endif
+  endif
+  |Khách Hàng|
+  :Hiển thị chi tiết đơn + trạng thái vận chuyển;
+  if (Muốn export?) then (Có)
+    |Hệ Thống|
+    :Tạo file CSV/PDF và trả link tải;
+  endif
+  stop
+endif
+@enduml

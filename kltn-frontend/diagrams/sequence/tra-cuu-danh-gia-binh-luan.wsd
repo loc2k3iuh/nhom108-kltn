@@ -1,0 +1,97 @@
+@startuml tra-cuu-danh-gia-binh-luan
+actor "Khách Hàng" as User
+actor "Nhân viên quản lý" as Staff
+participant "Giao diện (UI)" as UI
+participant "Review Service" as Review
+participant "Database" as DB
+participant "Moderation Service" as Mod
+participant "Analytics Service" as Analytics
+participant "Export Service" as Export
+
+alt Khách xem đánh giá sản phẩm
+  User -> UI: Vào trang sản phẩm -> Chọn tab "Đánh giá"
+else Staff quản lý đánh giá
+  Staff -> UI: Vào "Quản lý đánh giá" -> Nhập productId hoặc reviewId
+end
+
+UI -> Review: GET /reviews (productId, filters, sort)
+Review -> DB: SELECT reviews WHERE productId AND status='approved'
+alt DB lỗi
+  DB --> Review: Lỗi kết nối
+  Review -> UI: Trả lỗi "Không thể tải đánh giá"
+  UI -> User: Hiển thị lỗi + cached data (nếu có)
+else DB thành công
+  alt Không có đánh giá
+    DB --> Review: Trả rỗng
+    Review -> UI: Trả empty list
+    UI -> User: Hiển thị "Chưa có đánh giá" + khuyến khích đánh giá
+  else Có đánh giá
+    DB --> Review: Trả danh sách reviews
+    Review -> Analytics: GET rating summary (avg, distribution)
+    Analytics --> Review: Trả thống kê rating
+    Review -> UI: Trả reviews + rating summary
+    UI -> User: Hiển thị danh sách đánh giá + tổng quan
+    
+    alt User muốn lọc
+      User -> UI: Chọn bộ lọc (sao/thời gian/có ảnh/verified) -> Áp dụng
+      UI -> Review: GET /reviews/filtered (productId, advanced_filters)
+      Review -> DB: SELECT reviews WHERE complex_conditions
+      alt Không tìm thấy
+        DB --> Review: Trả rỗng
+        Review -> UI: Trả empty
+        UI -> User: Hiển thị "Không có đánh giá phù hợp" + gợi ý
+      else Tìm thấy
+        DB --> Review: Trả kết quả lọc
+        Review -> UI: Trả filtered reviews
+        UI -> User: Hiển thị kết quả lọc
+      end
+    end
+    
+    User -> UI: Chọn đánh giá để xem chi tiết
+    UI -> Review: GET /reviews/{reviewId}/details
+    Review -> DB: SELECT review_details, user_info, media
+    alt Review không tồn tại/bị ẩn
+      DB --> Review: Không tìm thấy hoặc status='hidden'
+      Review -> UI: Trả lỗi "Đánh giá không khả dụng"
+      UI -> User: Hiển thị "Đánh giá không còn khả dụng"
+    else Review khả dụng
+      DB --> Review: Trả chi tiết review
+      Review -> UI: Trả chi tiết (content, media, user info, verified_purchase)
+      UI -> User: Hiển thị chi tiết đầy đủ
+      
+      alt User tương tác (like/report)
+        User -> UI: Click "Hữu ích" hoặc "Báo cáo"
+        UI -> Review: POST /reviews/{reviewId}/interact (action, userId)
+        Review -> DB: INSERT interaction hoặc UPDATE helpful_count
+        alt Báo cáo
+          Review -> Mod: POST /moderation/report (reviewId, reason)
+          Mod --> Review: Tạo ticket kiểm duyệt
+        end
+        Review -> UI: Trả kết quả tương tác
+        UI -> User: Cập nhật giao diện (đã like/đã báo cáo)
+      end
+    end
+  end
+end
+
+alt Staff moderation actions
+  Staff -> UI: Chọn review -> Hành động (approve/reject/hide/reply)
+  UI -> Review: PUT /reviews/{reviewId}/moderate (action, staffId, reason)
+  Review -> DB: UPDATE review status/visibility
+  Review -> Mod: Log moderation action (staffId, reviewId, action)
+  Review -> UI: Trả kết quả moderation
+  UI -> Staff: Hiển thị "Đã thực hiện hành động"
+end
+
+alt Staff export reports
+  Staff -> UI: Chọn "Xuất báo cáo đánh giá" -> Chọn format/filters
+  UI -> Export: POST /export/reviews (productId, dateRange, format)
+  Export -> Review: GET aggregated review data
+  Review -> Analytics: GET detailed analytics (sentiment, keywords)
+  Analytics --> Review: Trả analysis data
+  Review --> Export: Trả data for export
+  Export -> Export: Tạo file CSV/PDF với charts
+  Export -> UI: Trả download link
+  UI -> Staff: Hiển thị link tải báo cáo
+end
+@enduml

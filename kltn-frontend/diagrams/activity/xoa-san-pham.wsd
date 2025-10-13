@@ -1,0 +1,43 @@
+@startuml xoa-san-pham
+|Nhân viên bán hàng|
+start
+:Tìm sản phẩm cần xóa -> Click "Xóa sản phẩm";
+|Hệ Thống|
+:Kiểm tra sản phẩm tồn tại;
+if (Sản phẩm tồn tại?) then (Không)
+  |Nhân viên bán hàng|
+  :Hiển thị "Sản phẩm không tồn tại";
+  stop
+else (Có)
+  :Kiểm tra điều kiện xóa (đơn hàng pending, tồn kho reserved);
+  if (Cho phép xóa?) then (Không)
+    |Nhân viên bán hàng|
+    :Hiển thị "Không thể xóa - có đơn hàng đang xử lý";
+    stop
+  else (Có)
+    :Hiển thị xác nhận xóa (soft/hard delete options);
+    |Nhân viên bán hàng|
+    :Chọn loại xóa và xác nhận;
+    |Hệ Thống|
+    if (Loại xóa = Hard Delete?) then (Có)
+      if (Có media files?) then (Có)
+        :Xóa media files khỏi AWS S3;
+        if (Xóa media thành công?) then (Không)
+          :Ghi log lỗi storage + tạo cleanup task;
+        endif
+      endif
+      :Xóa product record khỏi Database;
+      :Xóa inventory record;
+    else (Soft Delete)
+      :Cập nhật status='deleted', deleted_at=now();
+      :Giữ nguyên media files và inventory;
+    endif
+    :Xóa khỏi search index;
+    :Ghi audit log (staffId, action, productId);
+    :Gửi notification cho team;
+    |Nhân viên bán hàng|
+    :Hiển thị "Xóa sản phẩm thành công";
+    stop
+  endif
+endif
+@enduml

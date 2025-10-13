@@ -1,0 +1,25 @@
+@startuml phan-quyen-tai-khoan
+|Nhân viên quản lý|
+start
+:Truy cập "Quản lý tài khoản";
+:Chọn tài khoản cần phân quyền;
+|Hệ Thống|
+:Hiển thị chi tiết tài khoản;
+|Nhân viên quản lý|
+:Chọn "Phân quyền → NVBH";
+:Xác nhận hành động;
+|Hệ Thống|
+:Kiểm tra tài khoản tồn tại và quyền quản lý (admin);
+if (Tài khoản tồn tại & quyền hợp lệ?) then (Có)
+  :Cập nhật role = NVBH trong Database;
+  :Ghi audit entry (adminId, action, targetUserId, timestamp);
+  :Gửi thông báo tới user (email/in-app) nếu cấu hình;
+  |Nhân viên quản lý|
+  :Hiển thị "Phân quyền thành công";
+  stop
+else (Không)
+  |Nhân viên quản lý|
+  :Hiển thị lỗi ("Tài khoản không tồn tại" / "Không có quyền");
+  stop
+endif
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+actor "Khách Hàng" as KH
+participant "Giao diện (UI)" as UI
+participant "Auth Service" as Auth
+participant "Database" as DB
+participant "Email Service" as Email
+
+KH -> UI: Truy cập trang quên mật khẩu
+UI -> KH: Hiển thị biểu mẫu yêu cầu email
+KH -> UI: Nhập email và gửi
+UI -> Auth: Yêu cầu tạo liên kết đặt lại (email)
+Auth -> DB: Kiểm tra email tồn tại?
+alt Email tồn tại
+  Auth -> Auth: Tạo reset token (có thời hạn)
+  Auth -> DB: Lưu token liên kết (hoặc hash)
+  Auth -> Email: Gửi email chứa liên kết reset
+  Email -> KH: Gửi email (ngoại vi)
+  KH -> UI: Nhấp liên kết trong email (mở trang reset)
+  UI -> Auth: Gửi token để kiểm tra
+  alt Token hợp lệ
+    UI -> KH: Hiển thị form nhập mật khẩu mới
+    KH -> UI: Nhập mật khẩu mới và gửi
+    UI -> Auth: Gửi mật khẩu mới + token
+    Auth -> Auth: Kiểm tra độ mạnh/mẫu mật khẩu
+    alt Mật khẩu hợp lệ
+      Auth -> DB: Cập nhật mật khẩu (hash)
+      Auth -> DB: Xóa/thu hồi token reset
+      Auth -> UI: Trả về kết quả thành công
+      UI -> KH: Hiển thị trang đặt lại thành công
+    else Mật khẩu không hợp lệ
+      Auth -> UI: Trả lỗi định dạng mật khẩu
+      UI -> KH: Hiển thị lỗi, yêu cầu nhập lại
+    end
+  else Token không hợp lệ
+    Auth -> UI: Trả lỗi "Liên kết không hợp lệ hoặc đã hết hạn"
+    UI -> KH: Hiển thị lỗi
+  end
+else Email không tồn tại
+  Auth -> UI: Trả lỗi "Email không tồn tại"
+  UI -> KH: Hiển thị lỗi, yêu cầu nhập lại
+end
+@enduml

@@ -1,0 +1,38 @@
+@startuml cap-nhat-tai-khoan
+|Nhân viên quản lý|
+start
+:Chọn tài khoản -> Click "Cập nhật thông tin";
+|Hệ Thống|
+:Hiển thị thông tin tài khoản hiện tại;
+if (Tài khoản tồn tại?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Tài khoản không tồn tại";
+  stop
+else (Có)
+  |Nhân viên quản lý|
+  :Chỉnh sửa thông tin (họ tên, email, phone, trạng thái);
+  :Nhấn "Lưu thay đổi";
+  |Hệ Thống|
+  :Validate dữ liệu;
+  if (Dữ liệu hợp lệ?) then (Không)
+    |Nhân viên quản lý|
+    :Hiển thị lỗi validation;
+    stop
+  else (Có)
+    if (Email thay đổi?) then (Có)
+      :Kiểm tra email không trùng;
+      if (Email trùng?) then (Có)
+        |Nhân viên quản lý|
+        :Hiển thị "Email này đã được sử dụng";
+        stop
+      endif
+    endif
+    :Cập nhật thông tin trong DB;
+    :Ghi audit log;
+    :Gửi thông báo cho user;
+    |Nhân viên quản lý|
+    :Hiển thị "Cập nhật tài khoản thành công";
+    stop
+  endif
+endif
+@enduml

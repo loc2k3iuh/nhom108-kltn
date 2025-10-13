@@ -1,0 +1,90 @@
+@startuml xoa-danh-gia-binh-luan
+actor "Khách Hàng" as User
+actor "Nhân viên quản lý" as Staff
+participant "Giao diện (UI)" as UI
+participant "Review Service" as Review
+participant "Database" as DB
+participant "Storage Service" as Storage
+participant "Analytics Service" as Analytics
+participant "Audit Service" as Audit
+participant "Notification Service" as Notif
+
+alt Khách xóa đánh giá của mình
+  User -> UI: Vào "Đánh giá của tôi" -> Chọn review -> Click "Xóa"
+else Staff xóa đánh giá vi phạm
+  Staff -> UI: Vào "Quản lý đánh giá" -> Chọn review -> Click "Xóa/Ẩn"
+end
+
+UI -> Review: DELETE /reviews/{reviewId} (userId hoặc staffId, reason?)
+Review -> DB: SELECT review WHERE id = reviewId
+alt Review không tồn tại
+  DB --> Review: Không tìm thấy
+  Review -> UI: Trả lỗi "Review không tồn tại"
+  UI -> User: Hiển thị "Đánh giá không tồn tại hoặc đã được xóa"
+else Review tồn tại
+  DB --> Review: Trả review data (ownerId, media_urls)
+  Review -> Review: Kiểm tra quyền (userId == ownerId hoặc isStaff)
+  alt Không có quyền
+    Review -> UI: Trả lỗi "No permission"
+    UI -> User: Hiển thị "Bạn không có quyền xóa đánh giá này"
+  else Có quyền
+    alt Có media files
+      Review -> Storage: DELETE files (media_urls)
+      alt Storage lỗi
+        Storage --> Review: Lỗi xóa files
+        Review -> Audit: Log storage error + create cleanup task
+      else Storage thành công
+        Storage --> Review: Confirm file deletion
+      end
+    end
+    
+    alt Staff action (có options)
+      alt Hard delete
+        Review -> DB: DELETE review WHERE id = reviewId
+      else Soft delete/Hide
+        Review -> DB: UPDATE review SET status='deleted'/'hidden', deleted_at=now()
+      end
+    else User action (soft delete default)
+      Review -> DB: UPDATE review SET status='deleted', deleted_at=now(), deleted_by_user=true
+    end
+    
+    DB --> Review: Confirm deletion/update
+    Review -> Analytics: Recalculate product rating (productId, exclude deleted)
+    Analytics -> DB: UPDATE products SET avg_rating, review_count
+    Analytics --> Review: Confirm rating update
+    
+    Review -> Audit: Log deletion action (userId/staffId, reviewId, action_type, reason)
+    Audit --> Review: Confirm log
+    
+    alt User deletion
+      Review -> Notif: Send confirmation to user
+      Notif --> User: "Đánh giá đã được xóa"
+    else Staff deletion
+      Review -> Notif: Send notification to review owner (nếu cần)
+      Notif --> User: "Đánh giá của bạn đã bị xóa do vi phạm chính sách"
+    end
+    
+    Review -> UI: Trả success
+    UI -> User: Hiển thị "Đánh giá đã được xóa thành công"
+  end
+end
+
+alt Staff bulk delete
+  Staff -> UI: Chọn nhiều reviews -> "Xóa hàng loạt"
+  UI -> Review: DELETE /reviews/bulk (reviewIds[], reason)
+  Review -> DB: Batch operations (transactions)
+  Review -> Analytics: Batch recalculate ratings
+  Review -> Audit: Log bulk action
+  Review -> UI: Trả bulk result (success_count, failed_count)
+  UI -> Staff: Hiển thị kết quả bulk delete
+end
+
+alt Khôi phục đánh giá (nếu hỗ trợ)
+  User -> UI: Vào "Đánh giá đã xóa" -> Chọn review -> "Khôi phục"
+  UI -> Review: POST /reviews/{reviewId}/restore
+  Review -> DB: UPDATE review SET status='approved', deleted_at=null
+  Review -> Analytics: Recalculate rating (include restored)
+  Review -> UI: Trả success
+  UI -> User: Hiển thị "Đánh giá đã được khôi phục"
+end
+@enduml

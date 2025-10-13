@@ -1,0 +1,97 @@
+@startuml them-san-pham
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Product Service" as Product
+participant "Validation Service" as Validation
+participant "Storage (AWS S3)" as S3
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+participant "Search Service" as Search
+participant "Audit Service" as Audit
+participant "Notification Service" as Notif
+
+Staff -> UI: Vào "Thêm sản phẩm" -> Điền form -> Submit
+UI -> Product: POST /products (product_data + files)
+Product -> Validation: Validate input (fields, formats, business rules)
+alt Validation fails
+  Validation --> Product: Trả lỗi validation
+  Product -> UI: Trả validation errors
+  UI -> Staff: Hiển thị lỗi cụ thể (thiếu field/format sai)
+else Validation OK
+  Product -> DB: SELECT COUNT(*) WHERE name = ? OR sku = ?
+  alt Tên/SKU trùng
+    DB --> Product: Trả count > 0
+    Product -> UI: Trả lỗi "Duplicate product"
+    UI -> Staff: Hiển thị "Sản phẩm đã tồn tại" + gợi ý
+  else Tên/SKU unique
+    DB --> Product: Trả count = 0
+    Product -> DB: SELECT category WHERE id = ?
+    alt Category không tồn tại
+      DB --> Product: Trả rỗng
+      Product -> UI: Trả lỗi "Invalid category"
+      UI -> Staff: Hiển thị lỗi category + cho phép chọn lại
+    else Category hợp lệ
+      alt Có media files
+        Product -> S3: POST /upload (files, folder=products)
+        alt Upload fails
+          S3 --> Product: Trả lỗi (size/format/network)
+          Product -> UI: Trả lỗi upload
+          UI -> Staff: Hiển thị lỗi upload + option thử lại/bỏ qua
+        else Upload success
+          S3 --> Product: Trả media URLs
+        end
+      end
+      
+      Product -> DB: BEGIN TRANSACTION
+      Product -> DB: INSERT product (name, price, description, category_id, media_urls, status='active')
+      alt DB insert fails
+        DB --> Product: Lỗi database
+        Product -> DB: ROLLBACK
+        alt Media đã upload
+          Product -> S3: DELETE uploaded files (cleanup)
+        end
+        Product -> UI: Trả lỗi "Cannot create product"
+        UI -> Staff: Hiển thị "Lỗi hệ thống, vui lòng thử lại"
+      else DB insert success
+        DB --> Product: Trả productId
+        Product -> Inventory: POST /inventory (productId, initial_qty)
+        alt Inventory creation fails
+          Inventory --> Product: Lỗi inventory
+          Product -> DB: ROLLBACK
+          Product -> S3: DELETE uploaded files (cleanup)
+          Product -> UI: Trả lỗi "Inventory creation failed"
+          UI -> Staff: Hiển thị lỗi inventory
+        else Inventory success
+          Inventory --> Product: Trả inventory record
+          Product -> DB: COMMIT TRANSACTION
+          Product -> Audit: Log creation (staffId, productId, action="CREATE")
+          Audit --> Product: Confirm log
+          Product -> Search: POST /index/products (productId, searchable_data)
+          Search --> Product: Confirm indexing
+          Product -> Notif: Notify team về sản phẩm mới
+          Notif --> Staff: Confirmation sent
+          Product -> UI: Trả success + productId + product_data
+          UI -> Staff: Hiển thị "Thêm sản phẩm thành công" + link xem sản phẩm
+        end
+      end
+    end
+  end
+end
+
+alt Save as draft
+  Staff -> UI: Click "Lưu nháp"
+  UI -> Product: POST /products/draft (incomplete_data)
+  Product -> DB: INSERT product (status='draft')
+  Product -> UI: Trả draft_id
+  UI -> Staff: Hiển thị "Đã lưu nháp, có thể chỉnh sửa sau"
+end
+
+alt Bulk import
+  Staff -> UI: Upload CSV/Excel file
+  UI -> Product: POST /products/import (file)
+  Product -> Product: Parse file và validate từng row
+  Product -> DB: Batch insert valid products
+  Product -> UI: Trả import report (success_count, error_list)
+  UI -> Staff: Hiển thị báo cáo import chi tiết
+end
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+actor "Người dùng" as User
+participant "Giao diện (UI)" as UI
+participant "Profile Service" as Profile
+participant "Database" as DB
+participant "Storage" as FileStore
+
+User -> UI: Mở trang Hồ sơ cá nhân
+UI -> Profile: Yêu cầu thông tin hồ sơ
+Profile -> DB: Lấy thông tin user
+DB -> Profile: Trả về user data
+Profile -> UI: Trả data -> Hiển thị
+
+User -> UI: Chỉnh sửa thông tin + (upload ảnh)
+UI -> Profile: Yêu cầu cập nhật (data + fileRef)
+alt Dữ liệu hợp lệ
+  Profile -> DB: Cập nhật thông tin user
+  alt Có ảnh upload
+    Profile -> FileStore: Lưu file ảnh
+    FileStore -> Profile: Trả file URL
+    Profile -> DB: Lưu URL ảnh vào user record
+  end
+  DB -> Profile: Xác nhận cập nhật
+  Profile -> UI: Trả kết quả thành công
+  UI -> User: Hiển thị "Cập nhật thành công" và tải lại hồ sơ
+else Dữ liệu không hợp lệ
+  Profile -> UI: Trả lỗi (phone/ảnh...)
+  UI -> User: Hiển thị lỗi, yêu cầu sửa
+end
+@enduml

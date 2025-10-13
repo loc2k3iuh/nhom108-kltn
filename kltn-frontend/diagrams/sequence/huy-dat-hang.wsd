@@ -1,0 +1,67 @@
+@startuml huy-dat-hang
+actor "Khách Hàng" as Customer
+participant "Giao diện (UI)" as UI
+participant "Order Service" as Order
+participant "Payment Gateway" as PG
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+participant "Notification Service" as Notif
+
+Customer -> UI: Vào "Đơn hàng của tôi" -> Chọn đơn hàng -> "Hủy đơn hàng"
+UI -> Order: POST /orders/{orderId}/cancel (customerId, reason)
+Order -> DB: SELECT order WHERE id = orderId AND customer_id = customerId
+alt Đơn hàng không tồn tại hoặc không thuộc về customer
+  DB --> Order: Không tìm thấy
+  Order -> UI: Trả lỗi "Order not found or no permission"
+  UI -> Customer: Hiển thị "Không có quyền thao tác đơn hàng này"
+else Đơn hàng tồn tại
+  DB --> Order: Trả order data (status, payment_status, created_at)
+  Order -> Order: Kiểm tra điều kiện hủy (status, time limit)
+  alt Không thể hủy
+    Order -> UI: Trả lỗi "Cannot cancel" + reason
+    UI -> Customer: Hiển thị lý do không thể hủy
+  else Có thể hủy
+    Order -> DB: BEGIN TRANSACTION
+    Order -> DB: UPDATE orders SET status='cancelled', cancelled_at=NOW() WHERE id=?
+    
+    alt Đơn đã thanh toán online
+      Order -> PG: POST /refunds (orderId, amount, reason)
+      alt Refund request fails
+        PG --> Order: Lỗi khởi tạo hoàn tiền
+        Order -> DB: UPDATE orders SET refund_status='failed'
+        Order -> UI: Trả "Hủy thành công, hoàn tiền sẽ được xử lý sau"
+      else Refund request success
+        PG --> Order: Trả refund_id + status='processing'
+        Order -> DB: UPDATE orders SET refund_status='processing', refund_id=?
+      end
+    end
+    
+    alt Đã trừ tồn kho
+      Order -> Inventory: POST /inventory/restore (orderId, items[])
+      Inventory -> DB: UPDATE inventory SET available_qty = available_qty + ?
+      alt Inventory update fails
+        Inventory --> Order: Lỗi cập nhật tồn kho
+        Order -> DB: INSERT manual_tasks (type='restore_inventory', order_id)
+      else Inventory update success
+        Inventory --> Order: Confirm inventory restored
+      end
+    end
+    
+    Order -> DB: COMMIT TRANSACTION
+    Order -> DB: INSERT order_history (order_id, action='cancelled', reason)
+    Order -> Notif: Send cancellation notification (customer_id, order_id)
+    Order -> UI: Trả success + cancellation_details
+    UI -> Customer: Hiển thị "Hủy đơn hàng thành công" + refund info (nếu có)
+  end
+end
+
+alt Customer yêu cầu hủy đơn đã giao một phần
+  Customer -> UI: Chọn "Hủy sản phẩm chưa giao"
+  UI -> Order: POST /orders/{orderId}/partial-cancel (item_ids[])
+  Order -> Order: Validate partial cancellation
+  Order -> DB: Update từng item status + recalculate order total
+  Order -> PG: Partial refund cho các item bị hủy
+  Order -> UI: Trả partial cancellation result
+  UI -> Customer: Hiển thị kết quả hủy từng phần
+end
+@enduml

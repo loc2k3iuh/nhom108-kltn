@@ -1,0 +1,37 @@
+@startuml cap-nhat-khuyen-mai
+|Nhân viên quản lý|
+start
+:Tìm khuyến mãi cần sửa -> Click "Sửa";
+|Hệ Thống|
+:Hiển thị thông tin khuyến mãi hiện tại;
+if (Khuyến mãi có thể sửa?) then (Không)
+  |Nhân viên quản lý|
+  :Hiển thị "Không thể sửa - đang hoạt động";
+  stop
+else (Có)
+  |Nhân viên quản lý|
+  :Chỉnh sửa thông tin (tên, thời gian, giá trị);
+  :Nhấn "Lưu thay đổi";
+  |Hệ Thống|
+  :Validate dữ liệu cập nhật;
+  if (Dữ liệu hợp lệ?) then (Không)
+    |Nhân viên quản lý|
+    :Hiển thị lỗi validation;
+    stop
+  else (Có)
+    if (Mã code thay đổi?) then (Có)
+      :Kiểm tra mã code không trùng;
+      if (Mã trùng?) then (Có)
+        |Nhân viên quản lý|
+        :Hiển thị "Mã khuyến mãi đã tồn tại";
+        stop
+      endif
+    endif
+    :Cập nhật khuyến mãi trong DB;
+    :Gửi thông báo cho team;
+    |Nhân viên quản lý|
+    :Hiển thị "Cập nhật khuyến mãi thành công";
+    stop
+  endif
+endif
+@enduml

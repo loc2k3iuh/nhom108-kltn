@@ -1,0 +1,46 @@
+@startuml
+actor "Khách Hàng" as User
+' actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Order Service" as Order
+participant "Cart Service" as Cart
+participant "Inventory Service" as Inventory
+participant "Payment Gateway" as PG
+participant "Notification Service" as Notif
+participant "Database" as DB
+
+User -> UI: Mở giỏ hàng -> Thanh toán
+UI -> Cart: Lấy nội dung giỏ
+Cart -> UI: Trả cart
+UI -> User: Hiển thị trang thanh toán
+User -> UI: Chỉnh sửa địa chỉ, chọn phương thức, xác nhận
+UI -> Inventory: Kiểm tra tồn kho cho items
+Inventory --> UI: Trả availableQty
+alt Tồn kho đủ
+  UI -> Order: Yêu cầu tạo đơn tạm (order data)
+  alt Phương thức = COD
+    Order -> DB: Tạo đơn (status="Chờ xác nhận")
+    DB --> Order: Xác nhận
+    Order -> Notif: Gửi email/SMS xác nhận
+    Notif --> User: Gửi thông báo
+    Order -> UI: Trả kết quả thành công
+    UI -> User: Hiển thị "Đặt hàng thành công"
+  else Phương thức = Online
+    UI -> PG: Chuyển hướng/khởi tạo payment (payment request)
+    PG -> User: Thực hiện thanh toán (thẻ/OTP...)
+    alt Khách thanh toán thành công
+      PG -> Order: Trả kết quả thanh toán OK
+      Order -> DB: Tạo đơn (status="Đã thanh toán")
+      Order -> Notif: Gửi email/SMS xác nhận
+      Order -> UI: Trả kết quả thành công
+      UI -> User: Hiển thị "Đặt hàng thành công"
+    else Thanh toán thất bại / hủy
+      PG -> UI: Trả lỗi/hủy
+      UI -> User: Hiển thị lỗi, cho thử lại hoặc chọn COD
+    end
+  end
+else Tồn kho không đủ
+  Inventory --> UI: Trả số lượng sẵn có / lỗi
+  UI -> User: Hiển thị lỗi "Sản phẩm hết hàng / điều chỉnh qty"
+end
+@enduml

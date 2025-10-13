@@ -1,0 +1,120 @@
+@startuml xoa-san-pham
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Product Service" as Product
+participant "Order Service" as Order
+participant "Storage (AWS S3)" as S3
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+participant "Search Service" as Search
+participant "Audit Service" as Audit
+participant "Notification Service" as Notif
+
+Staff -> UI: Tìm sản phẩm -> Chọn "Xóa sản phẩm"
+UI -> Product: DELETE /products/{productId}
+Product -> DB: SELECT product WHERE id = productId
+alt Sản phẩm không tồn tại
+  DB --> Product: Không tìm thấy
+  Product -> UI: Trả lỗi "Product not found"
+  UI -> Staff: Hiển thị "Sản phẩm không tồn tại"
+else Sản phẩm tồn tại
+  DB --> Product: Trả product data (media_urls, status)
+  
+  Product -> Order: Check pending orders (productId)
+  Order -> DB: SELECT orders WHERE productId AND status IN ('pending', 'processing')
+  alt Có đơn hàng đang xử lý
+    DB --> Order: Trả order list
+    Order -> Product: Trả "Cannot delete - has pending orders"
+    Product -> UI: Trả lỗi với danh sách đơn hàng
+    UI -> Staff: Hiển thị "Không thể xóa - có đơn hàng đang xử lý" + list orders
+  else Không có đơn hàng pending
+    Order -> Product: Trả "OK to delete"
+    
+    Product -> Inventory: Check reserved stock (productId)
+    Inventory -> DB: SELECT inventory WHERE productId AND reserved_qty > 0
+    alt Có tồn kho đang reserved
+      DB --> Inventory: Trả reserved info
+      Inventory -> Product: Trả "Has reserved stock"
+      Product -> UI: Trả lỗi "Cannot delete - has reserved inventory"
+      UI -> Staff: Hiển thị "Không thể xóa - có tồn kho đang được đặt trước"
+    else Không có reserved stock
+      Inventory -> Product: Trả "OK to delete"
+      Product -> UI: Trả confirmation options (soft/hard delete)
+      UI -> Staff: Hiển thị dialog xác nhận với options
+      
+      Staff -> UI: Chọn delete type (soft/hard) -> Confirm
+      UI -> Product: DELETE /products/{productId}?type=soft|hard
+      
+      alt Hard Delete
+        Product -> DB: BEGIN TRANSACTION
+        alt Có media files
+          Product -> S3: DELETE media files
+          alt S3 delete fails
+            S3 --> Product: Lỗi xóa files
+            Product -> Audit: Log storage error + create cleanup task
+          else S3 delete success
+            S3 --> Product: Confirm files deleted
+          end
+        end
+        
+        Product -> DB: DELETE FROM products WHERE id = productId
+        Product -> Inventory: DELETE /inventory/{productId}
+        Inventory -> DB: DELETE FROM inventory WHERE product_id = productId
+        alt DB operations fail
+          DB --> Product: Lỗi database
+          Product -> DB: ROLLBACK
+          Product -> UI: Trả lỗi "Delete failed"
+          UI -> Staff: Hiển thị "Lỗi hệ thống, vui lòng thử lại"
+        else DB operations success
+          DB --> Product: Confirm deletion
+          Inventory --> Product: Confirm inventory deletion
+          Product -> DB: COMMIT TRANSACTION
+        end
+        
+      else Soft Delete
+        Product -> DB: UPDATE products SET status='deleted', deleted_at=NOW() WHERE id = productId
+        alt Update fails
+          DB --> Product: Lỗi update
+          Product -> UI: Trả lỗi "Soft delete failed"
+          UI -> Staff: Hiển thị lỗi update
+        else Update success
+          DB --> Product: Confirm soft delete
+        end
+      end
+      
+      Product -> Search: DELETE /index/products/{productId}
+      Search --> Product: Confirm removal from index
+      
+      Product -> Audit: Log deletion (staffId, productId, delete_type, reason)
+      Audit --> Product: Confirm audit log
+      
+      Product -> Notif: Notify team về sản phẩm đã xóa
+      Notif --> Staff: Confirmation sent
+      
+      Product -> UI: Trả success
+      UI -> Staff: Hiển thị "Xóa sản phẩm thành công"
+    end
+  end
+end
+
+alt Batch delete
+  Staff -> UI: Chọn nhiều sản phẩm -> "Xóa hàng loạt"
+  UI -> Product: DELETE /products/batch (productIds[], delete_type)
+  Product -> Product: Loop qua từng productId, kiểm tra điều kiện
+  Product -> DB: Batch operations với transaction
+  Product -> Search: Batch remove from index
+  Product -> Audit: Log batch delete action
+  Product -> UI: Trả batch result (success_count, failed_count, errors[])
+  UI -> Staff: Hiển thị kết quả batch delete chi tiết
+end
+
+alt Restore deleted product (soft delete only)
+  Staff -> UI: Vào "Sản phẩm đã xóa" -> Chọn product -> "Khôi phục"
+  UI -> Product: POST /products/{productId}/restore
+  Product -> DB: UPDATE products SET status='active', deleted_at=NULL WHERE id = productId
+  Product -> Search: POST /index/products (re-index product)
+  Product -> Audit: Log restore action
+  Product -> UI: Trả success
+  UI -> Staff: Hiển thị "Sản phẩm đã được khôi phục"
+end
+@enduml

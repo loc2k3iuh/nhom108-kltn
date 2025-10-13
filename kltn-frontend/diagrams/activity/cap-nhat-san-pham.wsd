@@ -1,0 +1,56 @@
+@startuml cap-nhat-san-pham
+|Nhân viên bán hàng|
+start
+:Tìm sản phẩm cần sửa -> Click "Sửa sản phẩm";
+|Hệ Thống|
+:Load thông tin sản phẩm hiện tại;
+if (Sản phẩm tồn tại?) then (Không)
+  |Nhân viên bán hàng|
+  :Hiển thị "Sản phẩm không tồn tại";
+  stop
+else (Có)
+  |Nhân viên bán hàng|
+  :Hiển thị form với data hiện tại;
+  :Chỉnh sửa thông tin (tên, giá, mô tả, etc);
+  :(Tùy chọn) Thay đổi ảnh/video;
+  :Nhấn "Lưu thay đổi";
+  |Hệ Thống|
+  :Validate dữ liệu cập nhật;
+  if (Dữ liệu hợp lệ?) then (Không)
+    |Nhân viên bán hàng|
+    :Hiển thị lỗi validation;
+    stop
+  else (Có)
+    :Kiểm tra tên không trùng với sản phẩm khác;
+    if (Tên trùng?) then (Có)
+      |Nhân viên bán hàng|
+      :Hiển thị "Tên sản phẩm đã tồn tại";
+      stop
+    else (Không)
+      if (Có media mới?) then (Có)
+        :Upload media mới lên AWS S3;
+        if (Upload thành công?) then (Không)
+          |Nhân viên bán hàng|
+          :Hiển thị lỗi upload + cho phép thử lại;
+          stop
+        else (Có)
+          :Nhận URLs media mới;
+        endif
+      endif
+      :Cập nhật thông tin sản phẩm trong DB;
+      if (Có media cũ cần xóa?) then (Có)
+        :Xóa media cũ khỏi S3;
+        if (Xóa thành công?) then (Không)
+          :Ghi log lỗi storage + tạo cleanup task;
+        endif
+      endif
+      :Ghi audit log (staffId, before/after data);
+      :Cập nhật search index;
+      :Gửi notification cho team;
+      |Nhân viên bán hàng|
+      :Hiển thị "Cập nhật sản phẩm thành công";
+      stop
+    endif
+  endif
+endif
+@enduml

@@ -1,0 +1,31 @@
+@startuml them-san-pham
+|Nhân viên bán hàng|
+start
+:Chọn "Thêm sản phẩm";
+:Hiển thị form nhập (tên, giá, mô tả, danh mục, qty, media);
+:Nhập thông tin và chọn file media;
+:Nhấn "Lưu";
+|Hệ Thống|
+:Kiểm tra tính hợp lệ dữ liệu (Validation Service);
+if (Dữ liệu hợp lệ?) then (Có)
+  :Upload file media lên AWS S3;
+  if (Upload thành công?) then (Có)
+    :Nhận file URL từ S3;
+    :Lưu product (info + media URL) vào Database;
+    :Ghi audit entry (Audit Service);
+    :Trả kết quả thành công;
+    |Nhân viên bán hàng|
+    :Hiển thị "Thêm sản phẩm thành công";
+    stop
+  else (Không)
+    |Nhân viên bán hàng|
+    :Hiển thị "Upload ảnh/video thất bại, thử lại";
+    stop
+  endif
+else (Không)
+  |Nhân viên bán hàng|
+  :Hiển thị lỗi dữ liệu (thiếu/không hợp lệ);
+  :NVBH chỉnh sửa và gửi lại;
+  -> [quay lại] -left-> :Nhấn "Lưu";
+endif
+@enduml

@@ -1,0 +1,54 @@
+@startuml thong-ke-khuyen-mai
+actor "Nhân viên quản lý" as Manager
+participant "Giao diện (UI)" as UI
+participant "Analytics Service" as Analytics
+participant "Promotion Service" as Promo
+participant "Order Service" as Order
+participant "Database" as DB
+participant "Export Service" as Export
+
+Manager -> UI: Vào "Thống kê khuyến mãi" -> Chọn thời gian/filters -> Submit
+UI -> Analytics: GET /analytics/promotions (date_range, promotion_filters)
+Analytics -> Analytics: Validate date range and filters
+alt Invalid parameters
+  Analytics -> UI: Trả lỗi "Invalid parameters"
+  UI -> Manager: Hiển thị "Vui lòng chọn khoảng thời gian hợp lệ"
+else Valid parameters
+  alt Thống kê tất cả khuyến mãi
+    Analytics -> Promo: Get all promotion usage (date_range)
+    Promo -> DB: SELECT p.*, COUNT(o.id) as usage_count, SUM(o.discount_amount) FROM promotions p LEFT JOIN orders o WHERE ...
+  else Thống kê khuyến mãi cụ thể
+    Analytics -> Promo: Get specific promotion usage (promotion_id, date_range)
+    Promo -> DB: SELECT usage_count, conversion_rate, total_discount FROM promotion_analytics WHERE promotion_id = ? AND date BETWEEN ...
+  else Thống kê hiệu quả khuyến mãi
+    Analytics -> Order: Get promotion effectiveness (date_range)
+    Order -> DB: SELECT promotion_id, COUNT(DISTINCT customer_id), AVG(total_amount) FROM orders WHERE promotion_id IS NOT NULL GROUP BY ...
+  end
+  
+  alt Không có dữ liệu
+    DB --> Promo: Trả kết quả rỗng
+    Promo -> Analytics: Trả "No data"
+    Analytics -> UI: Trả "No data"
+    UI -> Manager: Hiển thị "Không có dữ liệu khuyến mãi trong khoảng thời gian này"
+  else Có dữ liệu
+    DB --> Promo: Trả promotion statistics data
+    Promo -> Analytics: Trả processed data
+    Analytics -> Analytics: Calculate metrics (usage rate, ROI, top performing)
+    Analytics -> UI: Trả promotion statistics (data + charts)
+    UI -> Manager: Hiển thị thống kê với biểu đồ và bảng số liệu
+    
+    alt Manager muốn xuất báo cáo
+      Manager -> UI: Click "Xuất báo cáo" -> Chọn format (Excel/PDF)
+      UI -> Export: POST /export/promotion-stats (data, format)
+      Export -> Export: Generate file with performance charts and tables
+      alt Export fails
+        Export -> UI: Trả lỗi "Export failed"
+        UI -> Manager: Hiển thị "Không thể xuất báo cáo, vui lòng thử lại sau"
+      else Export success
+        Export -> UI: Trả download link
+        UI -> Manager: Hiển thị link tải file báo cáo
+      end
+    end
+  end
+end
+@enduml

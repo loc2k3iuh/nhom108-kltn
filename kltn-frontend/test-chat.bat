@@ -1,0 +1,3 @@
+@echo off
+echo Opening VUVISA WebSocket Chat Test Page...
+start "" "chat-test.html"

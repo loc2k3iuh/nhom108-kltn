@@ -1,0 +1,61 @@
+@startuml tra-cuu-san-pham
+actor "Khách Hàng" as Customer
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Search Service" as Search
+participant "Product Service" as Product
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+
+alt Khách tự tìm kiếm
+  Customer -> UI: Nhập từ khóa -> Chọn bộ lọc -> Tìm kiếm
+else Nhân viên tìm hỗ trợ
+  Staff -> UI: Nhập từ khóa/mã sản phẩm -> Tìm kiếm nâng cao
+end
+UI -> Search: GET /search (keyword, filters, sort, page)
+Search -> Search: Validate keyword length & format
+alt Keyword invalid
+  Search -> UI: Trả lỗi validation
+  UI -> Customer: Hiển thị "Vui lòng nhập ít nhất 2 ký tự"
+else Keyword valid
+  Search -> Product: Query products (keyword, category, price_range, brand)
+  Product -> DB: SELECT products WHERE conditions
+  alt DB lỗi
+    DB --> Product: Lỗi truy vấn
+    Product -> UI: Trả lỗi "Không thể tìm kiếm"
+    UI -> Customer: Hiển thị lỗi + cache results (nếu có)
+  else Truy vấn thành công
+    alt Không có kết quả
+      DB --> Product: Trả rỗng
+      Product -> Search: Trả empty
+      Search -> UI: Trả empty + suggestions
+      UI -> Customer: Hiển thị "Không tìm thấy" + gợi ý sản phẩm phổ biến
+    else Có kết quả
+      DB --> Product: Trả product list
+      Product -> Inventory: Batch check stock cho danh sách sản phẩm
+      Inventory --> Product: Trả stock info
+      Product -> Search: Trả enriched product list
+      Search -> UI: Trả kết quả (với stock) + pagination
+      UI -> Customer: Hiển thị danh sách sản phẩm
+      
+      Customer -> UI: Chọn sản phẩm để xem chi tiết
+      UI -> Product: GET /products/{id}/details
+      Product -> DB: SELECT product details, specs, reviews
+      DB --> Product: Trả chi tiết đầy đủ
+      Product -> Inventory: GET current stock cho product
+      Inventory --> Product: Trả current stock
+      Product -> UI: Trả chi tiết + stock hiện tại
+      UI -> Customer: Hiển thị trang chi tiết sản phẩm
+    end
+  end
+end
+
+alt Staff search (additional info)
+  Staff -> UI: Tìm theo mã SKU/barcode
+  UI -> Product: GET /products/sku/{sku}
+  Product -> DB: SELECT WHERE sku = ?
+  DB --> Product: Trả exact match
+  Product -> UI: Trả chi tiết + internal info (cost, supplier)
+  UI -> Staff: Hiển thị thông tin đầy đủ cho nhân viên
+end
+@enduml

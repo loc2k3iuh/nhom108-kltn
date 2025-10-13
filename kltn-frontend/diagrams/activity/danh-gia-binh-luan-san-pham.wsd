@@ -1,0 +1,35 @@
+@startuml danh-gia-binh-luan-san-pham
+|Khách Hàng|
+start
+:Mở trang sản phẩm hoặc "Sản phẩm đã mua";
+:Nhấn "Viết đánh giá";
+|Hệ Thống|
+:Kiểm tra điều kiện (đã mua & đã hoàn thành);
+if (Đủ điều kiện?) then (Có)
+  |Khách Hàng|
+  :Chọn sao (1-5) và nhập nội dung;\n(Chọn đính kèm ảnh/video - tùy);
+  :Nhấn "Gửi";
+  |Hệ Thống|
+  :Kiểm tra dữ liệu (không rỗng, từ cấm?);\nKiểm tra file (kích thước/định dạng);
+  if (Dữ liệu hợp lệ?) then (Có)
+    if (Có file đính kèm?) then (Có)
+      :Lưu file vào Storage;\nNhận fileRef;
+    endif
+    :Lưu review vào Database (userId, productId, rating, content, fileRef);
+    :Cập nhật điểm trung bình sản phẩm;
+    :Ghi lịch sử và gửi thông báo;
+    |Khách Hàng|
+    :Hiển thị "Gửi đánh giá thành công" (hoặc "Đang chờ duyệt");
+    stop
+  else (Không)
+    |Khách Hàng|
+    :Hiển thị lỗi tương ứng (thiếu rating / từ cấm / file lỗi);
+    :Người dùng sửa và gửi lại;
+    -> [quay lại] -left-> :Nhấn "Gửi";
+  endif
+else (Không)
+  |Khách Hàng|
+  :Hiển thị "Bạn cần mua sản phẩm trước khi đánh giá";
+  stop
+endif
+@enduml

@@ -1,0 +1,57 @@
+@startuml cap-nhat-gio-hang
+' skinparam swimlaneWidth same
+' skinparam swimlaneWrapTitle false
+' skinparam activity {
+'   BackgroundColor LightBlue
+'   BorderColor Black
+'   FontName Arial
+' }
+
+|Khách hàng/Nhân viên|
+start
+:Mở giỏ hàng;
+:Chọn sản phẩm cần cập nhật số lượng;
+|Hệ Thống|
+:Hiển thị form cập nhật số lượng;
+|Khách hàng/Nhân viên|
+:Nhập số lượng mới;
+:Nhấn "Cập nhật";
+|Hệ Thống|
+:Validate số lượng đầu vào;
+if (Số lượng hợp lệ?) then (Không)
+  |Khách hàng/Nhân viên|
+  :Hiển thị lỗi validation;
+  :Yêu cầu nhập lại;
+  stop
+else (Có)
+  :Kiểm tra sản phẩm tồn tại trong giỏ;
+  if (Sản phẩm có trong giỏ?) then (Không)
+    |Khách hàng/Nhân viên|
+    :Hiển thị "Sản phẩm không có trong giỏ hàng";
+    :Làm mới giỏ hàng;
+    stop
+  else (Có)
+    :Kiểm tra tồn kho (Inventory Service);
+    if (Đủ tồn kho?) then (Không)
+      |Khách hàng/Nhân viên|
+      :Hiển thị "Tồn kho chỉ còn X";
+      :Đề xuất số lượng tối đa;
+      stop
+    else (Có)
+      if (Số lượng mới = 0?) then (Có)
+        :Xóa sản phẩm khỏi giỏ hàng;
+      else (Không)
+        :Cập nhật số lượng trong giỏ hàng;
+      endif
+      :Tính lại tổng tiền giỏ hàng;
+      if (Nhân viên thao tác?) then (Có)
+        :Ghi log thao tác nhân viên;
+      endif
+      |Khách hàng/Nhân viên|
+      :Hiển thị "Giỏ hàng đã được cập nhật";
+      :Hiển thị giỏ hàng mới với tổng tiền;
+      stop
+    endif
+  endif
+endif
+@enduml

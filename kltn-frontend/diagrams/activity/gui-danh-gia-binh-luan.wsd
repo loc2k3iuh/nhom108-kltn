@@ -1,0 +1,61 @@
+@startuml gui-danh-gia-binh-luan
+|Khách Hàng|
+start
+:Vào trang sản phẩm hoặc "Sản phẩm chưa đánh giá";
+:Chọn "Viết đánh giá";
+|Hệ Thống|
+:Kiểm tra quyền đánh giá (đã mua, verified purchase);
+if (Đủ điều kiện?) then (Không)
+  |Khách Hàng|
+  :Hiển thị "Bạn cần mua sản phẩm trước khi đánh giá";
+  stop
+else (Có)
+  if (Đã đánh giá trước đó?) then (Có)
+    :Hiển thị form chỉnh sửa với data cũ;
+  else (Chưa)
+    :Hiển thị form đánh giá mới;
+  endif
+  |Khách Hàng|
+  :Chọn số sao (1-5), nhập nội dung;
+  :(Tùy chọn) Upload ảnh/video;
+  :Nhấn "Gửi đánh giá";
+  |Hệ Thống|
+  :Validate dữ liệu (rating bắt buộc, content length);
+  if (Dữ liệu hợp lệ?) then (Không)
+    |Khách Hàng|
+    :Hiển thị lỗi validation (thiếu rating, nội dung quá dài);
+    stop
+  else (Có)
+    if (Có file upload?) then (Có)
+      :Upload media lên Storage;
+      if (Upload thành công?) then (Không)
+        |Khách Hàng|
+        :Hiển thị lỗi file (quá dung lượng/format sai);
+        stop
+      else (Có)
+        :Nhận media URLs;
+      endif
+    endif
+    :Kiểm duyệt nội dung (từ cấm, spam);
+    if (Nội dung hợp lệ?) then (Không)
+      |Khách Hàng|
+      :Hiển thị "Nội dung vi phạm chính sách";
+      stop
+    else (Có)
+      if (Cần duyệt thủ công?) then (Có)
+        :Lưu với status="pending";
+        :Gửi cho moderator;
+        |Khách Hàng|
+        :Hiển thị "Đánh giá đang chờ duyệt";
+      else (Không)
+        :Lưu đánh giá với status="approved";
+        :Cập nhật rating trung bình sản phẩm;
+        :Ghi audit log và gửi notification;
+        |Khách Hàng|
+        :Hiển thị "Gửi đánh giá thành công" + hiển thị review;
+      endif
+      stop
+    endif
+  endif
+endif
+@enduml

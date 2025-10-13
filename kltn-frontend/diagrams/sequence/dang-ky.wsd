@@ -1,0 +1,46 @@
+@startuml
+actor KhachHang as KH
+participant "Giao diện" as UI
+participant "Hệ Thống" as HT
+participant "Database" as DB
+participant "Email Service" as Email
+
+KH -> UI: Truy cập trang đăng ký
+UI -> KH: Hiển thị biểu mẫu đăng ký
+KH -> UI: Nhập thông tin và gửi biểu mẫu
+UI -> HT: Gửi thông tin đăng ký
+
+HT -> HT: Kiểm tra tính hợp lệ thông tin
+alt Thông tin không hợp lệ
+    HT -> UI: Trả về lỗi, làm nổi bật trường lỗi
+    UI -> KH: Hiển thị lỗi, yêu cầu sửa
+    KH -> UI: Sửa và gửi lại
+    UI -> HT: Gửi lại thông tin đăng ký
+end
+
+HT -> DB: Kiểm tra email đã tồn tại
+alt Email đã tồn tại
+    HT -> UI: Trả về lỗi "Email đã được sử dụng"
+    UI -> KH: Hiển thị lỗi, yêu cầu nhập email khác
+    KH -> UI: Nhập lại email và gửi
+    UI -> HT: Gửi lại thông tin đăng ký
+else Email chưa tồn tại
+    HT -> DB: Tạo bản ghi khách hàng mới
+    HT -> Email: Gửi mã xác nhận qua email
+    HT -> UI: Yêu cầu nhập mã xác nhận
+    UI -> KH: Hiển thị form nhập mã xác nhận
+    KH -> UI: Nhập mã xác nhận và gửi
+    UI -> HT: Gửi mã xác nhận
+    HT -> HT: Kiểm tra mã xác nhận
+    alt Mã xác nhận đúng
+        HT -> UI: Chuyển hướng đến trang đăng nhập
+        UI -> KH: Thông báo đăng ký thành công
+    else Mã xác nhận sai
+        HT -> UI: Thông báo mã xác nhận sai
+        UI -> KH: Yêu cầu nhập lại mã xác nhận
+        KH -> UI: Nhập lại mã xác nhận và gửi
+        UI -> HT: Gửi lại mã xác nhận
+        ...Lặp lại kiểm tra mã xác nhận...
+    end
+end
+@enduml

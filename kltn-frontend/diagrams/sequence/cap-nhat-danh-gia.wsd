@@ -1,0 +1,58 @@
+@startuml cap-nhat-danh-gia
+actor "Khách hàng" as Customer
+participant "Giao diện (UI)" as UI
+participant "Review Service" as Review
+participant "Storage Service" as Storage
+participant "Database" as DB
+participant "Notification Service" as Notif
+
+Customer -> UI: Vào "Đánh giá của tôi" -> Chọn đánh giá -> Click "Sửa"
+UI -> Review: GET /reviews/{reviewId}
+Review -> DB: SELECT review WHERE id = reviewId
+alt Đánh giá không tồn tại
+  DB --> Review: Không tìm thấy
+  Review -> UI: Trả lỗi
+  UI -> Customer: Hiển thị "Đánh giá không tồn tại"
+else Đánh giá tồn tại
+  DB --> Review: Trả review data
+  alt Không phải chủ sở hữu
+    Review -> UI: Trả "No permission"
+    UI -> Customer: Hiển thị "Bạn không có quyền chỉnh sửa đánh giá này"
+  else Là chủ sở hữu
+    alt Quá thời gian chỉnh sửa
+      Review -> UI: Trả "Edit time expired"
+      UI -> Customer: Hiển thị "Đã hết thời gian chỉnh sửa đánh giá"
+    else Còn thời gian chỉnh sửa
+      Review -> UI: Trả review details
+      UI -> Customer: Hiển thị form với thông tin hiện tại
+      
+      Customer -> UI: Chỉnh sửa thông tin -> Submit
+      UI -> Review: PUT /reviews/{reviewId} (updated_data + new_images)
+      Review -> Review: Validate data
+      alt Invalid data
+        Review -> UI: Trả lỗi validation
+        UI -> Customer: Hiển thị lỗi chi tiết
+      else Valid data
+        alt Có hình ảnh mới
+          Review -> Storage: Upload new images
+          alt Upload fails
+            Storage --> Review: Lỗi upload
+            Review -> UI: Trả "Upload failed"
+            UI -> Customer: Hiển thị "Lỗi upload hình ảnh, vui lòng thử lại"
+          else Upload success
+            Storage --> Review: Trả new image URLs
+            Review -> Storage: Delete old images
+          end
+        end
+        
+        Review -> DB: UPDATE reviews SET content=?, rating=?, images=? WHERE id=?
+        DB --> Review: Confirm update
+        Review -> DB: Recalculate product average rating
+        Review -> Notif: Send update notification to shop
+        Review -> UI: Trả success
+        UI -> Customer: Hiển thị "Cập nhật đánh giá thành công"
+      end
+    end
+  end
+end
+@enduml

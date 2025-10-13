@@ -1,0 +1,47 @@
+@startuml them-san-pham
+|Nhân viên bán hàng|
+start
+:Vào chức năng "Thêm sản phẩm";
+:Điền form (tên, giá, mô tả, danh mục, qty, chọn media files);
+:Nhấn "Lưu sản phẩm";
+|Hệ Thống|
+:Validate dữ liệu (required fields, formats);
+if (Dữ liệu hợp lệ?) then (Không)
+  |Nhân viên bán hàng|
+  :Hiển thị lỗi validation (thiếu field/format sai);
+  stop
+else (Có)
+  :Kiểm tra tên/SKU không trùng;
+  if (Trùng tên/SKU?) then (Có)
+    |Nhân viên bán hàng|
+    :Hiển thị "Sản phẩm đã tồn tại" + gợi ý;
+    stop
+  else (Không)
+    :Kiểm tra danh mục tồn tại;
+    if (Category hợp lệ?) then (Không)
+      |Nhân viên bán hàng|
+      :Hiển thị lỗi category + cho phép chọn lại;
+      stop
+    else (Có)
+      if (Có media files?) then (Có)
+        :Upload files lên AWS S3;
+        if (Upload thành công?) then (Không)
+          |Nhân viên bán hàng|
+          :Hiển thị lỗi upload + cho phép thử lại/bỏ qua;
+          stop
+        else (Có)
+          :Nhận media URLs từ S3;
+        endif
+      endif
+      :Tạo product record trong Database;
+      :Khởi tạo inventory record với qty;
+      :Ghi audit log (staffId, action, productId);
+      :Cập nhật search index;
+      :Gửi notification cho team;
+      |Nhân viên bán hàng|
+      :Hiển thị "Thêm sản phẩm thành công" + productId;
+      stop
+    endif
+  endif
+endif
+@enduml

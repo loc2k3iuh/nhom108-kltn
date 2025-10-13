@@ -1,0 +1,21 @@
+@startuml
+actor "Người dùng" as User
+participant "Giao diện (UI)" as UI
+participant "Auth Service" as Auth
+participant "Token Store (DB/Blacklist)" as Store
+participant "Client Storage" as ClientStorage
+
+User -> UI: Chọn "Đăng xuất"
+UI -> Auth: POST /logout (refreshToken)
+alt Server reachable
+  Auth -> Store: Revoke refresh token / lưu vào blacklist
+  Store --> Auth: Xác nhận revoke
+  Auth --> UI: 200 OK (logout success)
+  UI -> ClientStorage: Xóa AccessToken, RefreshToken, cookie, "Remember me"
+  UI -> User: Hiển thị "Đăng xuất thành công" và redirect -> Login
+else Server unreachable / lỗi
+  UI -> User: Hiển thị cảnh báo lỗi kết nối (tùy chọn)
+  UI -> ClientStorage: Xóa AccessToken, RefreshToken, cookie, "Remember me" (đăng xuất cục bộ)
+  UI -> User: Thông báo "Đã đăng xuất cục bộ"; redirect -> Login
+end
+@enduml

@@ -1,0 +1,33 @@
+@startuml tra-cuu-khuyen-mai
+|Khách Hàng|
+start
+:Vào trang "Khuyến mãi" hoặc "Tra cứu khuyến mãi";
+:Hiển thị form tìm kiếm (từ khóa, loại, thời gian, sản phẩm);
+:(Tùy chọn) Nhập điều kiện tìm kiếm;
+:Nhấn "Tìm kiếm" hoặc xem tất cả;
+|Hệ Thống|
+:Truy vấn Promotion Service với điều kiện lọc;
+:Lọc khuyến mãi đang active/sắp diễn ra;
+if (Có kết quả?) then (Có)
+  |Khách Hàng|
+  :Hiển thị danh sách khuyến mãi;
+  :Chọn một khuyến mãi để xem chi tiết;
+  |Hệ Thống|
+  :Hiển thị chi tiết (điều kiện, thời hạn, phạm vi, cách sử dụng);
+  if (Khách muốn kiểm tra áp dụng?) then (Có)
+    :Nhập thông tin đơn hàng/sản phẩm để kiểm tra;
+    :Kiểm tra điều kiện áp dụng;
+    if (Hợp lệ?) then (Có)
+      :Hiển thị "Có thể áp dụng" + hướng dẫn sử dụng;
+    else (Không)
+      :Hiển thị lý do không áp dụng được + điều kiện cần thiết;
+    endif
+  endif
+  stop
+else (Không)
+  |Khách Hàng|
+  :Hiển thị "Không có khuyến mãi phù hợp";
+  :Gợi ý mở rộng điều kiện tìm kiếm hoặc xem tất cả;
+  stop
+endif
+@enduml

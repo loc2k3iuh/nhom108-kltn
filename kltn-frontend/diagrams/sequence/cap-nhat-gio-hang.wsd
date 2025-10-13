@@ -1,0 +1,53 @@
+@startuml cap-nhat-gio-hang
+actor "Khách Hàng" as Customer
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Cart Service" as Cart
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+
+alt Khách tự cập nhật
+  Customer -> UI: Mở giỏ hàng -> Chọn item -> Nhập qty mới -> Cập nhật
+else Nhân viên cập nhật thay
+  Staff -> UI: Chọn khách hàng -> Mở giỏ -> Chọn item -> Nhập qty mới -> Cập nhật
+end
+UI -> Cart: PUT /cart/item/{itemId} (newQty)
+Cart -> Cart: Validate newQty (> 0, numeric)
+alt Validation fails
+  Cart -> UI: Trả lỗi validation
+  UI -> Customer: Hiển thị lỗi số lượng
+else Validation OK
+  Cart -> DB: Kiểm tra item tồn tại trong cart
+  alt Item không tồn tại
+    DB --> Cart: Không tìm thấy
+    Cart -> UI: Trả lỗi "Item không có trong giỏ"
+    UI -> Customer: Hiển thị "Sản phẩm không có trong giỏ hàng"
+  else Item tồn tại
+    Cart -> Inventory: GET /inventory/check (productId, newQty)
+    alt Inventory insufficient
+      Inventory --> Cart: Trả availableQty < newQty
+      Cart -> UI: Trả lỗi "Tồn kho chỉ còn X"
+      UI -> Customer: Hiển thị cảnh báo + đề xuất qty tối đa
+    else Inventory sufficient
+      Inventory --> Cart: Trả OK
+      alt newQty = 0
+        Cart -> DB: DELETE cart_item WHERE id = itemId
+        DB --> Cart: Xác nhận xóa
+        Cart -> UI: Trả "Item đã xóa (qty = 0)"
+      else newQty > 0
+        Cart -> DB: UPDATE cart_item SET qty = newQty WHERE id = itemId
+        DB --> Cart: Xác nhận cập nhật
+      end
+      Cart -> Cart: Tính lại tổng tiền giỏ hàng
+      Cart -> UI: Trả success + cart totals
+      UI -> Customer: Hiển thị "Giỏ hàng đã được cập nhật" + giỏ hàng mới
+    end
+  end
+end
+
+alt Staff action (ghi log)
+  Staff -> Cart: Thao tác với flag staffId
+  Cart -> DB: Ghi log (staffId, action, customerId, itemId, oldQty, newQty)
+  DB --> Cart: Xác nhận log
+end
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+actor "Khách Hàng" as Customer
+actor "Nhân viên bán hàng" as Staff
+participant "Giao diện (UI)" as UI
+participant "Cart Service" as Cart
+participant "Inventory Service" as Inventory
+participant "Database" as DB
+
+alt Khách tự thêm
+  Customer -> UI: Chọn productId, qty -> Thêm vào giỏ
+else Nhân viên thêm thay
+  Staff -> UI: Chọn khách hàng, productId, qty -> Thêm vào giỏ
+end
+UI -> Cart: POST /cart/add (productId, qty, customerId?)
+Cart -> Inventory: GET /inventory (productId)
+alt Inventory lỗi
+  Inventory --> Cart: Lỗi/timeout
+  Cart -> UI: Trả lỗi "Không thể kiểm tra tồn kho"
+  UI -> Customer: Hiển thị lỗi
+else
+  Inventory --> Cart: Trả availableQty
+  alt availableQty >= qty
+    Cart -> DB: Insert/Update cart item
+    DB --> Cart: Xác nhận
+    Cart -> UI: Trả thành công
+    UI -> Customer: Hiển thị "Sản phẩm đã được thêm vào giỏ hàng"
+  else availableQty == 0
+    Cart -> UI: Trả lỗi "Sản phẩm đã hết hàng"
+    UI -> Customer: Hiển thị "Sản phẩm đã hết hàng"
+  else availableQty < qty
+    Cart -> UI: Trả cảnh báo "Tồn kho chỉ còn X, vui lòng điều chỉnh"
+    UI -> Customer: Hiển thị cảnh báo
+  end
+end
+
+alt Staff override (has permission)
+  Staff -> Cart: POST /cart/add (override=true)
+  Cart -> DB: Lưu với flag reserve/override
+  Cart -> UI: Trả thành công (ghi chú override)
+  UI -> Staff: Hiển thị "Đã thêm (override)"
+end
+@enduml
