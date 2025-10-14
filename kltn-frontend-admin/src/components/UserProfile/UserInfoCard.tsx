@@ -43,7 +43,7 @@ const updateSchema = yup.object({
     .string()
     .nullable()
     .notRequired()
-    .min(10, "Address must be at least 10 characters !")
+    .min(5, "Address must be at least 5 characters !")
     .max(100, "Address must not exceed 100 character !"),
 
   dateOfBirth: yup
