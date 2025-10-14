@@ -503,7 +503,7 @@ const UserPage = () => {
                 </div>
             </div>
 
-            <div className="bg-gray-600 text-white p-4 flex flex-col md:flex-row justify-center items-center gap-5 md:gap-20 mx-auto mt-2 rounded-lg mt-[50px] container lg:max-w-7xl">
+            <div className="bg-gray-600 text-white p-4 flex flex-col md:flex-row justify-center items-center gap-5 md:gap-20 mx-auto rounded-lg mt-[50px] container lg:max-w-7xl">
                 <div className="flex justify-center items-center gap-3">
                     <FontAwesomeIcon icon={faMailBulk} className="text-lg" />
                     <div className="text-2xl font-bold">ĐĂNG KÝ NHẬN BẢN TIN</div>

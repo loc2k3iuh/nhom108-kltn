@@ -46,21 +46,20 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
   StringRedisTemplate stringRedisTemplate;
   IRefreshTokenService iRefreshTokenService;
   InvalidatedTokenRepository invalidatedTokenRepository;
+  PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
   private boolean isGmailAddress(String email) {
     String regex = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
     return email != null && email.matches(regex);
   }
 
-  @Override
-  public PreLoginResponse authenticate(LoginRequest loginRequest) throws MessagingException {
+  private User checkAuth(LoginRequest loginRequest) {
+
     User user =
         (!isGmailAddress(loginRequest.getUsername())
                 ? userRepository.findByUsername(loginRequest.getUsername())
                 : userRepository.findByEmail(loginRequest.getUsername()))
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
     List<Map.Entry<Predicate<User>, ErrorCode>> rules =
         List.of(
@@ -78,8 +77,30 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
               throw new AppException(rule.getValue());
             });
 
+    return user;
+  }
+
+  @Override
+  public PreLoginResponse authenticateAdmin(LoginRequest loginRequest) throws MessagingException {
+    User user = checkAuth(loginRequest);
     iEmailService.sentOtp(user);
     return userMapper.toPreLoginResponse(user);
+  }
+
+  @Override
+  public LoginResponse authenticateClient(
+      LoginRequest loginRequest, boolean isRemembered, HttpServletResponse httpServletResponse)
+      throws JOSEException {
+    User user = checkAuth(loginRequest);
+    String accessToken = iJwtService.generateToken(user);
+    RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(user.getId(), isRemembered);
+    iRefreshTokenService.createRefreshTokenCookie(
+        httpServletResponse, isRemembered, refreshToken.getToken());
+    return LoginResponse.builder()
+        .authenticated(true)
+        .roles(userMapper.toPreLoginResponse(user).getRoles())
+        .accessToken(accessToken)
+        .build();
   }
 
   @Override
@@ -205,7 +226,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     PasswordEncoder encoder = new BCryptPasswordEncoder(10);
     existUser.setPassword(encoder.encode(verifyResetTokenRequest.getPassword()));
     userRepository.save(existUser);
-    
+
     stringRedisTemplate.delete("reset-token: " + existUser.getId());
   }
 }

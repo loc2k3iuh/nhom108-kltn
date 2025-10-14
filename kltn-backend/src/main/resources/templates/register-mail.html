@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
-    <title>Reset Your Password</title>
+    <title>Verify Your Account</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,7 +22,7 @@
         }
 
         .header {
-            background-color: #2563eb;
+            background-color: #16a34a;
             color: white;
             padding: 20px;
             text-align: center;
@@ -45,7 +45,7 @@
         }
 
         .btn {
-            background-color: #2563eb;
+            background-color: #16a34a;
             color: white;
             text-decoration: none;
             padding: 12px 30px;
@@ -55,7 +55,7 @@
         }
 
         .btn:hover {
-            background-color: #1d4ed8;
+            background-color: #15803d;
         }
 
         .footer {
@@ -71,28 +71,28 @@
 <body>
 <div class="container">
     <div class="header">
-        <h2>Password Reset Request</h2>
+        <h2>Account Verification</h2>
     </div>
     <div class="content">
         <p>Hello <strong th:text="${username}">User</strong>,</p>
         <p>
-            We received a request to reset your password. Click the button below
-            to reset it:
+            Thank you for signing up! Please click the button below to verify
+            your email address and activate your account.
         </p>
 
         <div class="button-container">
             <a
-                    class="btn"
-                    th:href="${resetLink}"
+                    class="btn "
+                    th:href="${verificationLink}"
                     target="_blank"
             >
-                Reset Password
+                Verify Account
             </a>
         </div>
 
         <p>
-            If you didn't request this, please ignore this email. This link will
-            expire in <strong>15 minutes</strong>.
+            If you did not register for this account, please ignore this email.
+            This verification link will expire in <strong>15 minutes</strong>.
         </p>
     </div>
 

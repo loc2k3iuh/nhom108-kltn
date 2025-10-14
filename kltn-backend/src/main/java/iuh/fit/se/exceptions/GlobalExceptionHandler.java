@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -29,9 +28,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<APIResponse> handleMethodArgumentNotValidException(
-          MethodArgumentNotValidException e,
-          HttpServletRequest request) {
-
+      MethodArgumentNotValidException e, HttpServletRequest request) {
 
     var error = e.getBindingResult().getAllErrors().get(0);
     String keyEnum = error.getDefaultMessage();
@@ -46,31 +43,30 @@ public class GlobalExceptionHandler {
     ConstraintViolation<?> violation = null;
     try {
       violation = error.unwrap(ConstraintViolation.class);
-    } catch (Exception ignored) {}
+    } catch (Exception ignored) {
+    }
 
-    Map<String, Object> attributes = violation != null
-            ? violation.getConstraintDescriptor().getAttributes()
-            : Map.of();
+    Map<String, Object> attributes =
+        violation != null ? violation.getConstraintDescriptor().getAttributes() : Map.of();
 
     log.info("Validation attributes: {}", attributes);
 
     APIResponse apiResponse = new APIResponse();
     apiResponse.setCode(errorCode.getCode());
     apiResponse.setMessage(
-            (attributes != null && !attributes.isEmpty())
-                    ? mapAttributeToMessage(errorCode.getMessage(), attributes)
-                    : errorCode.getMessage());
+        (attributes != null && !attributes.isEmpty())
+            ? mapAttributeToMessage(errorCode.getMessage(), attributes)
+            : errorCode.getMessage());
     apiResponse.setPath(request.getRequestURI());
     apiResponse.setRequestId(UUID.randomUUID().toString());
     apiResponse.setTimestamp(
-            ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
-                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 
     log.error("Validation error [{}]: {}", errorCode.name(), apiResponse.getMessage());
 
     return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
   }
-
 
   private String mapAttributeToMessage(String message, Map<String, Object> attributes) {
     String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));

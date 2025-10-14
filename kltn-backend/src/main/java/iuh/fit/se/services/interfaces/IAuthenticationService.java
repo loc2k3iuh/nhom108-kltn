@@ -11,7 +11,12 @@ import java.text.ParseException;
 
 public interface IAuthenticationService {
 
-  PreLoginResponse authenticate(LoginRequest loginRequest) throws JOSEException, MessagingException;
+  PreLoginResponse authenticateAdmin(LoginRequest loginRequest)
+      throws JOSEException, MessagingException;
+
+  LoginResponse authenticateClient(
+      LoginRequest loginRequest, boolean isRemembered, HttpServletResponse httpServletResponse)
+      throws JOSEException;
 
   LoginResponse verifyOtp(
       VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
