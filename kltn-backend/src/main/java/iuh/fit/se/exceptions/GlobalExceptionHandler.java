@@ -24,7 +24,8 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GlobalExceptionHandler {
 
-  static String MIN_ATTRIBUTE = "min";
+  private static final String MIN_ATTRIBUTE = "min";
+  private static final String MAX_ATTRIBUTE = "max";
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<APIResponse> handleMethodArgumentNotValidException(
@@ -70,7 +71,10 @@ public class GlobalExceptionHandler {
 
   private String mapAttributeToMessage(String message, Map<String, Object> attributes) {
     String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
-    return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
+    String maxValue = String.valueOf(attributes.get(MAX_ATTRIBUTE));
+    return message
+        .replace("{" + MIN_ATTRIBUTE + "}", minValue)
+        .replace("{" + MAX_ATTRIBUTE + "}", maxValue);
   }
 
   @ExceptionHandler(value = AppException.class)

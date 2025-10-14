@@ -1,4 +1,9 @@
-import { getUserDetailFromToken } from "@/services/useAuthService";
+import {
+  getUserDetailFromToken,
+  updateUserService,
+} from "@/services/useAuthService";
+import { getUserIdFromToken } from "@/services/useTokenService";
+import { UpdateUserRequest } from "@/types/requests/useRequest";
 import { UserResponse } from "@/types/responses/userResponse";
 import { create } from "zustand";
 
@@ -6,6 +11,7 @@ interface AuthStore {
   isLoading: boolean;
   checkAuth: () => Promise<UserResponse | null>;
   authUser: UserResponse | null;
+  updateUser: (updateUserRequest: UpdateUserRequest) => Promise<boolean>;
 }
 
 function getErrorMessage(err: unknown, fallback: string) {
@@ -27,6 +33,19 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return null;
     } finally {
       set({ isLoading: false });
+    }
+  },
+  updateUser: async (updateUserRequest) => {
+    try {
+      const userId = getUserIdFromToken();
+      if (userId) {
+        const response = await updateUserService(userId, updateUserRequest);
+        set({ authUser: response });
+      }
+      return true;
+    } catch (error: unknown) {
+      console.log(getErrorMessage(error, "Error in updating user !"));
+      return false;
     }
   },
 }));

@@ -12,16 +12,16 @@ import {
     faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
+import { useAuthStore } from "@/stores/useAuthStore";
 // Type imports removed - using any for flexibility
 
-interface UserSidebarProps {
-    userData: any;
-}
 
-const UserSidebar: React.FC<UserSidebarProps> = ({ userData }) => {
+
+const UserSidebar: React.FC = () => {
     const [isAccountOpen, setIsAccountOpen] = useState(true);
     const location = useLocation();
     const currentPath = location.pathname;
+    const {authUser} = useAuthStore();
 
     // Helper function to check if a path is active
     const isActive = (path: string) => currentPath.includes(path);
@@ -32,12 +32,12 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userData }) => {
             <div className="flex flex-col items-center">
                 <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                     <img 
-                        src={userData?.avatar_url || "https://via.placeholder.com/150"} 
+                        src={authUser?.avatar_url || "https://via.placeholder.com/150"} 
                         alt="User Avatar" 
                         className="w-full h-full object-cover" 
                     />
                 </div>
-                <h2 className="text-lg font-bold mt-2 mb-4">{userData?.full_name || "Người dùng"}</h2>
+                <h2 className="text-lg font-bold mt-2 mb-4">{authUser?.full_name || "Người dùng"}</h2>
                 <span className="bg-gray-300 text-sm px-3 py-1 rounded mt-1">
                     Thành viên Bạc
                 </span>

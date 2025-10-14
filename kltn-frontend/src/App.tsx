@@ -233,7 +233,7 @@ function App() {
           }
         />
         <Route
-          path="/user/profile"
+          path="/profile"
           element={
             <Layout>
               <UserPage />

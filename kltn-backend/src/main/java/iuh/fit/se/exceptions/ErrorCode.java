@@ -55,8 +55,11 @@ public enum ErrorCode {
   REFRESH_TOKEN_INVALID(1038, "Refresh already expired !", HttpStatus.BAD_REQUEST),
   PASSWORD_MUST_MATCH(1039, "Password must match !", HttpStatus.BAD_REQUEST),
   INVALID_INPUT(1040, "Error Enum doesn't match !", HttpStatus.BAD_REQUEST),
-  TOKEN_NOT_EXPIRED(1041, "Reset token doesn't expire yet, try again !", HttpStatus.BAD_REQUEST);
-  ;
+  TOKEN_NOT_EXPIRED(1041, "Reset token doesn't expire yet, try again !", HttpStatus.BAD_REQUEST),
+  ADDRESS_INVALID(
+      1042,
+      "Address must be at least {min} characters and maximum {max} characters !",
+      HttpStatus.BAD_REQUEST);
 
   int code;
   String message;
