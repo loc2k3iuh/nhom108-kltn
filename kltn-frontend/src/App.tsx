@@ -114,14 +114,17 @@ function App() {
 
         {/* Authentication Pages */}
         <Route
-          path="/user/forgot-password/success"
-          element={<ForgotPasswordSuccessPage />}
+      
+          path="/reset-password/success"
+        
+          element={ <ForgotPasswordSuccessPage /> }
+          
         />
         <Route
-          path="/user/forgot-password/change"
-          element={<ChangeForgotPasswordPage />}
+          path="/reset-password"
+          element={ <Layout><ChangeForgotPasswordPage /> </Layout>}
         />
-        <Route path="/user/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/forgot-password" element={  <Layout><ForgotPasswordPage /> </Layout>} />
         <Route
           path="/login"
           element={

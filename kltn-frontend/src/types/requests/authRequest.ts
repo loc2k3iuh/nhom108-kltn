@@ -16,3 +16,11 @@ export interface VerifyRegistrationRequest{
     email : string;
     token: string;
 }
+
+
+export interface VerifyResetTokenRequest {
+    email: string;
+    reset_token: string;
+    password: string;
+    retype_password: string;
+}

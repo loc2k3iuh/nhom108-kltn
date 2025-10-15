@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
-import { registerUser } from "@/services/useAuthService";
+import { registerUser } from "@/services/useUserService";
 
 const registerSchema = yup.object({
   username: yup
@@ -539,12 +539,12 @@ const RegisterPage = () => {
 
             <p className="text-center text-gray-600 mt-6">
               Đã có tài khoản?{" "}
-              <a
-                href="/auth/login"
-                className="text-[#C92127] hover:text-[#a71b20] font-medium transition-colors"
+              <span
+                onClick={() => navigate("/login")}
+                className="text-[#C92127] hover:text-[#a71b20] font-medium transition-colors cursor-pointer"
               >
                 Đăng nhập
-              </a>
+              </span>
             </p>
           </div>
         </div>

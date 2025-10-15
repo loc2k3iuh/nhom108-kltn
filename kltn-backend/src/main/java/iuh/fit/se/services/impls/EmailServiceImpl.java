@@ -74,7 +74,7 @@ public class EmailServiceImpl implements IEmailService {
 
   @Override
   public void sendEmail(User user) throws MessagingException {
-    String key = "Verify-email: " + user.getEmail();
+    String key = "verify:email=" + user.getEmail();
     Long ttl = stringRedisTemplate.getExpire(key, TimeUnit.SECONDS);
     if (ttl != null && ttl > 0) {
       long minutes = ttl / 60;
@@ -108,7 +108,7 @@ public class EmailServiceImpl implements IEmailService {
   @Override
   public void sentOtp(User user) throws MessagingException {
     String otp = String.format("%06d", random.nextInt(1_000_000));
-    stringRedisTemplate.opsForValue().set("OTP: " + user.getEmail(), otp, Duration.ofMinutes(5));
+    stringRedisTemplate.opsForValue().set("otp:email=" + user.getEmail(), otp, Duration.ofMinutes(5));
     Map<String, Object> variables = Map.of("username", user.getUsername(), "otp", otp);
     sendWithHtmlMailFormat(user.getEmail(), "Your Otp Code", "otp-mail", variables);
   }
@@ -148,7 +148,7 @@ public class EmailServiceImpl implements IEmailService {
             .findByEmail(email)
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    String key = "Reset-token: " + user.getId();
+    String key = "reset:token:userId=" + user.getId();
 
     Long ttl = stringRedisTemplate.getExpire(key, TimeUnit.SECONDS);
     if (ttl != null && ttl > 0) {
@@ -180,13 +180,13 @@ public class EmailServiceImpl implements IEmailService {
 
   @Override
   public boolean verifyOtp(VerifyOtpRequest verifyOtpRequest) {
-    String key = "OTP: " + verifyOtpRequest.getEmail();
+    String key = "otp:email=" + verifyOtpRequest.getEmail();
     return verifyToken(key, verifyOtpRequest.getOptToken());
   }
 
   @Override
   public boolean verifyRegistration(VerifyRegistrationRequest verifyRegistrationRequest) {
-    String key = "Verify-email: " + verifyRegistrationRequest.getEmail();
+    String key = "verify:email=" + verifyRegistrationRequest.getEmail();
     return verifyToken(key, verifyRegistrationRequest.getToken());
   }
 

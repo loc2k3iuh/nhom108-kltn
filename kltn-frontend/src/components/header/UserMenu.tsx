@@ -12,7 +12,7 @@ interface UserMenuProps {
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, isLoggingOut, onToggle, onLogout }) => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col cursor-pointer justify-center items-center relative">
@@ -117,8 +117,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, isLog
             </>
           ) : (
             <div className="flex flex-col items-start">
-              <a href="/user/register" className="text-sm bg-[#C92127] text-white hover:bg-[#a71b20] py-2 px-4 rounded-md mb-2 text-center block w-full cursor-pointer">Đăng ký</a>
-              <a href="/user/login" className="text-sm bg-white text-[#C92127] border border-[#C92127] hover:bg-[#f8d7da] py-2 px-4 rounded-md text-center block w-full cursor-pointer">Đăng nhập</a>
+              <span onClick={() => navigate("/register")} className="text-sm bg-[#C92127] text-white hover:bg-[#a71b20] py-2 px-4 rounded-md mb-2 text-center block w-full cursor-pointer">Đăng ký</span>
+              <span onClick={() => navigate("/login")} className="text-sm bg-white text-[#C92127] border border-[#C92127] hover:bg-[#f8d7da] py-2 px-4 rounded-md text-center block w-full cursor-pointer">Đăng nhập</span>
             </div>
           )}
         </div>

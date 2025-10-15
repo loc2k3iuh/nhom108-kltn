@@ -155,9 +155,9 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
       Optional.ofNullable(refreshToken).ifPresent(iRefreshTokenService::deleteByToken);
 
-      String userId = "refresh-token: " + signToken.getJWTClaimsSet().getLongClaim("userId");
-      if (stringRedisTemplate.opsForValue().get(userId) != null) {
-        stringRedisTemplate.delete(userId);
+      String key = "refresh:token:userId=" + signToken.getJWTClaimsSet().getLongClaim("userId");
+      if (stringRedisTemplate.opsForValue().get(key) != null) {
+        stringRedisTemplate.delete(key);
       }
 
     } catch (AppException e) {
@@ -197,9 +197,9 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
   @Override
   public void deleteRefreshTokenFromRedis(String userId) {
-    String userIdKey = "refresh-token: " + userId;
-    if (stringRedisTemplate.opsForValue().get(userIdKey) != null) {
-      stringRedisTemplate.delete(userIdKey);
+    String key = "refresh:token:userId=" + userId;
+    if (stringRedisTemplate.opsForValue().get(key) != null) {
+      stringRedisTemplate.delete(key);
     }
   }
 
@@ -215,7 +215,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
         userRepository
             .findByEmail(verifyResetTokenRequest.getEmail())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    String resetToken = stringRedisTemplate.opsForValue().get("reset-token: " + existUser.getId());
+    String resetToken = stringRedisTemplate.opsForValue().get("reset:token:userId=" + existUser.getId());
 
     if (resetToken == null || resetToken.isBlank()) {
       throw new AppException(ErrorCode.TOKEN_EXPIRED);
@@ -227,6 +227,6 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     existUser.setPassword(encoder.encode(verifyResetTokenRequest.getPassword()));
     userRepository.save(existUser);
 
-    stringRedisTemplate.delete("reset-token: " + existUser.getId());
+    stringRedisTemplate.delete("reset:token:userId=" + existUser.getId());
   }
 }

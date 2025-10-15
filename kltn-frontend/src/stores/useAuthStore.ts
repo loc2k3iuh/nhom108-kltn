@@ -1,8 +1,6 @@
-import {
-  getUserDetailFromToken,
-  updateUserService,
-} from "@/services/useAuthService";
+
 import { getUserIdFromToken } from "@/services/useTokenService";
+import { getUserDetailFromToken, updateUserService } from "@/services/useUserService";
 import { UpdateUserRequest } from "@/types/requests/useRequest";
 import { UserResponse } from "@/types/responses/userResponse";
 import { create } from "zustand";

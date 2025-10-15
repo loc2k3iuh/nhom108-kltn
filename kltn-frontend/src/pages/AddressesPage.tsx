@@ -144,7 +144,7 @@ const AddressesPage = () => {
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-6xl mx-auto p-4 flex flex-col md:flex-row">
                 {/* Sidebar */}
-                <UserSidebar userData={userData as any} />
+                <UserSidebar/>
 
                 {/* Main Content */}
                 <div className="w-full md:w-3/4 mt-3 md:mt-0 space-y-4 ml-0 md:ml-6">

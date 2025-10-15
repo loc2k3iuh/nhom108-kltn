@@ -100,7 +100,7 @@ const ChangePassword: React.FC = () => {
     <div className="bg-gray-100 min-h-screen">
       <div className="max-w-6xl mx-auto p-4 flex flex-col md:flex-row p-8">
 
-        <UserSidebar userData={userData} />
+        <UserSidebar/>
 
         <div className="w-full md:w-3/4 space-y-4 ml-0 mt-3 md:mt-0 md:ml-6 bg-white p-4 rounded shadow-md">
 

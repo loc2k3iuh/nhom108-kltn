@@ -253,7 +253,7 @@ const LoginPage: React.FC = () => {
                   <span className="ml-2">Duy trì đăng nhập</span>
                 </label>
                 <span
-                  onClick={() => navigate("/user/forgot-password")}
+                  onClick={() => navigate("/forgot-password")}
                   className="text-sm text-[#C92127] hover:text-[#a71b20] font-medium transition-colors cursor-pointer"
                 >
                   Quên mật khẩu?

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
-import { verifyRegistration } from "@/services/useAuthService";
+import { verifyRegistration } from "@/services/useUserService";
+
 
 const RegisterSuccessPage: React.FC = () => {
   const location = useLocation();
