@@ -19,7 +19,6 @@ import {
 import { LoginResponse, UserResponse } from "@/types/responses/authResponse";
 import { checkAuthUser, updateUser } from "@/services/useUserService";
 import { getUserIdFromToken } from "@/services/useTokenService";
-import { toast } from "sonner";
 
 interface AuthStore {
   isLoading: boolean;

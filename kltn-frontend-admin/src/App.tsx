@@ -1,9 +1,5 @@
-import {
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { toast, Toaster } from "sonner";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "sonner";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import OtpVerification from "./pages/AuthPages/OtpVerification";
@@ -26,6 +22,7 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
+import AccountSettings from "./pages/OtherPage/AccountSettings";
 import { useEffect } from "react";
 import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletions/Reloading";
@@ -60,9 +57,8 @@ export default function App() {
   return (
     <>
       <Toaster />
-     
-        <ScrollToTop />
-        <Routes>
+      <ScrollToTop />
+      <Routes>
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route
@@ -83,6 +79,10 @@ export default function App() {
             <Route
               path="/blank"
               element={authUser ? <Blank /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/account-settings"
+              element={authUser ? <AccountSettings /> : <Navigate to="/signin" />}
             />
 
             {/* Forms */}
@@ -159,7 +159,6 @@ export default function App() {
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-   
     </>
   );
 }

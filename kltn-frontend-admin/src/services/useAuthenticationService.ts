@@ -1,14 +1,13 @@
-import { VerifyResetTokenRequest } from './../types/requests/authRequest';
+import { ChangePasswordRequest, VerifyResetTokenRequest } from './../types/requests/authRequest';
 import {
   LoginResponse,
   PreLoginResponse,
 } from "./../types/responses/authResponse";
 import { LoginRequest, OtpTokenRequest, ResendOtpRequest, SignOutRequest } from "../types/requests/authRequest";
 import axiosInstance from "../lib/axios";
-import { data } from 'react-router';
 
 export const login = async (data: LoginRequest): Promise<PreLoginResponse> => {
-  const response = await axiosInstance.post("/auth/login", data);
+  const response = await axiosInstance.post("/auth/admin/login", data);
   return response.data.result;
 };
 
@@ -17,7 +16,7 @@ export const verify = async (
   isChecked: boolean
 ): Promise<LoginResponse> => {
   const response = await axiosInstance.post(
-    `/auth/verify-otp?isChecked=${isChecked}`,
+    `/auth/admin/verify-otp?isChecked=${isChecked}`,
     data
   );
   return response.data.result as LoginResponse;
@@ -38,3 +37,5 @@ export const resetPassword = async(email: string): Promise<void> => {
 export const verifyPassword = async(data: VerifyResetTokenRequest ): Promise<void> => {
   await axiosInstance.post("/auth/verify-reset-token", data);
 }
+
+

@@ -30,3 +30,9 @@ export interface VerifyResetTokenRequest {
     password: string;
     retype_password: string;
 }
+
+export interface ChangePasswordRequest {
+    current_password: string;
+    new_password: string;
+    retype_new_password: string;
+}

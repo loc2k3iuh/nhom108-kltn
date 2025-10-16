@@ -2,7 +2,7 @@
 
 import { UserResponse } from "@/types/responses/authResponse";
 import axiosInstance from "../lib/axios";
-import { UpdateUserRequest } from "@/types/requests/authRequest";
+import { ChangePasswordRequest, UpdateUserRequest } from "@/types/requests/authRequest";
 
 export const checkAuthUser = async (): Promise<UserResponse> => {
   const response = await axiosInstance.get("/users/my-information");
@@ -25,4 +25,8 @@ export const updateUser = async (userId: number, data: UpdateUserRequest): Promi
   });
 
   return response.data.result as UserResponse;
+}
+
+export const changePassword = async(data: ChangePasswordRequest): Promise<void> => {
+  await axiosInstance.post("/auth/change-password", data);
 }
