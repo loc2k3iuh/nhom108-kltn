@@ -50,5 +50,5 @@ export const updateUserService = async (userId: number, data: UpdateUserRequest)
 }
 
 export const changePasswordService = async(data: changePasswordRequest): Promise<void> => {
-   await axios.post("/users/change-password", data);
+   await axiosInstance.post("/users/change-password", data);
 }

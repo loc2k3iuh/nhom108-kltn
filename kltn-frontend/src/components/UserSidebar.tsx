@@ -62,13 +62,13 @@ const UserSidebar: React.FC = () => {
                 {isAccountOpen && (
                     <ul className="ml-6 text-gray-700">
                         <li className={`py-1 ${isActive('/user/profile') ? 'text-red-500' : 'hover:text-red-500'} cursor-pointer`}>
-                            <Link to="/user/profile">Hồ sơ cá nhân</Link>
+                            <Link to="/profile">Hồ sơ cá nhân</Link>
                         </li>
                         <li className={`py-1 ${isActive('address') ? 'text-red-500' : 'hover:text-red-500'} cursor-pointer`}>
                             <Link to="/user/addresses">Số địa chỉ</Link>
                         </li>
                         <li className={`py-1 ${isActive('/user/change-password') ? 'text-red-500' : 'hover:text-red-500'} cursor-pointer`}>
-                            <Link to="/user/change-password">Đổi mật khẩu</Link>
+                            <Link to="/change-password">Đổi mật khẩu</Link>
                         </li>
                         {/* <li className="py-1 hover:text-red-500 cursor-pointer">
                             <Link to="/user/invoice">Thông tin xuất hóa đơn GTGT</Link>

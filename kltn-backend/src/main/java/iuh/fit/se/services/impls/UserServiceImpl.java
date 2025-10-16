@@ -179,7 +179,7 @@ public class UserServiceImpl implements IUserService {
     User existingUser = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-    boolean isAuthenticated = passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword());
+    boolean isAuthenticated = passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), existingUser.getPassword());
     if(!isAuthenticated){
         throw  new AppException(ErrorCode.PASSWORD_MUST_MATCH);
     }
