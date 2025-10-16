@@ -23,8 +23,14 @@ public class ProductImage {
 
   Boolean isMain;
 
+  @Column(name = "is_primary")
+  Boolean isPrimary;
+
   @Column(name = "sort_order")
   Integer sortOrder;
+
+  @Column(name = "display_order")
+  Integer displayOrder;
 
   @ManyToOne
   @JoinColumn(name = "product_id")

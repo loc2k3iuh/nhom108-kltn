@@ -1,8 +1,11 @@
 package iuh.fit.se.entities;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -18,13 +21,26 @@ public class CartItem {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
 
+  @Column(nullable = false)
   Long quantity;
 
-  @ManyToOne
-  @JoinColumn(name = "cart_id")
+  @Column(name = "created_date")
+  @CreationTimestamp
+  LocalDateTime createdDate;
+
+  @Column(name = "updated_date")
+  @UpdateTimestamp
+  LocalDateTime updatedDate;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "cart_id", nullable = false)
   Cart cart;
 
-  @ManyToOne
-  @JoinColumn(name = "product_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "product_id", nullable = false)
   Product product;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "product_variant_id")
+  ProductVariant productVariant;
 }

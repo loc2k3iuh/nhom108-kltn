@@ -20,6 +20,9 @@ public class Color {
 
   String name;
 
+  @Column(name = "hex_code")
+  String hexCode;
+
   @Column(columnDefinition = "TEXT")
   String description;
 }

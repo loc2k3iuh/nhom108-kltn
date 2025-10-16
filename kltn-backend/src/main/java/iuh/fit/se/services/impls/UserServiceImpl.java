@@ -1,7 +1,11 @@
 package iuh.fit.se.services.impls;
 
-import iuh.fit.se.dtos.requests.*;
+import iuh.fit.se.dtos.requests.RegisterUserRequest;
+import iuh.fit.se.dtos.requests.ResendTokenRequest;
+import iuh.fit.se.dtos.requests.TokenRequest;
+import iuh.fit.se.dtos.requests.UpdateUserRequest;
 import iuh.fit.se.dtos.responses.UserResponse;
+import iuh.fit.se.entities.ConfirmationToken;
 import iuh.fit.se.entities.Role;
 import iuh.fit.se.entities.User;
 import iuh.fit.se.enums.RoleType;
@@ -36,12 +40,12 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements IUserService {
 
-  IS3Service is3Service;
-  UserMapper userMapper;
-  IEmailService iEmailService;
   UserRepository userRepository;
   RoleRepository roleRepository;
+  IS3Service is3Service;
+  IEmailService iEmailService;
   IConfirmationTokenService iConfirmationTokenService;
+  UserMapper userMapper;
 
   @NonFinal
   @Value("${client.url}")
@@ -68,7 +72,7 @@ public class UserServiceImpl implements IUserService {
       PasswordEncoder encoder = new BCryptPasswordEncoder(10);
       existingUser.setPassword(encoder.encode(request.getPassword()));
 
-      MultipartFile file = request.getFile();
+      MultipartFile file = request.getMultipartFile();
       if (file != null && !file.isEmpty()) {
         String avatarUrl = is3Service.uploadFile(file, existingUser.getUsername());
         existingUser.setAvatarUrl(avatarUrl);
@@ -81,7 +85,9 @@ public class UserServiceImpl implements IUserService {
       iConfirmationTokenService.deleteTokensByUser(existingUser);
 
       userRepository.save(existingUser);
-      iEmailService.sendEmail(existingUser);
+      String token = iConfirmationTokenService.createConfirmationToken(existingUser);
+      String link = clientUrl + "/user/register-success?token=" + token;
+      iEmailService.sendEmail(request.getEmail(), link);
       return true;
     }
 
@@ -109,7 +115,7 @@ public class UserServiceImpl implements IUserService {
             .enabled(false)
             .build();
 
-    MultipartFile file = request.getFile();
+    MultipartFile file = request.getMultipartFile();
     if (file != null && !file.isEmpty()) {
       String avatarUrl = is3Service.uploadFile(file, user.getUsername());
       user.setAvatarUrl(avatarUrl);
@@ -117,27 +123,37 @@ public class UserServiceImpl implements IUserService {
 
     userRepository.save(user);
 
-    iEmailService.sendEmail(user);
-
+    String token = iConfirmationTokenService.createConfirmationToken(user);
+    String link = clientUrl + "/user/register-success?token=" + token;
+    iEmailService.sendEmail(request.getEmail(), link);
     return false;
   }
 
   @Override
-  public void confirmToken(VerifyRegistrationRequest verifyRegistrationRequest) {
-    boolean isValidToken = iEmailService.verifyRegistration(verifyRegistrationRequest);
-    if (!isValidToken) {
-      throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+  public UserResponse confirmToken(TokenRequest tokenRequest) {
+
+    ConfirmationToken confirmationToken =
+        iConfirmationTokenService
+            .getToken(tokenRequest.getToken())
+            .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOT_FOUND));
+
+    if (confirmationToken.getConfirmedAt() != null) {
+      throw new AppException(ErrorCode.TOKEN_CONFIRMED);
     }
 
-    User existingUser =
-        userRepository
-            .findByEmail(verifyRegistrationRequest.getEmail())
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    if (confirmationToken.getExpiresAt().before(new Date())) {
+      throw new AppException(ErrorCode.TOKEN_EXPIRED);
+    }
 
-    existingUser.setEnabled(true);
-    existingUser.setIsActive(true);
+    confirmationToken.setConfirmedAt(new Date());
+    iConfirmationTokenService.saveToken(confirmationToken);
 
-    userRepository.save(existingUser);
+    User user = confirmationToken.getUser();
+
+    user.setEnabled(true);
+    user.setIsActive(true);
+    userRepository.save(user);
+    return userMapper.toUserResponse(user);
   }
 
   @Override
@@ -156,6 +172,7 @@ public class UserServiceImpl implements IUserService {
     String token = iConfirmationTokenService.createConfirmationToken(existUser);
 
     String link = clientUrl + "/user/register-success?token=" + token;
+    iEmailService.sendEmail(resendTokenRequest.getEmail(), link);
   }
 
   @Override

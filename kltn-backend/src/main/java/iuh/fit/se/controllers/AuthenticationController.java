@@ -31,16 +31,16 @@ public class AuthenticationController {
 
   IAuthenticationService iAuthenticationService;
 
-  @PostMapping("/admin/login")
-  public APIResponse<PreLoginResponse> loginAdmin(@Valid @RequestBody LoginRequest loginRequest)
+  @PostMapping("/login")
+  public APIResponse<PreLoginResponse> login(@Valid @RequestBody LoginRequest loginRequest)
       throws JOSEException, MessagingException {
     return APIResponse.<PreLoginResponse>builder()
-        .result(iAuthenticationService.authenticateAdmin(loginRequest))
+        .result(iAuthenticationService.authenticate(loginRequest))
         .message("We sent an OTP CODE to your email !")
         .build();
   }
 
-  @PostMapping("/admin/verify-otp")
+  @PostMapping("/verify-otp")
   public APIResponse<LoginResponse> verifyToken(
       @RequestParam("isChecked") boolean isChecked,
       @Valid @RequestBody VerifyOtpRequest verifyOtpRequest,
@@ -52,21 +52,7 @@ public class AuthenticationController {
         .build();
   }
 
-  @PostMapping("/login")
-  public APIResponse<LoginResponse> loginClient(
-      @RequestParam boolean isRemembered,
-      @Valid @RequestBody LoginRequest loginRequest,
-      HttpServletResponse httpServletResponse)
-      throws JOSEException {
-    return APIResponse.<LoginResponse>builder()
-        .message("Login successfully !")
-        .result(
-            iAuthenticationService.authenticateClient(
-                loginRequest, isRemembered, httpServletResponse))
-        .build();
-  }
-
-  @PostMapping("/admin/resend-otp")
+  @PostMapping("/resend-otp")
   public APIResponse<Void> resendOtp(@Valid @RequestBody ResenOtpRequest resenOtpRequest)
       throws MessagingException {
     iAuthenticationService.resendOtp(resenOtpRequest);

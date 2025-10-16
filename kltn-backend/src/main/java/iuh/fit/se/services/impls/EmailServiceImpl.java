@@ -2,7 +2,6 @@ package iuh.fit.se.services.impls;
 
 import iuh.fit.se.dtos.requests.ResenOtpRequest;
 import iuh.fit.se.dtos.requests.VerifyOtpRequest;
-import iuh.fit.se.dtos.requests.VerifyRegistrationRequest;
 import iuh.fit.se.entities.User;
 import iuh.fit.se.exceptions.AppException;
 import iuh.fit.se.exceptions.ErrorCode;
@@ -24,6 +23,7 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,7 @@ public class EmailServiceImpl implements IEmailService {
   @Value("${vite.frontend.client.url}")
   String FRONTEND_CLIENT_URL;
 
-  private String generateToken() {
+  private String generateResetToken() {
     SecureRandom secureRandom = new SecureRandom();
     Base64.Encoder baEncoder = Base64.getUrlEncoder().withoutPadding();
     byte[] randomBytes = new byte[32];
@@ -73,42 +73,18 @@ public class EmailServiceImpl implements IEmailService {
   }
 
   @Override
-  public void sendEmail(User user) throws MessagingException {
-    String key = "verify:email=" + user.getEmail();
-    Long ttl = stringRedisTemplate.getExpire(key, TimeUnit.SECONDS);
-    if (ttl != null && ttl > 0) {
-      long minutes = ttl / 60;
-      long seconds = ttl % 60;
-      throw new AppException(
-          ErrorCode.TOKEN_NOT_EXPIRED,
-          String.format(
-              "You only send mail after %d minutes %d seconds or check your mail !",
-              minutes, seconds));
-    }
-
-    String token = generateToken();
-
-    stringRedisTemplate.opsForValue().set(key, token, Duration.ofMinutes(15));
-
-    Map<String, Object> variables =
-        Map.of(
-            "username",
-            user.getUsername(),
-            "verificationLink",
-            FRONTEND_CLIENT_URL
-                + "/register-success"
-                + "?email="
-                + user.getEmail()
-                + "&token="
-                + token);
-
-    sendWithHtmlMailFormat(user.getEmail(), "Verify Account", "register-mail", variables);
+  public void sendEmail(String to, String link) {
+    SimpleMailMessage mailMessage = new SimpleMailMessage();
+    mailMessage.setTo(to);
+    mailMessage.setSubject("PLease confirm your email");
+    mailMessage.setText("Click on the following link to reset your password: " + link);
+    mailSender.send(mailMessage);
   }
 
   @Override
   public void sentOtp(User user) throws MessagingException {
     String otp = String.format("%06d", random.nextInt(1_000_000));
-    stringRedisTemplate.opsForValue().set("otp:email=" + user.getEmail(), otp, Duration.ofMinutes(5));
+    stringRedisTemplate.opsForValue().set("OTP: " + user.getEmail(), otp, Duration.ofMinutes(5));
     Map<String, Object> variables = Map.of("username", user.getUsername(), "otp", otp);
     sendWithHtmlMailFormat(user.getEmail(), "Your Otp Code", "otp-mail", variables);
   }
@@ -148,7 +124,7 @@ public class EmailServiceImpl implements IEmailService {
             .findByEmail(email)
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    String key = "reset:token:userId=" + user.getId();
+    String key = "reset-token: " + user.getId();
 
     Long ttl = stringRedisTemplate.getExpire(key, TimeUnit.SECONDS);
     if (ttl != null && ttl > 0) {
@@ -158,7 +134,7 @@ public class EmailServiceImpl implements IEmailService {
           ErrorCode.TOKEN_NOT_EXPIRED,
           String.format("You only send mail after %d minutes %d seconds.", minutes, seconds));
     }
-    String token = generateToken();
+    String token = generateResetToken();
 
     stringRedisTemplate.opsForValue().set(key, token, Duration.ofMinutes(15));
 
@@ -180,21 +156,11 @@ public class EmailServiceImpl implements IEmailService {
 
   @Override
   public boolean verifyOtp(VerifyOtpRequest verifyOtpRequest) {
-    String key = "otp:email=" + verifyOtpRequest.getEmail();
-    return verifyToken(key, verifyOtpRequest.getOptToken());
-  }
-
-  @Override
-  public boolean verifyRegistration(VerifyRegistrationRequest verifyRegistrationRequest) {
-    String key = "verify:email=" + verifyRegistrationRequest.getEmail();
-    return verifyToken(key, verifyRegistrationRequest.getToken());
-  }
-
-  private boolean verifyToken(String key, String token) {
+    String key = "OTP: " + verifyOtpRequest.getEmail();
     return Optional.ofNullable(stringRedisTemplate.opsForValue().get(key))
-        .filter(cachedToken -> cachedToken.equals(token))
+        .filter(cachedOtp -> cachedOtp.equals(verifyOtpRequest.getOptToken()))
         .map(
-            validToken -> {
+            validOtp -> {
               stringRedisTemplate.delete(key);
               return true;
             })

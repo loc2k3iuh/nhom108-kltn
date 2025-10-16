@@ -22,4 +22,8 @@ public class Role {
   String description;
 
   @ManyToMany Set<Permission> permissions;
+
+  public Role(RoleType name) {
+    this.name = name;
+  }
 }
