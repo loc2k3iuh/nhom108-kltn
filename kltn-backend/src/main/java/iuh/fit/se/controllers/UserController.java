@@ -3,6 +3,7 @@ package iuh.fit.se.controllers;
 import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.*;
 import iuh.fit.se.dtos.responses.UserListResponse;
+
 import iuh.fit.se.dtos.responses.UserResponse;
 import iuh.fit.se.services.interfaces.IUserService;
 import jakarta.validation.Valid;
@@ -44,10 +45,11 @@ public class UserController {
   }
 
   @PostMapping("/confirm_user")
-  public APIResponse<Void> confirmUser(
-      @Valid @RequestBody VerifyRegistrationRequest verifyRegistrationRequest) {
-    iUserService.confirmToken(verifyRegistrationRequest);
-    return APIResponse.<Void>builder().message("Your account has been confirmed !").build();
+  public APIResponse<UserResponse> confirmUser(@Valid @RequestBody TokenRequest tokenRequest) {
+    return APIResponse.<UserResponse>builder()
+        .result(iUserService.confirmToken(tokenRequest))
+        .message("Your account has been confirmed !")
+        .build();
   }
 
   @GetMapping("/my-information")

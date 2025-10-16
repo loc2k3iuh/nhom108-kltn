@@ -4,6 +4,10 @@ import iuh.fit.se.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -37,4 +41,12 @@ public class Product {
   @ManyToOne
   @JoinColumn(name = "brand_id")
   Brand brand;
+
+  @CreationTimestamp
+  @Column(name = "created_at", updatable = false)
+  LocalDateTime createdAt;
+
+  @UpdateTimestamp
+  @Column(name = "updated_at")
+  LocalDateTime updatedAt;
 }

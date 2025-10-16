@@ -7,12 +7,12 @@ import {
   removeToken,
 } from "@/services/useTokenService";
 import {
-  getUserDetailFromToken,
-  updateUserService,
+
 } from "@/services/useUserService";
 import { LogoutRequest } from "@/types/requests/authRequest";
 import { UpdateUserRequest } from "@/types/requests/useRequest";
-import { UserResponse } from "@/types/responses/userResponse";
+import { UserResponse } from "@/types/responses/authResponse";
+
 import { data } from "react-router-dom";
 import { create } from "zustand";
 

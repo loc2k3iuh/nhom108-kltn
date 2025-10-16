@@ -1,0 +1,1703 @@
+<!DOCTYPE html><html><head>
+      <title>Instrument_Service_Documentation_ERD_DB</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:///c:\Users\Da Nguym\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.19\crossnote\dependencies\katex\katex.min.css">
+      
+      
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <!-- The content below will be included at the end of the <head> element. --><script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script></head><body for="html-export">
+    
+    
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="erd-and-schema-for-instrument-service">ERD and Schema for Instrument Service </h1>
+<p><img src="image.png" alt="alt text"></p>
+<h2 id="-mục-lục">📋 Mục Lục </h2>
+<ol>
+<li><a href="#1-t%E1%BB%95ng-quan">Tổng quan</a></li>
+<li><a href="#2-core-entities-collection-1-3">Core Entities (Collection 1-3)</a>
+<ul>
+<li>2.1 <a href="#21-collection-1-instrument_model">Collection 1: Instrument_Model</a></li>
+<li>2.2 <a href="#22-collection-2-instrument">Collection 2: Instrument</a></li>
+<li>2.3 <a href="#23-collection-3-instrument_mode_change_log">Collection 3: Instrument_Mode_Change_Log</a></li>
+</ul>
+</li>
+<li><a href="#3-test-results-management-collection-4-7">Test Results Management (Collection 4-7)</a>
+<ul>
+<li>3.1 <a href="#31-collection-4-raw_test_result">Collection 4: Raw_Test_Result</a></li>
+<li>3.2 <a href="#32-collection-5-hl7_publish_log">Collection 5: HL7_Publish_Log</a></li>
+<li>3.3 <a href="#33-collection-6-raw_result_deletion_log">Collection 6: Raw_Result_Deletion_Log</a></li>
+<li>3.4 <a href="#34-collection-7-auto_test_order_creation">Collection 7: Auto_Test_Order_Creation</a></li>
+</ul>
+</li>
+<li><a href="#4-reagents-management-collection-8-10">Reagents Management (Collection 8-10)</a>
+<ul>
+<li>4.1 <a href="#41-collection-8-reagent">Collection 8: Reagent</a></li>
+<li>4.2 <a href="#42-collection-9-instrument_reagent">Collection 9: Instrument_Reagent</a></li>
+<li>4.3 <a href="#43-collection-10-reagent_activity_log">Collection 10: Reagent_Activity_Log</a></li>
+</ul>
+</li>
+<li><a href="#5-configuration-management-collection-11-12">Configuration Management (Collection 11-12)</a>
+<ul>
+<li>5.1 <a href="#51-collection-11-configuration_profile">Collection 11: Configuration_Profile</a></li>
+<li>5.2 <a href="#52-collection-12-configuration_sync_log">Collection 12: Configuration_Sync_Log</a></li>
+</ul>
+</li>
+<li><a href="#6-relationships--business-rules">Relationships &amp; Business Rules</a></li>
+</ol>
+<hr>
+<h2 id="1-tổng-quan">1. Tổng quan </h2>
+<p>Sơ đồ ERD (Entity Relationship Diagram) này mô tả cấu trúc cơ sở dữ liệu MongoDB cho <strong>Instrument Service</strong> - một thành phần quan trọng trong hệ thống Quản lý Phòng thí nghiệm (Laboratory Management System). Dịch vụ này quản lý toàn bộ quy trình xét nghiệm thiết bị, thuốc thử và cấu hình cho các thiết bị phân tích huyết học.</p>
+<h3 id="️-cấu-trúc-module-theo-erd---tổng-quan-chi-tiết">🏗️ Cấu trúc Module theo ERD - Tổng quan Chi tiết </h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Collections</th>
+<th>Count</th>
+<th>Mô tả chi tiết</th>
+<th>Lý do nhóm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Core Entities<br>(Collection 1-3)</strong></td>
+<td>• <strong>Instrument_Model</strong>: Định nghĩa các loại thiết bị<br>• <strong>Instrument</strong>: Thông tin thiết bị cụ thể<br>• <strong>Instrument_Mode_Change_Log</strong>: Audit log thay đổi mode</td>
+<td><strong>3</strong></td>
+<td><strong>Quản lý thiết bị vật lý và audit trail</strong><br>- Master data các model thiết bị<br>- Thông tin runtime của từng thiết bị<br>- Truy vết mọi thay đổi trạng thái</td>
+<td>Entities cốt lõi về <strong>thiết bị vật lý</strong> và audit trail của chúng</td>
+</tr>
+<tr>
+<td><strong>2. Test Results Management<br>(Collection 4-7)</strong></td>
+<td>• <strong>Raw_Test_Result</strong>: Kết quả xét nghiệm thô<br>• <strong>HL7_Publish_Log</strong>: Log việc publish kết quả<br>• <strong>Raw_Result_Deletion_Log</strong>: Audit việc xóa kết quả<br>• <strong>Auto_Test_Order_Creation</strong>: Tự động tạo test order</td>
+<td><strong>4</strong></td>
+<td><strong>Toàn bộ lifecycle kết quả xét nghiệm</strong><br>- Lưu trữ kết quả thô từ thiết bị<br>- Theo dõi việc publish sang services khác<br>- Audit việc xóa data (compliance)<br>- Tự động tạo order khi thiếu</td>
+<td>Tất cả liên quan đến <strong>lifecycle của kết quả xét nghiệm</strong> - từ tạo, publish, đến xóa và auto-creation</td>
+</tr>
+<tr>
+<td><strong>3. Reagents Management<br>(Collection 8-10)</strong></td>
+<td>• <strong>Reagent</strong>: Thông tin thuốc thử<br>• <strong>Instrument_Reagent</strong>: Gán thuốc thử cho thiết bị<br>• <strong>Reagent_Activity_Log</strong>: Audit hoạt động thuốc thử</td>
+<td><strong>3</strong></td>
+<td><strong>Quản lý toàn bộ lifecycle thuốc thử</strong><br>- Inventory và thông tin thuốc thử<br>- Assignment thuốc thử cho từng thiết bị<br>- Tracking usage và các hoạt động</td>
+<td>Quản lý toàn bộ <strong>lifecycle thuốc thử</strong> - từ inventory, assignment đến usage tracking</td>
+</tr>
+<tr>
+<td><strong>4. Configuration Management<br>(Collection 11-12)</strong></td>
+<td>• <strong>Configuration_Profile</strong>: Các profile cấu hình<br>• <strong>Configuration_Sync_Log</strong>: Log việc sync cấu hình</td>
+<td><strong>2</strong></td>
+<td><strong>Cấu hình hệ thống và audit đồng bộ</strong><br>- Templates cấu hình cho các loại thiết bị<br>- Theo dõi việc apply cấu hình<br>- Rollback và error handling</td>
+<td>Quản lý <strong>cấu hình hệ thống</strong> và audit trail của việc áp dụng cấu hình</td>
+</tr>
+<tr>
+<td><strong>🎯 Total</strong></td>
+<td><strong>Complete Laboratory Workflow</strong></td>
+<td><strong>12</strong></td>
+<td><strong>End-to-end Laboratory Management</strong><br>Covering: Device → Results → Reagents → Configuration</td>
+<td><strong>Kiến trúc Microservices</strong> - mỗi module độc lập nhưng có integration points</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-kiến-trúc-microservices">🎯 Kiến trúc Microservices </h3>
+<p>Cách phân chia này <strong>tuân thủ kiến trúc microservices</strong> - mỗi service chỉ quản lý domain của mình:</p>
+<ul>
+<li><strong>Test_Order được quản lý bởi Test Order Service</strong> (không store trong Instrument Service)</li>
+<li><strong>Instrument Service</strong> chỉ reference Test_Order_ID và tự động tạo order khi cần thiết</li>
+<li><strong>Clear separation of concerns</strong> cho từng functional domain</li>
+</ul>
+<hr>
+<h2 id="2-core-entities-collection-1-3">2. Core Entities (Collection 1-3) </h2>
+<h3 id="21--collection-1-instrument_model-collection-instrument_models">2.1 📋 Collection 1: Instrument_Model (Collection: <code>instrument_models</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Định nghĩa các loại model thiết bị và thông số kỹ thuật chuẩn cho từng model.</p>
+<h4 id="schema-definition">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Validation Rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Model_ID</strong></td>
+<td>String (PK)</td>
+<td>ID model thiết bị</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Model_Name</td>
+<td>String</td>
+<td>Tên model</td>
+<td>Required, Max 100 chars</td>
+</tr>
+<tr>
+<td>Manufacturer</td>
+<td>String</td>
+<td>Nhà sản xuất</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Model_Version</td>
+<td>String</td>
+<td>Phiên bản model</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Supported_Test_Types</td>
+<td>Array[String]</td>
+<td>Loại xét nghiệm hỗ trợ</td>
+<td>Required, Min 1 item</td>
+</tr>
+<tr>
+<td>Technical_Specifications</td>
+<td>Object</td>
+<td>Thông số kỹ thuật</td>
+<td>JSON format</td>
+</tr>
+<tr>
+<td>Default_Configuration</td>
+<td>Object</td>
+<td>Cấu hình mặc định</td>
+<td>JSON format</td>
+</tr>
+<tr>
+<td>Created_Date</td>
+<td>DateTime</td>
+<td>Ngày tạo</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Updated_Date</td>
+<td>DateTime</td>
+<td>Ngày cập nhật</td>
+<td>Auto-updated</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef012345"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Model_ID"</span><span class="token operator">:</span> <span class="token string">"MDL_XN1000_SYSMEX_V1"</span><span class="token punctuation">,</span>
+  <span class="token property">"Model_Name"</span><span class="token operator">:</span> <span class="token string">"XN-1000 Hematology Analyzer"</span><span class="token punctuation">,</span>
+  <span class="token property">"Manufacturer"</span><span class="token operator">:</span> <span class="token string">"Sysmex Corporation"</span><span class="token punctuation">,</span>
+  <span class="token property">"Model_Version"</span><span class="token operator">:</span> <span class="token string">"v2.1.0"</span><span class="token punctuation">,</span>
+  <span class="token property">"Supported_Test_Types"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token string">"CBC"</span><span class="token punctuation">,</span> <span class="token string">"CBC+Diff"</span><span class="token punctuation">,</span> <span class="token string">"Reticulocyte"</span><span class="token punctuation">,</span> <span class="token string">"Body Fluid"</span><span class="token punctuation">,</span> <span class="token string">"PLT-F"</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"Technical_Specifications"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"throughput"</span><span class="token operator">:</span> <span class="token string">"100 samples/hour"</span><span class="token punctuation">,</span>
+    <span class="token property">"sample_volume"</span><span class="token operator">:</span> <span class="token string">"88μL whole blood"</span><span class="token punctuation">,</span>
+    <span class="token property">"measurement_parameters"</span><span class="token operator">:</span> <span class="token number">29</span><span class="token punctuation">,</span>
+    <span class="token property">"measurement_methods"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"Flow Cytometry"</span><span class="token punctuation">,</span> <span class="token string">"Hydrodynamic Focusing"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token property">"barcode_capability"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"connectivity"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"LIS"</span><span class="token punctuation">,</span> <span class="token string">"Middleware"</span><span class="token punctuation">,</span> <span class="token string">"HL7"</span><span class="token punctuation">]</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Default_Configuration"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"auto_sample_prep"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"auto_dilution"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"qc_frequency"</span><span class="token operator">:</span> <span class="token string">"daily"</span><span class="token punctuation">,</span>
+    <span class="token property">"maintenance_interval"</span><span class="token operator">:</span> <span class="token string">"monthly"</span><span class="token punctuation">,</span>
+    <span class="token property">"calibration_validity"</span><span class="token operator">:</span> <span class="token number">30</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Performance_Specs"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"precision_cv"</span><span class="token operator">:</span> <span class="token string">"&lt;2%"</span><span class="token punctuation">,</span>
+    <span class="token property">"linearity"</span><span class="token operator">:</span> <span class="token string">"0.5-80 x10³/μL (WBC)"</span><span class="token punctuation">,</span>
+    <span class="token property">"carryover"</span><span class="token operator">:</span> <span class="token string">"&lt;0.5%"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Created_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-01-15T00:00:00.000Z"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Updated_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T10:30:00.000Z"</span>)
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-instrument_model">🔧 Business Rules cho Instrument_Model </h4>
+<ul>
+<li><strong>Master Data</strong>: Không được xóa khi có instruments đang sử dụng</li>
+<li><strong>Version Control</strong>: Model_Version phải theo semantic versioning</li>
+<li><strong>Test Types</strong>: Supported_Test_Types không được empty</li>
+<li><strong>Specifications</strong>: Technical_Specifications phải có đầy đủ thông tin cần thiết</li>
+<li><strong>ID Format</strong>: <code>MDL_{ModelName}_{Manufacturer}_{Version}</code></li>
+</ul>
+<h3 id="22--collection-2-instrument-collection-instruments">2.2 🔬 Collection 2: Instrument (Collection: <code>instruments</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Quản lý thông tin thiết bị cụ thể và trạng thái runtime.</p>
+<h4 id="schema-definition-1">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Runtime Info</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Instrument_ID</strong></td>
+<td>String (PK)</td>
+<td>ID thiết bị duy nhất</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Model_ID</strong></td>
+<td>String (FK)</td>
+<td>Model thiết bị</td>
+<td>References Instrument_Model</td>
+</tr>
+<tr>
+<td>Serial_Number</td>
+<td>String</td>
+<td>Số serial</td>
+<td>Required, Unique</td>
+</tr>
+<tr>
+<td>Installation_Date</td>
+<td>DateTime</td>
+<td>Ngày lắp đặt</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Current_Mode</td>
+<td>Enum</td>
+<td>Mode hiện tại</td>
+<td>[Ready, Maintenance, Inactive]</td>
+</tr>
+<tr>
+<td>Last_Mode_Change_TS</td>
+<td>DateTime</td>
+<td>Thời điểm thay đổi mode cuối</td>
+<td>Auto-updated</td>
+</tr>
+<tr>
+<td>Location</td>
+<td>String</td>
+<td>Vị trí đặt thiết bị</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Maintenance_Schedule</td>
+<td>Object</td>
+<td>Lịch bảo trì</td>
+<td>JSON format</td>
+</tr>
+<tr>
+<td>QC_Status</td>
+<td>Enum</td>
+<td>Trạng thái QC</td>
+<td>[Passed, Failed, Pending, NotRequired]</td>
+</tr>
+<tr>
+<td>Is_Active</td>
+<td>Boolean</td>
+<td>Đang hoạt động</td>
+<td>Default: true</td>
+</tr>
+<tr>
+<td>Memory_Usage_Percent</td>
+<td>Number</td>
+<td>% sử dụng memory</td>
+<td>0-100</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Enum</td>
+<td>Trạng thái</td>
+<td>[Available, Busy, Error]</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-1">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef012346"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Instrument_ID"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Model_ID"</span><span class="token operator">:</span> <span class="token string">"MDL_XN1000_SYSMEX_V1"</span><span class="token punctuation">,</span>
+  <span class="token property">"Device_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"serial_number"</span><span class="token operator">:</span> <span class="token string">"XN1000-2024-001"</span><span class="token punctuation">,</span>
+    <span class="token property">"installation_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-03-15T00:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"location"</span><span class="token operator">:</span> <span class="token string">"Hematology Lab - Station 1"</span><span class="token punctuation">,</span>
+    <span class="token property">"asset_number"</span><span class="token operator">:</span> <span class="token string">"ASSET_2024_001"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Current_Status"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"current_mode"</span><span class="token operator">:</span> <span class="token string">"Ready"</span><span class="token punctuation">,</span>
+    <span class="token property">"last_mode_change_ts"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"status"</span><span class="token operator">:</span> <span class="token string">"Available"</span><span class="token punctuation">,</span>
+    <span class="token property">"is_active"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Quality_Control"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"qc_status"</span><span class="token operator">:</span> <span class="token string">"Passed"</span><span class="token punctuation">,</span>
+    <span class="token property">"last_qc_run"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T07:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"qc_due_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-08T07:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"qc_results"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token property">"wbc_cv"</span><span class="token operator">:</span> <span class="token number">1.2</span><span class="token punctuation">,</span>
+      <span class="token property">"rbc_cv"</span><span class="token operator">:</span> <span class="token number">0.8</span><span class="token punctuation">,</span>
+      <span class="token property">"plt_cv"</span><span class="token operator">:</span> <span class="token number">2.1</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Maintenance_Schedule"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"daily_maintenance"</span><span class="token operator">:</span> <span class="token string">"07:00"</span><span class="token punctuation">,</span>
+    <span class="token property">"weekly_maintenance"</span><span class="token operator">:</span> <span class="token string">"Sunday 18:00"</span><span class="token punctuation">,</span>
+    <span class="token property">"monthly_maintenance"</span><span class="token operator">:</span> <span class="token string">"First Sunday 09:00"</span><span class="token punctuation">,</span>
+    <span class="token property">"last_maintenance"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-06T18:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"next_maintenance"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-13T18:00:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Performance_Metrics"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"memory_usage_percent"</span><span class="token operator">:</span> <span class="token number">45</span><span class="token punctuation">,</span>
+    <span class="token property">"daily_throughput"</span><span class="token operator">:</span> <span class="token number">856</span><span class="token punctuation">,</span>
+    <span class="token property">"error_rate"</span><span class="token operator">:</span> <span class="token number">0.2</span><span class="token punctuation">,</span>
+    <span class="token property">"uptime_percent"</span><span class="token operator">:</span> <span class="token number">99.8</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Created_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-03-15T10:00:00.000Z"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Updated_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:30:00.000Z"</span>)
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-instrument">🔧 Business Rules cho Instrument </h4>
+<ul>
+<li><strong>Unique Serial</strong>: Serial_Number phải unique trong hệ thống</li>
+<li><strong>Mode Transition</strong>: Chỉ cho phép Ready↔Maintenance↔Inactive</li>
+<li><strong>QC Validation</strong>: Không thể chuyển sang Ready nếu QC_Status = Failed</li>
+<li><strong>Memory Threshold</strong>: Cảnh báo khi Memory_Usage_Percent &gt; 80%</li>
+<li><strong>ID Format</strong>: <code>INS_{Location}_{ModelName}_{Number}</code></li>
+</ul>
+<h3 id="23--collection-3-instrument_mode_change_log-collection-mode_change_logs">2.3 🔄 Collection 3: Instrument_Mode_Change_Log (Collection: <code>mode_change_logs</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Theo dõi tất cả thay đổi mode của thiết bị cho audit và troubleshooting.</p>
+<h4 id="schema-definition-2">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Audit Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Log_ID</strong></td>
+<td>String (PK)</td>
+<td>ID log thay đổi mode</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Instrument_ID</strong></td>
+<td>String (FK)</td>
+<td>Thiết bị thay đổi</td>
+<td>References Instrument</td>
+</tr>
+<tr>
+<td>Timestamp</td>
+<td>DateTime</td>
+<td>Thời điểm thay đổi</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>User_Performed</td>
+<td>String</td>
+<td>Người thực hiện</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Previous_Mode</td>
+<td>Enum</td>
+<td>Mode trước</td>
+<td>[Ready, Maintenance, Inactive]</td>
+</tr>
+<tr>
+<td>New_Mode</td>
+<td>Enum</td>
+<td>Mode mới</td>
+<td>[Ready, Maintenance, Inactive]</td>
+</tr>
+<tr>
+<td>Reason_Provided</td>
+<td>String</td>
+<td>Lý do thay đổi</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>QC_Confirmation</td>
+<td>Boolean</td>
+<td>Xác nhận QC</td>
+<td>Required for Ready mode</td>
+</tr>
+<tr>
+<td>Approved_By</td>
+<td>String</td>
+<td>Người phê duyệt</td>
+<td>Required</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-2">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef012347"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Log_ID"</span><span class="token operator">:</span> <span class="token string">"MODE_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Instrument_ID"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Mode_Change_Details"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:30:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"user_performed"</span><span class="token operator">:</span> <span class="token string">"TECH_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"previous_mode"</span><span class="token operator">:</span> <span class="token string">"Maintenance"</span><span class="token punctuation">,</span>
+    <span class="token property">"new_mode"</span><span class="token operator">:</span> <span class="token string">"Ready"</span><span class="token punctuation">,</span>
+    <span class="token property">"reason_provided"</span><span class="token operator">:</span> <span class="token string">"Completed scheduled maintenance and QC validation"</span><span class="token punctuation">,</span>
+    <span class="token property">"qc_confirmation"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"approved_by"</span><span class="token operator">:</span> <span class="token string">"SUPERVISOR_001"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Pre_Change_Validation"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"qc_status"</span><span class="token operator">:</span> <span class="token string">"Passed"</span><span class="token punctuation">,</span>
+    <span class="token property">"reagent_levels"</span><span class="token operator">:</span> <span class="token string">"Sufficient"</span><span class="token punctuation">,</span> 
+    <span class="token property">"maintenance_completed"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"calibration_current"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"system_errors"</span><span class="token operator">:</span> <span class="token string">"None"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Post_Change_Status"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"mode_set_successfully"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"system_ready"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"first_test_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:45:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"performance_normal"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Approval_Chain"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"requested_by"</span><span class="token operator">:</span> <span class="token string">"TECH_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"approved_by"</span><span class="token operator">:</span> <span class="token string">"SUPERVISOR_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"approval_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:25:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"approval_comments"</span><span class="token operator">:</span> <span class="token string">"QC passed, maintenance complete"</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-instrument_mode_change_log">🔧 Business Rules cho Instrument_Mode_Change_Log </h4>
+<ul>
+<li><strong>Immutable</strong>: Audit logs không được sửa đổi sau khi tạo</li>
+<li><strong>QC Requirement</strong>: Chuyển sang Ready bắt buộc QC_Confirmation = true</li>
+<li><strong>Approval Chain</strong>: Mọi thay đổi mode đều phải có approval</li>
+<li><strong>Automatic Logging</strong>: Tự động tạo log cho mọi mode change</li>
+<li><strong>ID Format</strong>: <code>MODE_{YYYYMMDD}_{SequenceNumber}</code></li>
+</ul>
+<hr>
+<h2 id="3-test-results-management-collection-4-7">3. Test Results Management (Collection 4-7) </h2>
+<h3 id="31--collection-4-raw_test_result-collection-raw_test_results">3.1 📊 Collection 4: Raw_Test_Result (Collection: <code>raw_test_results</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Lưu trữ kết quả xét nghiệm thô từ thiết bị và quản lý lifecycle của chúng.</p>
+<h4 id="schema-definition-3">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Data Management</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Result_ID</strong></td>
+<td>String (PK)</td>
+<td>ID kết quả duy nhất</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Instrument_ID</strong></td>
+<td>String (FK)</td>
+<td>Thiết bị tạo kết quả</td>
+<td>References Instrument</td>
+</tr>
+<tr>
+<td>Test_Order_ID</td>
+<td>String</td>
+<td>ID lệnh xét nghiệm</td>
+<td>May be auto-generated</td>
+</tr>
+<tr>
+<td>Sample_Barcode</td>
+<td>String</td>
+<td>Mã vạch mẫu</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Raw_HL7_Message</td>
+<td>String</td>
+<td>Message HL7 thô</td>
+<td>Required, Large text</td>
+</tr>
+<tr>
+<td>Analysis_Start_TS</td>
+<td>DateTime</td>
+<td>Thời điểm bắt đầu phân tích</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Analysis_Completion_TS</td>
+<td>DateTime</td>
+<td>Thời điểm hoàn thành</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Result_Status</td>
+<td>Enum</td>
+<td>Trạng thái kết quả</td>
+<td>[Completed, Processing, Failed, Pending]</td>
+</tr>
+<tr>
+<td>Quality_Flags</td>
+<td>Array[String]</td>
+<td>Các flag chất lượng</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td>Publish_Status</td>
+<td>Enum</td>
+<td>Trạng thái publish</td>
+<td>[Sent, Failed, Pending]</td>
+</tr>
+<tr>
+<td>Is_Backup_Stored</td>
+<td>Boolean</td>
+<td>Đã backup</td>
+<td>Default: false</td>
+</tr>
+<tr>
+<td>Memory_Size_KB</td>
+<td>Number</td>
+<td>Kích thước data</td>
+<td>For cleanup</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-3">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef012348"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Result_ID"</span><span class="token operator">:</span> <span class="token string">"RST_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Instrument_ID"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Test_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"test_order_id"</span><span class="token operator">:</span> <span class="token string">"ORD_2024_1007_0001"</span><span class="token punctuation">,</span>
+    <span class="token property">"sample_barcode"</span><span class="token operator">:</span> <span class="token string">"SMP20241007001"</span><span class="token punctuation">,</span>
+    <span class="token property">"test_type"</span><span class="token operator">:</span> <span class="token string">"CBC+Diff"</span><span class="token punctuation">,</span>
+    <span class="token property">"operator_id"</span><span class="token operator">:</span> <span class="token string">"TECH_001"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Timing_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"analysis_start_ts"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T09:15:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"analysis_completion_ts"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T09:18:30.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"processing_time_seconds"</span><span class="token operator">:</span> <span class="token number">210</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Raw_HL7_Message"</span><span class="token operator">:</span> <span class="token string">"MSH|^~\\&amp;|XN1000|LAB1|LIS|HOSPITAL|20241007091830||ORU^R01|MSG001|P|2.5\nPID|1||PAT001||Nguyen^Van^A||19900101|M\nOBR|1||ORD_2024_1007_0001|CBC+Diff||20241007091500\nOBX|1|NM|WBC|5.8|10*3/uL|4.0-10.0|N|||F\nOBX|2|NM|RBC|4.2|10*6/uL|4.0-5.2|N|||F"</span><span class="token punctuation">,</span>
+  <span class="token property">"Result_Status"</span><span class="token operator">:</span> <span class="token string">"Completed"</span><span class="token punctuation">,</span>
+  <span class="token property">"Quality_Control"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"quality_flags"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"Normal"</span><span class="token punctuation">,</span> <span class="token string">"No Interference"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token property">"qc_level"</span><span class="token operator">:</span> <span class="token string">"Level_2"</span><span class="token punctuation">,</span>
+    <span class="token property">"sample_quality"</span><span class="token operator">:</span> <span class="token string">"Good"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Publishing_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"publish_status"</span><span class="token operator">:</span> <span class="token string">"Sent"</span><span class="token punctuation">,</span>
+    <span class="token property">"publish_attempts"</span><span class="token operator">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+    <span class="token property">"last_publish_ts"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T09:19:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"target_services"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"TestOrderService"</span><span class="token punctuation">,</span> <span class="token string">"MonitoringService"</span><span class="token punctuation">]</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Storage_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"is_backup_stored"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"backup_location"</span><span class="token operator">:</span> <span class="token string">"MonitoringService_Backup_DB"</span><span class="token punctuation">,</span>
+    <span class="token property">"memory_size_kb"</span><span class="token operator">:</span> <span class="token number">12.5</span><span class="token punctuation">,</span>
+    <span class="token property">"retention_until"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-14T09:18:30.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Created_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T09:18:30.000Z"</span>)
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-raw_test_result">🔧 Business Rules cho Raw_Test_Result </h4>
+<ul>
+<li><strong>Data Integrity</strong>: Raw_HL7_Message không được modify sau khi tạo</li>
+<li><strong>Retention Policy</strong>: Xóa sau 7 ngày nếu đã backup và publish thành công</li>
+<li><strong>Quality Flags</strong>: Tự động validate và gắn quality flags</li>
+<li><strong>Publish Requirement</strong>: Phải publish thành công trước khi cleanup</li>
+<li><strong>ID Format</strong>: <code>RST_{YYYYMMDD}_{SequenceNumber}</code></li>
+</ul>
+<h3 id="32--collection-5-hl7_publish_log-collection-hl7_publish_logs">3.2 📤 Collection 5: HL7_Publish_Log (Collection: <code>hl7_publish_logs</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Theo dõi việc publish kết quả HL7 tới các service khác và retry mechanism.</p>
+<h4 id="schema-definition-4">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Publish Tracking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Publish_ID</strong></td>
+<td>String (PK)</td>
+<td>ID publish duy nhất</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Result_ID</strong></td>
+<td>String (FK)</td>
+<td>Kết quả được publish</td>
+<td>References Raw_Test_Result</td>
+</tr>
+<tr>
+<td>Target_Service</td>
+<td>Enum</td>
+<td>Service đích</td>
+<td>[TestOrderService, MonitoringService]</td>
+</tr>
+<tr>
+<td>Publish_Timestamp</td>
+<td>DateTime</td>
+<td>Thời điểm publish</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Publish_Status</td>
+<td>Enum</td>
+<td>Trạng thái publish</td>
+<td>[Success, Failed, Retry]</td>
+</tr>
+<tr>
+<td>Error_Message</td>
+<td>String</td>
+<td>Lỗi nếu có</td>
+<td>Nullable</td>
+</tr>
+<tr>
+<td>Retry_Count</td>
+<td>Number</td>
+<td>Số lần retry</td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td>Last_Retry_TS</td>
+<td>DateTime</td>
+<td>Lần retry cuối</td>
+<td>Nullable</td>
+</tr>
+<tr>
+<td>Response_Code</td>
+<td>String</td>
+<td>Mã response</td>
+<td>HTTP status</td>
+</tr>
+<tr>
+<td>Processing_Time_MS</td>
+<td>Number</td>
+<td>Thời gian xử lý</td>
+<td>Performance metric</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-4">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef012349"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Publish_ID"</span><span class="token operator">:</span> <span class="token string">"PUB_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Result_ID"</span><span class="token operator">:</span> <span class="token string">"RST_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Target_Service"</span><span class="token operator">:</span> <span class="token string">"TestOrderService"</span><span class="token punctuation">,</span>
+  <span class="token property">"Publishing_Details"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"publish_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T09:19:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"publish_status"</span><span class="token operator">:</span> <span class="token string">"Success"</span><span class="token punctuation">,</span>
+    <span class="token property">"response_code"</span><span class="token operator">:</span> <span class="token string">"200"</span><span class="token punctuation">,</span>
+    <span class="token property">"processing_time_ms"</span><span class="token operator">:</span> <span class="token number">245</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Request_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"endpoint"</span><span class="token operator">:</span> <span class="token string">"https://testorder-service/api/v1/results"</span><span class="token punctuation">,</span>
+    <span class="token property">"method"</span><span class="token operator">:</span> <span class="token string">"POST"</span><span class="token punctuation">,</span>
+    <span class="token property">"content_type"</span><span class="token operator">:</span> <span class="token string">"application/hl7-v2"</span><span class="token punctuation">,</span>
+    <span class="token property">"message_size_kb"</span><span class="token operator">:</span> <span class="token number">12.5</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Response_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"response_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T09:19:00.245Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"response_message"</span><span class="token operator">:</span> <span class="token string">"Result received and processed successfully"</span><span class="token punctuation">,</span>
+    <span class="token property">"correlation_id"</span><span class="token operator">:</span> <span class="token string">"CORR_20241007_001"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Retry_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"retry_count"</span><span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    <span class="token property">"max_retries"</span><span class="token operator">:</span> <span class="token number">3</span><span class="token punctuation">,</span>
+    <span class="token property">"retry_interval_seconds"</span><span class="token operator">:</span> <span class="token number">30</span><span class="token punctuation">,</span>
+    <span class="token property">"last_retry_ts"</span><span class="token operator">:</span> <span class="token null keyword">null</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Performance_Metrics"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"network_latency_ms"</span><span class="token operator">:</span> <span class="token number">45</span><span class="token punctuation">,</span>
+    <span class="token property">"service_response_time_ms"</span><span class="token operator">:</span> <span class="token number">200</span><span class="token punctuation">,</span>
+    <span class="token property">"total_processing_time_ms"</span><span class="token operator">:</span> <span class="token number">245</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-hl7_publish_log">🔧 Business Rules cho HL7_Publish_Log </h4>
+<ul>
+<li><strong>Retry Logic</strong>: Tối đa 3 lần retry với exponential backoff</li>
+<li><strong>Timeout</strong>: 30 giây timeout cho mỗi publish attempt</li>
+<li><strong>Success Criteria</strong>: Response_Code = 200 và valid response message</li>
+<li><strong>Error Handling</strong>: Log chi tiết error message cho troubleshooting</li>
+<li><strong>ID Format</strong>: <code>PUB_{YYYYMMDD}_{SequenceNumber}</code></li>
+</ul>
+<h3 id="33-️-collection-6-raw_result_deletion_log-collection-result_deletion_logs">3.3 🗑️ Collection 6: Raw_Result_Deletion_Log (Collection: <code>result_deletion_logs</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Audit trail cho việc xóa kết quả thô, tuân thủ các quy định về compliance và traceability.</p>
+<h4 id="schema-definition-5">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Compliance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Deletion_Log_ID</strong></td>
+<td>String (PK)</td>
+<td>ID log xóa</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Result_ID</strong></td>
+<td>String (FK)</td>
+<td>Kết quả đã xóa</td>
+<td>May be null after deletion</td>
+</tr>
+<tr>
+<td>User_Performed</td>
+<td>String</td>
+<td>Người thực hiện (manual)</td>
+<td>Nullable for auto</td>
+</tr>
+<tr>
+<td>Deletion_Timestamp</td>
+<td>DateTime</td>
+<td>Thời điểm xóa</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Test_Order_ID</td>
+<td>String</td>
+<td>ID lệnh xét nghiệm đã xóa</td>
+<td>For audit</td>
+</tr>
+<tr>
+<td>Sample_Barcode</td>
+<td>String</td>
+<td>Mã vạch đã xóa</td>
+<td>For audit</td>
+</tr>
+<tr>
+<td>Deletion_Type</td>
+<td>Enum</td>
+<td>Loại xóa</td>
+<td>[Manual, Auto, Scheduled]</td>
+</tr>
+<tr>
+<td>Deletion_Reason</td>
+<td>String</td>
+<td>Lý do xóa</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Approved_By</td>
+<td>String</td>
+<td>Người phê duyệt</td>
+<td>Required for manual</td>
+</tr>
+<tr>
+<td>Memory_Freed_KB</td>
+<td>Number</td>
+<td>Bộ nhớ được giải phóng</td>
+<td>Performance tracking</td>
+</tr>
+<tr>
+<td>Backup_Verification_Status</td>
+<td>Enum</td>
+<td>Xác minh backup</td>
+<td>[Verified, NotVerified, Failed]</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-5">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef01234a"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Deletion_Log_ID"</span><span class="token operator">:</span> <span class="token string">"DEL_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Result_ID"</span><span class="token operator">:</span> <span class="token string">"RST_20241006_045"</span><span class="token punctuation">,</span>
+  <span class="token property">"Deletion_Details"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"user_performed"</span><span class="token operator">:</span> <span class="token string">"SYSTEM_AUTO"</span><span class="token punctuation">,</span>
+    <span class="token property">"deletion_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T12:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"deletion_type"</span><span class="token operator">:</span> <span class="token string">"Auto"</span><span class="token punctuation">,</span>
+    <span class="token property">"deletion_reason"</span><span class="token operator">:</span> <span class="token string">"Automatic cleanup - data older than retention period"</span><span class="token punctuation">,</span>
+    <span class="token property">"approved_by"</span><span class="token operator">:</span> <span class="token string">"SYSTEM_AUTO"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Original_Data_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"test_order_id"</span><span class="token operator">:</span> <span class="token string">"ORD_2024_1006_0045"</span><span class="token punctuation">,</span>
+    <span class="token property">"sample_barcode"</span><span class="token operator">:</span> <span class="token string">"SMP20241006045"</span><span class="token punctuation">,</span> 
+    <span class="token property">"instrument_id"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"test_type"</span><span class="token operator">:</span> <span class="token string">"CBC+Diff"</span><span class="token punctuation">,</span>
+    <span class="token property">"analysis_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-06T14:30:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"System_Metrics"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"memory_freed_kb"</span><span class="token operator">:</span> <span class="token number">15.7</span><span class="token punctuation">,</span>
+    <span class="token property">"storage_freed_mb"</span><span class="token operator">:</span> <span class="token number">0.8</span><span class="token punctuation">,</span>
+    <span class="token property">"processing_time_ms"</span><span class="token operator">:</span> <span class="token number">45</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Backup_Information"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"backup_verification_status"</span><span class="token operator">:</span> <span class="token string">"Verified"</span><span class="token punctuation">,</span>
+    <span class="token property">"backup_location"</span><span class="token operator">:</span> <span class="token string">"MonitoringService_Backup_DB"</span><span class="token punctuation">,</span>
+    <span class="token property">"backup_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-06T15:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"backup_checksum"</span><span class="token operator">:</span> <span class="token string">"a1b2c3d4e5f6..."</span><span class="token punctuation">,</span>
+    <span class="token property">"verification_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T11:58:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Compliance_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"regulatory_requirement"</span><span class="token operator">:</span> <span class="token string">"Data retention 7 days after backup"</span><span class="token punctuation">,</span>
+    <span class="token property">"retention_period_days"</span><span class="token operator">:</span> <span class="token number">7</span><span class="token punctuation">,</span>
+    <span class="token property">"deletion_policy_version"</span><span class="token operator">:</span> <span class="token string">"v2.1"</span><span class="token punctuation">,</span>
+    <span class="token property">"audit_trail_preserved"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-raw_result_deletion_log">🔧 Business Rules cho Raw_Result_Deletion_Log </h4>
+<ul>
+<li><strong>Backup Required</strong>: Chỉ xóa khi Backup_Verification_Status = "Verified"</li>
+<li><strong>Retention</strong>: Audit logs giữ vĩnh viễn, không xóa</li>
+<li><strong>Approval</strong>: Manual deletion cần approval từ supervisor</li>
+<li><strong>Compliance</strong>: Tuân thủ quy định về data retention</li>
+<li><strong>ID Format</strong>: <code>DEL_{YYYYMMDD}_{SequenceNumber}</code></li>
+</ul>
+<h3 id="34--collection-7-auto_test_order_creation-collection-auto_test_orders">3.4 🔄 Collection 7: Auto_Test_Order_Creation (Collection: <code>auto_test_orders</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Quản lý việc tự động tạo test order khi có barcode nhưng thiếu test order trong hệ thống.</p>
+<h4 id="schema-definition-6">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Workflow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Creation_ID</strong></td>
+<td>String (PK)</td>
+<td>ID tạo tự động</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Sample_Barcode</td>
+<td>String</td>
+<td>Mã vạch mẫu</td>
+<td>Trigger condition</td>
+</tr>
+<tr>
+<td>Generated_Test_Order_ID</td>
+<td>String</td>
+<td>Test order được tạo</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Instrument_ID</strong></td>
+<td>String (FK)</td>
+<td>Thiết bị tạo</td>
+<td>References Instrument</td>
+</tr>
+<tr>
+<td>Creation_Timestamp</td>
+<td>DateTime</td>
+<td>Thời điểm tạo</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>User_Notified</td>
+<td>Boolean</td>
+<td>Đã thông báo user</td>
+<td>Default: false</td>
+</tr>
+<tr>
+<td>Patient_Info_Updated</td>
+<td>Boolean</td>
+<td>Đã cập nhật thông tin BN</td>
+<td>Default: false</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Enum</td>
+<td>Trạng thái</td>
+<td>[Created, Pending_Update, Completed]</td>
+</tr>
+<tr>
+<td>Notes</td>
+<td>String</td>
+<td>Ghi chú</td>
+<td>Optional</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-6">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef01234b"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Creation_ID"</span><span class="token operator">:</span> <span class="token string">"AUTO_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Sample_Barcode"</span><span class="token operator">:</span> <span class="token string">"SMP20241007002"</span><span class="token punctuation">,</span>
+  <span class="token property">"Generated_Test_Order_ID"</span><span class="token operator">:</span> <span class="token string">"ORD_AUTO_2024_1007_0001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Instrument_ID"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Creation_Timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T11:15:00.000Z"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Trigger_Context"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"reason"</span><span class="token operator">:</span> <span class="token string">"Sample scanned but no existing order found"</span><span class="token punctuation">,</span>
+    <span class="token property">"scan_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T11:14:45.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"operator_id"</span><span class="token operator">:</span> <span class="token string">"TECH_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"sample_type"</span><span class="token operator">:</span> <span class="token string">"Whole Blood"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Auto_Order_Details"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"default_tests"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"CBC"</span><span class="token punctuation">,</span> <span class="token string">"CBC+Diff"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token property">"priority"</span><span class="token operator">:</span> <span class="token string">"Routine"</span><span class="token punctuation">,</span>
+    <span class="token property">"estimated_completion"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T12:15:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"auto_approval"</span><span class="token operator">:</span> <span class="token boolean">false</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Patient_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"patient_id_placeholder"</span><span class="token operator">:</span> <span class="token string">"UNKNOWN_PAT_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"sample_collection_time"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T10:30:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"collection_location"</span><span class="token operator">:</span> <span class="token string">"Ward A"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Notification_Status"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"user_notified"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"notification_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T11:15:30.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"notification_method"</span><span class="token operator">:</span> <span class="token string">"Email+SMS"</span><span class="token punctuation">,</span>
+    <span class="token property">"notified_users"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"lab_supervisor@hospital.com"</span><span class="token punctuation">,</span> <span class="token string">"tech_001@hospital.com"</span><span class="token punctuation">]</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Status"</span><span class="token operator">:</span> <span class="token string">"Pending_Update"</span><span class="token punctuation">,</span>
+  <span class="token property">"Notes"</span><span class="token operator">:</span> <span class="token string">"Auto-created due to missing order. Awaiting patient information update from nursing staff."</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-auto_test_order_creation">🔧 Business Rules cho Auto_Test_Order_Creation </h4>
+<ul>
+<li><strong>Trigger Condition</strong>: Tự động trigger khi scan barcode không có order</li>
+<li><strong>Default Tests</strong>: Áp dụng test mặc định theo instrument model</li>
+<li><strong>Notification Required</strong>: Phải notify user trong vòng 5 phút</li>
+<li><strong>Manual Update</strong>: Cần cập nhật patient info manually sau khi tạo</li>
+<li><strong>ID Format</strong>: <code>AUTO_{YYYYMMDD}_{SequenceNumber}</code></li>
+</ul>
+<hr>
+<h2 id="4-reagents-management-collection-8-10">4. Reagents Management (Collection 8-10) </h2>
+<h3 id="41--collection-8-reagent-collection-reagents">4.1 🧪 Collection 8: Reagent (Collection: <code>reagents</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Quản lý thông tin thuốc thử, inventory và lifecycle từ nhập kho đến sử dụng.</p>
+<h4 id="schema-definition-7">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Validation Rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reagent_ID</strong></td>
+<td>String (PK)</td>
+<td>ID duy nhất thuốc thử</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Reagent_Name</td>
+<td>String</td>
+<td>Tên thuốc thử</td>
+<td>Required, Max 200 chars</td>
+</tr>
+<tr>
+<td>Reagent_Type</td>
+<td>String</td>
+<td>Loại thuốc thử</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Part_Number</td>
+<td>String</td>
+<td>Số part của nhà sản xuất</td>
+<td>Required for traceability</td>
+</tr>
+<tr>
+<td>Current_Quantity</td>
+<td>Number</td>
+<td>Số lượng hiện tại</td>
+<td>&gt;= 0</td>
+</tr>
+<tr>
+<td>Initial_Quantity</td>
+<td>Number</td>
+<td>Số lượng ban đầu</td>
+<td>&gt; 0</td>
+</tr>
+<tr>
+<td>Unit_Measure</td>
+<td>String</td>
+<td>Đơn vị đo</td>
+<td>[mL, μL, tests, units, vials]</td>
+</tr>
+<tr>
+<td>Expiration_Date</td>
+<td>Date</td>
+<td>Ngày hết hạn</td>
+<td>Must be future date on creation</td>
+</tr>
+<tr>
+<td>Lot_Number</td>
+<td>String</td>
+<td>Số lô</td>
+<td>Required for traceability</td>
+</tr>
+<tr>
+<td>Vendor_ID</td>
+<td>String</td>
+<td>ID nhà cung cấp</td>
+<td>References Vendor</td>
+</tr>
+<tr>
+<td>Vendor_Name</td>
+<td>String</td>
+<td>Tên nhà cung cấp</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Storage_Conditions</td>
+<td>Object</td>
+<td>Điều kiện bảo quản</td>
+<td>JSON format</td>
+</tr>
+<tr>
+<td>Is_Active</td>
+<td>Boolean</td>
+<td>Còn hoạt động</td>
+<td>Default: true</td>
+</tr>
+<tr>
+<td>In_Use_Status</td>
+<td>Enum</td>
+<td>Trạng thái sử dụng</td>
+<td>[InUse, NotInUse, Expired, Depleted]</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-7">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef01234c"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Reagent_ID"</span><span class="token operator">:</span> <span class="token string">"REA_SYS_CBC_202410_001"</span><span class="token punctuation">,</span> 
+  <span class="token property">"Reagent_Name"</span><span class="token operator">:</span> <span class="token string">"Sysmex CBC reagent kit"</span><span class="token punctuation">,</span>
+  <span class="token property">"Reagent_Type"</span><span class="token operator">:</span> <span class="token string">"Analysis Reagent"</span><span class="token punctuation">,</span>
+  <span class="token property">"Part_Number"</span><span class="token operator">:</span> <span class="token string">"XN-991-001-SYS"</span><span class="token punctuation">,</span>
+  <span class="token property">"Inventory_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"current_quantity"</span><span class="token operator">:</span> <span class="token number">755</span><span class="token punctuation">,</span>
+    <span class="token property">"initial_quantity"</span><span class="token operator">:</span> <span class="token number">1000</span><span class="token punctuation">,</span>
+    <span class="token property">"unit_measure"</span><span class="token operator">:</span> <span class="token string">"tests"</span><span class="token punctuation">,</span>
+    <span class="token property">"quantity_used"</span><span class="token operator">:</span> <span class="token number">245</span><span class="token punctuation">,</span>
+    <span class="token property">"usage_rate_per_day"</span><span class="token operator">:</span> <span class="token number">50</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Expiration_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"expiration_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2025-09-15T00:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"lot_number"</span><span class="token operator">:</span> <span class="token string">"LOT_202409_SYS_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"days_until_expiry"</span><span class="token operator">:</span> <span class="token number">343</span><span class="token punctuation">,</span>
+    <span class="token property">"expiry_alert_threshold"</span><span class="token operator">:</span> <span class="token number">30</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Supplier_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"vendor_id"</span><span class="token operator">:</span> <span class="token string">"VENDOR_SYSMEX_VN"</span><span class="token punctuation">,</span>
+    <span class="token property">"vendor_name"</span><span class="token operator">:</span> <span class="token string">"Sysmex Medical Vietnam"</span><span class="token punctuation">,</span>
+    <span class="token property">"purchase_order"</span><span class="token operator">:</span> <span class="token string">"PO_2024_09_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"received_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-09-01T00:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"batch_certificate"</span><span class="token operator">:</span> <span class="token string">"CERT_202409_001"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Storage_Conditions"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"temperature_range"</span><span class="token operator">:</span> <span class="token string">"2-8°C"</span><span class="token punctuation">,</span>
+    <span class="token property">"humidity_max"</span><span class="token operator">:</span> <span class="token string">"85%"</span><span class="token punctuation">,</span>
+    <span class="token property">"light_protection"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"storage_location"</span><span class="token operator">:</span> <span class="token string">"Reagent Fridge A-02"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Status_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"is_active"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"in_use_status"</span><span class="token operator">:</span> <span class="token string">"InUse"</span><span class="token punctuation">,</span>
+    <span class="token property">"quality_control_status"</span><span class="token operator">:</span> <span class="token string">"Passed"</span><span class="token punctuation">,</span>
+    <span class="token property">"last_qc_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-01T00:00:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Created_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-09-01T08:00:00.000Z"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Updated_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T10:30:00.000Z"</span>)
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-reagent">🔧 Business Rules cho Reagent </h4>
+<ul>
+<li><strong>Expiry Management</strong>: Cảnh báo khi còn 30 ngày hết hạn</li>
+<li><strong>Inventory Threshold</strong>: Alert khi Current_Quantity &lt; 20% Initial_Quantity</li>
+<li><strong>Lot Traceability</strong>: Lot_Number bắt buộc cho compliance</li>
+<li><strong>Storage Compliance</strong>: Kiểm tra storage conditions thường xuyên</li>
+<li><strong>ID Format</strong>: <code>REA_{Vendor}_{Type}_{YYYYMM}_{Number}</code></li>
+</ul>
+<h3 id="42--collection-9-instrument_reagent-collection-instrument_reagents">4.2 🔗 Collection 9: Instrument_Reagent (Collection: <code>instrument_reagents</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Quản lý việc gán thuốc thử cho từng thiết bị và theo dõi usage.</p>
+<h4 id="schema-definition-8">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Assignment Info</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Assignment_ID</strong></td>
+<td>String (PK)</td>
+<td>ID gán thuốc thử</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Instrument_ID</strong></td>
+<td>String (FK)</td>
+<td>Thiết bị sử dụng</td>
+<td>References Instrument</td>
+</tr>
+<tr>
+<td><strong>Reagent_ID</strong></td>
+<td>String (FK)</td>
+<td>Thuốc thử được gán</td>
+<td>References Reagent</td>
+</tr>
+<tr>
+<td>Installation_Date</td>
+<td>DateTime</td>
+<td>Ngày lắp đặt</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Position_Slot</td>
+<td>String</td>
+<td>Vị trí slot trên máy</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Enum</td>
+<td>Trạng thái</td>
+<td>[Installed, Removed, Expired, LowLevel]</td>
+</tr>
+<tr>
+<td>Expected_Tests_Count</td>
+<td>Number</td>
+<td>Số test dự kiến</td>
+<td>Based on reagent capacity</td>
+</tr>
+<tr>
+<td>Actual_Tests_Count</td>
+<td>Number</td>
+<td>Số test thực tế</td>
+<td>Auto-increment</td>
+</tr>
+<tr>
+<td>Low_Level_Threshold</td>
+<td>Number</td>
+<td>Ngưỡng báo thiếu</td>
+<td>Configurable</td>
+</tr>
+<tr>
+<td>Sufficient_Level</td>
+<td>Boolean</td>
+<td>Đủ mức sử dụng</td>
+<td>Auto-calculated</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-8">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef01234d"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Assignment_ID"</span><span class="token operator">:</span> <span class="token string">"ASG_INS001_REA001_20241007"</span><span class="token punctuation">,</span>
+  <span class="token property">"Instrument_ID"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Reagent_ID"</span><span class="token operator">:</span> <span class="token string">"REA_SYS_CBC_202410_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Installation_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"installation_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"position_slot"</span><span class="token operator">:</span> <span class="token string">"R1-A"</span><span class="token punctuation">,</span>
+    <span class="token property">"installed_by"</span><span class="token operator">:</span> <span class="token string">"TECH_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"installation_verified"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Usage_Tracking"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"expected_tests_count"</span><span class="token operator">:</span> <span class="token number">1000</span><span class="token punctuation">,</span>
+    <span class="token property">"actual_tests_count"</span><span class="token operator">:</span> <span class="token number">245</span><span class="token punctuation">,</span>
+    <span class="token property">"remaining_tests"</span><span class="token operator">:</span> <span class="token number">755</span><span class="token punctuation">,</span>
+    <span class="token property">"usage_rate_per_day"</span><span class="token operator">:</span> <span class="token number">50</span><span class="token punctuation">,</span>
+    <span class="token property">"estimated_depletion_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-22T00:00:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Status_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"status"</span><span class="token operator">:</span> <span class="token string">"Installed"</span><span class="token punctuation">,</span>
+    <span class="token property">"low_level_threshold"</span><span class="token operator">:</span> <span class="token number">100</span><span class="token punctuation">,</span>
+    <span class="token property">"sufficient_level"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"last_usage"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T10:30:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Performance_Metrics"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"efficiency_rate"</span><span class="token operator">:</span> <span class="token number">98.5</span><span class="token punctuation">,</span>
+    <span class="token property">"error_count"</span><span class="token operator">:</span> <span class="token number">2</span><span class="token punctuation">,</span>
+    <span class="token property">"maintenance_due"</span><span class="token operator">:</span> <span class="token boolean">false</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Quality_Control"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"qc_status"</span><span class="token operator">:</span> <span class="token string">"Passed"</span><span class="token punctuation">,</span>
+    <span class="token property">"last_qc_check"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T07:30:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"next_qc_due"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-14T07:30:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Created_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:00:00.000Z"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Updated_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T10:50:00.000Z"</span>)
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-instrument_reagent">🔧 Business Rules cho Instrument_Reagent </h4>
+<ul>
+<li><strong>Position Validation</strong>: Mỗi slot chỉ có 1 reagent active</li>
+<li><strong>Sufficient_Level Calculation</strong>: Auto-update dựa trên actual vs threshold</li>
+<li><strong>Usage Tracking</strong>: Auto-increment Actual_Tests_Count sau mỗi test</li>
+<li><strong>Status Management</strong>: Auto chuyển "LowLevel" khi &lt; threshold</li>
+<li><strong>ID Format</strong>: <code>ASG_{InstrumentID}_{ReagentID}_{YYYYMMDD}</code></li>
+</ul>
+<h3 id="43--collection-10-reagent_activity_log-collection-reagent_activity_logs">4.3 📋 Collection 10: Reagent_Activity_Log (Collection: <code>reagent_activity_logs</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Audit trail cho tất cả hoạt động liên quan đến thuốc thử và lifecycle management.</p>
+<h4 id="schema-definition-9">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Audit Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Activity_ID</strong></td>
+<td>String (PK)</td>
+<td>ID hoạt động</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Reagent_ID</strong></td>
+<td>String (FK)</td>
+<td>Thuốc thử</td>
+<td>References Reagent</td>
+</tr>
+<tr>
+<td><strong>Instrument_ID</strong></td>
+<td>String (FK)</td>
+<td>Thiết bị liên quan</td>
+<td>References Instrument</td>
+</tr>
+<tr>
+<td>Activity_Type</td>
+<td>Enum</td>
+<td>Loại hoạt động</td>
+<td>[Install, Modify, Delete, Use, Replace]</td>
+</tr>
+<tr>
+<td>User_Performed</td>
+<td>String</td>
+<td>Người thực hiện</td>
+<td>Required for manual actions</td>
+</tr>
+<tr>
+<td>Timestamp</td>
+<td>DateTime</td>
+<td>Thời điểm hoạt động</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Previous_Quantity</td>
+<td>Number</td>
+<td>Số lượng trước</td>
+<td>For quantity changes</td>
+</tr>
+<tr>
+<td>New_Quantity</td>
+<td>Number</td>
+<td>Số lượng sau</td>
+<td>For quantity changes</td>
+</tr>
+<tr>
+<td>Previous_Status</td>
+<td>String</td>
+<td>Trạng thái trước</td>
+<td>For status changes</td>
+</tr>
+<tr>
+<td>New_Status</td>
+<td>String</td>
+<td>Trạng thái sau</td>
+<td>For status changes</td>
+</tr>
+<tr>
+<td>Lot_Number</td>
+<td>String</td>
+<td>Số lô</td>
+<td>For traceability</td>
+</tr>
+<tr>
+<td>Notes</td>
+<td>String</td>
+<td>Ghi chú thêm</td>
+<td>Optional</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-9">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef01234e"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Activity_ID"</span><span class="token operator">:</span> <span class="token string">"ACT_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Reagent_ID"</span><span class="token operator">:</span> <span class="token string">"REA_SYS_CBC_202410_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Instrument_ID"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Activity_Details"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"activity_type"</span><span class="token operator">:</span> <span class="token string">"Use"</span><span class="token punctuation">,</span>
+    <span class="token property">"user_performed"</span><span class="token operator">:</span> <span class="token string">"SYSTEM_AUTO"</span><span class="token punctuation">,</span>
+    <span class="token property">"timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T10:30:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Quantity_Changes"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"previous_quantity"</span><span class="token operator">:</span> <span class="token number">755</span><span class="token punctuation">,</span>
+    <span class="token property">"new_quantity"</span><span class="token operator">:</span> <span class="token number">750</span><span class="token punctuation">,</span>
+    <span class="token property">"usage_amount"</span><span class="token operator">:</span> <span class="token number">5</span><span class="token punctuation">,</span>
+    <span class="token property">"unit_measure"</span><span class="token operator">:</span> <span class="token string">"tests"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Status_Changes"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"previous_status"</span><span class="token operator">:</span> <span class="token string">"InUse"</span><span class="token punctuation">,</span>
+    <span class="token property">"new_status"</span><span class="token operator">:</span> <span class="token string">"InUse"</span><span class="token punctuation">,</span>
+    <span class="token property">"sufficient_level_before"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"sufficient_level_after"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Test_Context"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"test_order_id"</span><span class="token operator">:</span> <span class="token string">"ORD_2024_1007_0123"</span><span class="token punctuation">,</span>
+    <span class="token property">"sample_barcode"</span><span class="token operator">:</span> <span class="token string">"SMP20241007001"</span><span class="token punctuation">,</span>
+    <span class="token property">"test_type"</span><span class="token operator">:</span> <span class="token string">"CBC+Diff"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Traceability_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"lot_number"</span><span class="token operator">:</span> <span class="token string">"LOT_202409_SYS_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"expiration_date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2025-09-15T00:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"supplier_details"</span><span class="token operator">:</span> <span class="token string">"Sysmex Medical Vietnam"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Performance_Metrics"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"remaining_tests_estimated"</span><span class="token operator">:</span> <span class="token number">750</span><span class="token punctuation">,</span>
+    <span class="token property">"daily_usage_rate"</span><span class="token operator">:</span> <span class="token number">50</span><span class="token punctuation">,</span>
+    <span class="token property">"depletion_forecast"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-22T00:00:00.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Notes"</span><span class="token operator">:</span> <span class="token string">"Automatic usage logging during CBC+Diff analysis"</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-reagent_activity_log">🔧 Business Rules cho Reagent_Activity_Log </h4>
+<ul>
+<li><strong>Immutable</strong>: Audit logs không được sửa đổi sau khi tạo</li>
+<li><strong>Auto-Generation</strong>: Tự động tạo log cho mọi thao tác on reagents</li>
+<li><strong>Traceability</strong>: Mọi thao tác quan trọng đều phải có audit trail</li>
+<li><strong>Retention</strong>: Audit logs giữ vĩnh viễn cho compliance</li>
+<li><strong>ID Format</strong>: <code>ACT_{YYYYMMDD}_{SequenceNumber}</code></li>
+</ul>
+<hr>
+<h2 id="5-configuration-management-collection-11-12">5. Configuration Management (Collection 11-12) </h2>
+<h3 id="51-️-collection-11-configuration_profile-collection-configuration_profiles">5.1 ⚙️ Collection 11: Configuration_Profile (Collection: <code>configuration_profiles</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Lưu trữ các profile cấu hình cho thiết bị, hỗ trợ cả cấu hình toàn cục và đặc thù.</p>
+<h4 id="schema-definition-10">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Configuration Types</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Profile_ID</strong></td>
+<td>String (PK)</td>
+<td>ID profile duy nhất</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Profile_Name</td>
+<td>String</td>
+<td>Tên profile</td>
+<td>Required, Max 100 chars</td>
+</tr>
+<tr>
+<td>Profile_Type</td>
+<td>Enum</td>
+<td>Loại profile</td>
+<td>[General, Specific, Custom]</td>
+</tr>
+<tr>
+<td>Configuration_Data</td>
+<td>Object</td>
+<td>Dữ liệu cấu hình</td>
+<td>JSON format</td>
+</tr>
+<tr>
+<td>Is_Global</td>
+<td>Boolean</td>
+<td>Áp dụng toàn cục</td>
+<td>true for General type</td>
+</tr>
+<tr>
+<td>Target_Model_ID</td>
+<td>String</td>
+<td>Model đích (cho Specific)</td>
+<td>Nullable for General</td>
+</tr>
+<tr>
+<td>Target_Device_Type</td>
+<td>String</td>
+<td>Loại thiết bị đích</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>String</td>
+<td>Phiên bản cấu hình</td>
+<td>Semantic versioning</td>
+</tr>
+<tr>
+<td>Firmware_Version</td>
+<td>String</td>
+<td>Phiên bản firmware tương thích</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Calibration_Settings</td>
+<td>Object</td>
+<td>Cài đặt hiệu chuẩn</td>
+<td>JSON format</td>
+</tr>
+<tr>
+<td>Created_By</td>
+<td>String</td>
+<td>Người tạo</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Is_Active</td>
+<td>Boolean</td>
+<td>Đang hoạt động</td>
+<td>Default: true</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-10">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef01234f"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Profile_ID"</span><span class="token operator">:</span> <span class="token string">"CFG_GENERAL_HEMATO_V2"</span><span class="token punctuation">,</span>
+  <span class="token property">"Profile_Name"</span><span class="token operator">:</span> <span class="token string">"General Hematology Configuration v2.0"</span><span class="token punctuation">,</span>
+  <span class="token property">"Profile_Type"</span><span class="token operator">:</span> <span class="token string">"General"</span><span class="token punctuation">,</span>
+  <span class="token property">"Is_Global"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+  <span class="token property">"Target_Device_Type"</span><span class="token operator">:</span> <span class="token string">"Hematology Analyzer"</span><span class="token punctuation">,</span>
+  <span class="token property">"Version"</span><span class="token operator">:</span> <span class="token string">"2.0.1"</span><span class="token punctuation">,</span>
+  <span class="token property">"Firmware_Version"</span><span class="token operator">:</span> <span class="token string">"&gt;=2.1.0"</span><span class="token punctuation">,</span>
+  <span class="token property">"Configuration_Data"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"analysis_parameters"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token property">"sample_volume"</span><span class="token operator">:</span> <span class="token number">88</span><span class="token punctuation">,</span>
+      <span class="token property">"dilution_ratio"</span><span class="token operator">:</span> <span class="token string">"1:200"</span><span class="token punctuation">,</span>
+      <span class="token property">"analysis_time"</span><span class="token operator">:</span> <span class="token number">60</span><span class="token punctuation">,</span>
+      <span class="token property">"temperature"</span><span class="token operator">:</span> <span class="token number">37</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token property">"quality_control"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token property">"qc_frequency"</span><span class="token operator">:</span> <span class="token string">"daily"</span><span class="token punctuation">,</span>
+      <span class="token property">"control_levels"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"Level1"</span><span class="token punctuation">,</span> <span class="token string">"Level2"</span><span class="token punctuation">,</span> <span class="token string">"Level3"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+      <span class="token property">"acceptable_cv"</span><span class="token operator">:</span> <span class="token number">2.0</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token property">"alert_thresholds"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token property">"critical_low"</span><span class="token operator">:</span> <span class="token punctuation">{</span><span class="token property">"wbc"</span><span class="token operator">:</span> <span class="token number">1.0</span><span class="token punctuation">,</span> <span class="token property">"rbc"</span><span class="token operator">:</span> <span class="token number">2.0</span><span class="token punctuation">,</span> <span class="token property">"plt"</span><span class="token operator">:</span> <span class="token number">20</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"critical_high"</span><span class="token operator">:</span> <span class="token punctuation">{</span><span class="token property">"wbc"</span><span class="token operator">:</span> <span class="token number">50.0</span><span class="token punctuation">,</span> <span class="token property">"rbc"</span><span class="token operator">:</span> <span class="token number">7.0</span><span class="token punctuation">,</span> <span class="token property">"plt"</span><span class="token operator">:</span> <span class="token number">1000</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"delta_check"</span><span class="token operator">:</span> <span class="token punctuation">{</span><span class="token property">"wbc"</span><span class="token operator">:</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token property">"rbc"</span><span class="token operator">:</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token property">"plt"</span><span class="token operator">:</span> <span class="token number">40</span><span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Calibration_Settings"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"calibration_frequency"</span><span class="token operator">:</span> <span class="token number">30</span><span class="token punctuation">,</span>
+    <span class="token property">"calibrator_type"</span><span class="token operator">:</span> <span class="token string">"Sysmex e-CHECK"</span><span class="token punctuation">,</span>
+    <span class="token property">"linearity_check"</span><span class="token operator">:</span> <span class="token string">"monthly"</span><span class="token punctuation">,</span>
+    <span class="token property">"carryover_check"</span><span class="token operator">:</span> <span class="token string">"weekly"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Maintenance_Config"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"daily_maintenance"</span><span class="token operator">:</span> <span class="token string">"auto"</span><span class="token punctuation">,</span>
+    <span class="token property">"weekly_maintenance"</span><span class="token operator">:</span> <span class="token string">"manual"</span><span class="token punctuation">,</span>
+    <span class="token property">"reagent_monitoring"</span><span class="token operator">:</span> <span class="token string">"continuous"</span><span class="token punctuation">,</span>
+    <span class="token property">"background_check"</span><span class="token operator">:</span> <span class="token string">"startup"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Created_By"</span><span class="token operator">:</span> <span class="token string">"ADMIN_CONFIG"</span><span class="token punctuation">,</span>
+  <span class="token property">"Created_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-01-15T00:00:00.000Z"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Updated_Date"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T00:00:00.000Z"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Is_Active"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-configuration_profile">🔧 Business Rules cho Configuration_Profile </h4>
+<ul>
+<li><strong>Version Control</strong>: Version phải theo semantic versioning</li>
+<li><strong>Global Constraint</strong>: Is_Global = true chỉ cho Profile_Type = "General"</li>
+<li><strong>Firmware Compatibility</strong>: Kiểm tra firmware version compatibility</li>
+<li><strong>Validation</strong>: Configuration_Data phải validate trước khi save</li>
+<li><strong>ID Format</strong>: <code>CFG_{Type}_{DeviceType}_{Version}</code></li>
+</ul>
+<h3 id="52--collection-12-configuration_sync_log-collection-configuration_sync_logs">5.2 🔄 Collection 12: Configuration_Sync_Log (Collection: <code>configuration_sync_logs</code>) </h3>
+<p><strong>🎯 Mục đích</strong>: Theo dõi việc đồng bộ cấu hình từ profile xuống thiết bị và error handling.</p>
+<h4 id="schema-definition-11">Schema Definition </h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu dữ liệu</th>
+<th>Mô tả</th>
+<th>Sync Tracking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sync_Log_ID</strong></td>
+<td>String (PK)</td>
+<td>ID log đồng bộ</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><strong>Instrument_ID</strong></td>
+<td>String (FK)</td>
+<td>Thiết bị đồng bộ</td>
+<td>References Instrument</td>
+</tr>
+<tr>
+<td><strong>Profile_ID</strong></td>
+<td>String (FK)</td>
+<td>Profile được áp dụng</td>
+<td>References Configuration_Profile</td>
+</tr>
+<tr>
+<td>User_Performed</td>
+<td>String</td>
+<td>Người thực hiện</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Sync_Timestamp</td>
+<td>DateTime</td>
+<td>Thời điểm đồng bộ</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td>Sync_Type</td>
+<td>Enum</td>
+<td>Loại đồng bộ</td>
+<td>[General, Specific, Both]</td>
+</tr>
+<tr>
+<td>Sync_Status</td>
+<td>Enum</td>
+<td>Trạng thái đồng bộ</td>
+<td>[Success, Failed, Partial]</td>
+</tr>
+<tr>
+<td>Error_Details</td>
+<td>String</td>
+<td>Chi tiết lỗi</td>
+<td>For failed syncs</td>
+</tr>
+<tr>
+<td>Configuration_Hash</td>
+<td>String</td>
+<td>Hash của config</td>
+<td>For validation</td>
+</tr>
+<tr>
+<td>Rollback_Data</td>
+<td>Object</td>
+<td>Dữ liệu rollback</td>
+<td>For recovery</td>
+</tr>
+<tr>
+<td>Processing_Time_MS</td>
+<td>Number</td>
+<td>Thời gian xử lý</td>
+<td>Performance metric</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-ví-dụ-document-complete-11">📄 Ví dụ Document Complete </h4>
+<pre data-role="codeBlock" data-info="json" class="language-json json"><code><span class="token punctuation">{</span>
+  <span class="token property">"_id"</span><span class="token operator">:</span> ObjectId(<span class="token string">"64f123456789abcdef012350"</span>)<span class="token punctuation">,</span>
+  <span class="token property">"Sync_Log_ID"</span><span class="token operator">:</span> <span class="token string">"SYNC_20241007_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Instrument_ID"</span><span class="token operator">:</span> <span class="token string">"INS_LAB1_XN1000_001"</span><span class="token punctuation">,</span>
+  <span class="token property">"Profile_ID"</span><span class="token operator">:</span> <span class="token string">"CFG_GENERAL_HEMATO_V2"</span><span class="token punctuation">,</span>
+  <span class="token property">"Sync_Details"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"user_performed"</span><span class="token operator">:</span> <span class="token string">"TECH_SUPERVISOR_001"</span><span class="token punctuation">,</span>
+    <span class="token property">"sync_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T08:00:00.000Z"</span>)<span class="token punctuation">,</span>
+    <span class="token property">"sync_type"</span><span class="token operator">:</span> <span class="token string">"General"</span><span class="token punctuation">,</span>
+    <span class="token property">"sync_status"</span><span class="token operator">:</span> <span class="token string">"Success"</span><span class="token punctuation">,</span>
+    <span class="token property">"processing_time_ms"</span><span class="token operator">:</span> <span class="token number">2340</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Configuration_Info"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"configuration_hash"</span><span class="token operator">:</span> <span class="token string">"sha256:a1b2c3d4e5f6..."</span><span class="token punctuation">,</span>
+    <span class="token property">"config_version"</span><span class="token operator">:</span> <span class="token string">"2.0.1"</span><span class="token punctuation">,</span>
+    <span class="token property">"firmware_compatibility"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"validation_passed"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Applied_Settings"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"general_config_applied"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"specific_config_applied"</span><span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span>
+    <span class="token property">"calibration_settings_updated"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"qc_parameters_updated"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Rollback_Data"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"previous_config_hash"</span><span class="token operator">:</span> <span class="token string">"sha256:f6e5d4c3b2a1..."</span><span class="token punctuation">,</span>
+    <span class="token property">"rollback_available"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"backup_timestamp"</span><span class="token operator">:</span> ISODate(<span class="token string">"2024-10-07T07:59:30.000Z"</span>)
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Validation_Results"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"device_type_validated"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"firmware_version_check"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"parameter_range_check"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token property">"dependency_check"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token property">"Performance_Metrics"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"config_download_time_ms"</span><span class="token operator">:</span> <span class="token number">450</span><span class="token punctuation">,</span>
+    <span class="token property">"validation_time_ms"</span><span class="token operator">:</span> <span class="token number">890</span><span class="token punctuation">,</span>
+    <span class="token property">"application_time_ms"</span><span class="token operator">:</span> <span class="token number">1000</span><span class="token punctuation">,</span>
+    <span class="token property">"total_processing_time_ms"</span><span class="token operator">:</span> <span class="token number">2340</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="-business-rules-cho-configuration_sync_log">🔧 Business Rules cho Configuration_Sync_Log </h4>
+<ul>
+<li><strong>Pre-Sync Validation</strong>: Validate firmware compatibility trước khi sync</li>
+<li><strong>Rollback Capability</strong>: Lưu trữ rollback data cho mọi sync</li>
+<li><strong>Hash Verification</strong>: Verify config integrity qua hash comparison</li>
+<li><strong>Error Recovery</strong>: Auto rollback nếu sync failed</li>
+<li><strong>ID Format</strong>: <code>SYNC_{YYYYMMDD}_{SequenceNumber}</code></li>
+</ul>
+<hr>
+<h2 id="6-relationships--business-rules">6. Relationships &amp; Business Rules </h2>
+<h3 id="-entity-relationships">🔗 Entity Relationships </h3>
+<h4 id="primary-relationships">Primary Relationships </h4>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Instrument_Model (1) -----&gt; (*) Instrument
+Instrument (1) -----&gt; (*) Instrument_Mode_Change_Log
+Instrument (1) -----&gt; (*) Raw_Test_Result
+Instrument (1) -----&gt; (*) Auto_Test_Order_Creation
+Instrument (1) -----&gt; (*) Instrument_Reagent
+Instrument (1) -----&gt; (*) Configuration_Sync_Log
+
+Raw_Test_Result (1) -----&gt; (*) HL7_Publish_Log
+Raw_Test_Result (1) -----&gt; (0..1) Raw_Result_Deletion_Log
+
+Reagent (1) -----&gt; (*) Instrument_Reagent
+Reagent (1) -----&gt; (*) Reagent_Activity_Log
+Instrument_Reagent (1) -----&gt; (*) Reagent_Activity_Log
+
+Configuration_Profile (1) -----&gt; (*) Configuration_Sync_Log
+</code></pre><h3 id="-critical-business-rules">🔧 Critical Business Rules </h3>
+<h4 id="data-integrity-rules">Data Integrity Rules </h4>
+<ol>
+<li><strong>Cascading Deletes</strong>: Không cho phép xóa Instrument khi có Raw_Test_Result active</li>
+<li><strong>Foreign Key Constraints</strong>: Tất cả FK phải valid trước khi insert</li>
+<li><strong>Audit Trail</strong>: Mọi thay đổi quan trọng phải có audit log</li>
+</ol>
+<h4 id="operational-rules">Operational Rules </h4>
+<ol>
+<li><strong>Mode Change</strong>: Instrument chỉ có thể Ready khi QC_Status = "Passed"</li>
+<li><strong>Reagent Usage</strong>: Không cho phép start test khi Sufficient_Level = false</li>
+<li><strong>Configuration Sync</strong>: Phải validate firmware compatibility trước sync</li>
+</ol>
+<h4 id="compliance-rules">Compliance Rules </h4>
+<ol>
+<li><strong>Data Retention</strong>: Raw data giữ tối thiểu 7 ngày sau backup</li>
+<li><strong>Audit Logs</strong>: Audit logs không được xóa hoặc modify</li>
+<li><strong>Traceability</strong>: Mọi sample phải có full traceability chain</li>
+</ol>
+<hr>
+
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+  
+    </body></html>

@@ -22,6 +22,7 @@ public class ConfirmationTokenServiceImpl implements IConfirmationTokenService {
 
   ConfirmationTokenRepository confirmationTokenRepository;
 
+  // Implementation of the methods defined in ConfirmationTokenService interface
   @Override
   public Optional<ConfirmationToken> getToken(String token) {
     return confirmationTokenRepository.findByToken(token);
