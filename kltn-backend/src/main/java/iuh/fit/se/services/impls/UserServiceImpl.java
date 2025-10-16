@@ -164,14 +164,28 @@ public class UserServiceImpl implements IUserService {
     if (authentication == null || !authentication.isAuthenticated()) {
       throw new AppException(ErrorCode.UNAUTHORIZED);
     }
-    String username = authentication.getName();
+    return userMapper.toUserResponse(userRepository
+            .findByUsername(authentication.getName())
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
+  }
 
-    User user =
-        userRepository
-            .findByUsername(username)
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+  @Override
+  public void changePassword(ChangePasswordRequest changePasswordRequest) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if(authentication == null || !authentication.isAuthenticated()){
+        throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
 
-    return userMapper.toUserResponse(user);
+    User existingUser = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+    boolean isAuthenticated = passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword());
+    if(!isAuthenticated){
+        throw  new AppException(ErrorCode.PASSWORD_MUST_MATCH);
+    }
+    String encodedPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
+    existingUser.setPassword(encodedPassword);
+    userRepository.save(existingUser);
   }
 
   @Override

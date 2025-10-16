@@ -21,7 +21,6 @@ const Header: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<NotificationType | 'all'>('all');
   const [notifications, setNotifications] = useState<NotificationResponseDTO[]>(demoNotifications);
@@ -64,21 +63,6 @@ const Header: React.FC = () => {
     toast.success('Đã đánh dấu tất cả là đã đọc!');
   };
 
-  const handleLogout = () => {
-    if (isLoggingOut) return;
-    setIsLoggingOut(true);
-    setTimeout(() => {
-      localStorage.removeItem('vuvisa_access_token');
-      localStorage.removeItem('vuvisa_user_data');
-      setUnreadCount(0);
-      setNotifications([]);
-      setCartItemCount(0);
-      setIsUserMenuOpen(false);
-      toast.success('Đăng xuất thành công!');
-      setIsLoggingOut(false);
-      window.location.href = '/';
-    }, 800);
-  };
 
   return (
     <nav className="bg-white">
@@ -152,9 +136,8 @@ const Header: React.FC = () => {
               isOpen={isUserMenuOpen}
               isLoggedIn={isLoggedIn}
               authUser={authUser}
-              isLoggingOut={isLoggingOut}
               onToggle={() => { setIsUserMenuOpen(v => !v); setIsNotificationsOpen(false); setIsCategoryOpen(false); }}
-              onLogout={handleLogout}
+      
             />
           </div>
         </div>

@@ -268,8 +268,8 @@ function App() {
           }
         />
         <Route
-          path="/user/change-password"
-          element={
+          path="/change-password"
+          element={ 
             <Layout>
               <ChangePassword />
             </Layout>

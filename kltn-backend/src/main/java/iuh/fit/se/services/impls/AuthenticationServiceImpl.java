@@ -215,7 +215,8 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
         userRepository
             .findByEmail(verifyResetTokenRequest.getEmail())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    String resetToken = stringRedisTemplate.opsForValue().get("reset:token:userId=" + existUser.getId());
+    String resetToken =
+        stringRedisTemplate.opsForValue().get("reset:token:userId=" + existUser.getId());
 
     if (resetToken == null || resetToken.isBlank()) {
       throw new AppException(ErrorCode.TOKEN_EXPIRED);

@@ -108,7 +108,9 @@ public class EmailServiceImpl implements IEmailService {
   @Override
   public void sentOtp(User user) throws MessagingException {
     String otp = String.format("%06d", random.nextInt(1_000_000));
-    stringRedisTemplate.opsForValue().set("otp:email=" + user.getEmail(), otp, Duration.ofMinutes(5));
+    stringRedisTemplate
+        .opsForValue()
+        .set("otp:email=" + user.getEmail(), otp, Duration.ofMinutes(5));
     Map<String, Object> variables = Map.of("username", user.getUsername(), "otp", otp);
     sendWithHtmlMailFormat(user.getEmail(), "Your Otp Code", "otp-mail", variables);
   }

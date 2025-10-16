@@ -64,4 +64,13 @@ public class UserController {
         .message("Updated user successfully !")
         .build();
   }
+
+    @PostMapping("/change-password")
+    public APIResponse<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+      iUserService.changePassword(changePasswordRequest);
+        return APIResponse.<Void>builder()
+                .message("Change password successfully !")
+                .build();
+    }
 }

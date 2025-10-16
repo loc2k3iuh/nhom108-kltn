@@ -1,19 +1,29 @@
 import React from "react";
 import { UserResponse } from "@/types/responses/userResponse";
 import { useNavigate } from "react-router-dom"; 
+import { useAuthStore } from "@/stores/useAuthStore";
+import { toast } from "sonner";
 
 interface UserMenuProps {
   isOpen: boolean;
   isLoggedIn: boolean;
   authUser: UserResponse | null;
-  isLoggingOut: boolean;
   onToggle: () => void;
-  onLogout: () => void;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, isLoggingOut, onToggle, onLogout }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onToggle }) => {
+  const {isLoading, logOut} = useAuthStore();
   const navigate = useNavigate();
 
+  const onLogout = async () => {
+    const isSuccess = await logOut();
+    if(isSuccess) {
+      navigate("/");
+      toast.success("Đăng xuất thành công !");
+    }else{
+      toast.error("Không thể đăng xuất !");
+    }
+  }
   return (
     <div className="flex flex-col cursor-pointer justify-center items-center relative">
       <div onClick={onToggle} className="flex flex-col items-center">
@@ -97,7 +107,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, isLog
                 <span className="text-gray-600">Wallet Voucher</span>
               </a>
 
-              <button onClick={onLogout} disabled={isLoggingOut} className="flex items-center p-3 hover:bg-gray-50 border-t border-gray-100 w-full text-left cursor-pointer">
+              <button onClick={onLogout} disabled={isLoading} className="flex items-center p-3 hover:bg-gray-50 border-t border-gray-100 w-full text-left cursor-pointer">
                 <div className="w-8 h-8 flex items-center justify-center mr-3 text-gray-500">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -105,7 +115,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, isLog
                     <path d="M21 12H9" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                {isLoggingOut ? (
+                {isLoading ? (
                   <div className="flex items-center">
                     <span className="text-gray-400">Đang đăng xuất...</span>
                     <div className="ml-2 animate-spin h-4 w-4 border-t-2 border-b-2 border-[#C92127] rounded-full"></div>

@@ -74,6 +74,9 @@ public class User {
   @Enumerated(EnumType.STRING)
   UserStatus status;
 
+  @Column(name = "is_oauth2")
+  Boolean isOauth2 = false;
+
   @Column(name = "last_login")
   Date lastLogin = new Date();
 

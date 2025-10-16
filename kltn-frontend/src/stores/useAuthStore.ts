@@ -1,8 +1,18 @@
-
-import { getUserIdFromToken } from "@/services/useTokenService";
-import { getUserDetailFromToken, updateUserService } from "@/services/useUserService";
+import { logoutService } from "@/services/useAuthService";
+import {
+  getTokenFromLocalStorage,
+  getTokenFromSessionStorage,
+  getUserIdFromToken,
+  removeToken,
+} from "@/services/useTokenService";
+import {
+  getUserDetailFromToken,
+  updateUserService,
+} from "@/services/useUserService";
+import { LogoutRequest } from "@/types/requests/authRequest";
 import { UpdateUserRequest } from "@/types/requests/useRequest";
 import { UserResponse } from "@/types/responses/userResponse";
+import { data } from "react-router-dom";
 import { create } from "zustand";
 
 interface AuthStore {
@@ -10,6 +20,7 @@ interface AuthStore {
   checkAuth: () => Promise<UserResponse | null>;
   authUser: UserResponse | null;
   updateUser: (updateUserRequest: UpdateUserRequest) => Promise<boolean>;
+  logOut: () => Promise<boolean>;
 }
 
 function getErrorMessage(err: unknown, fallback: string) {
@@ -44,6 +55,27 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     } catch (error: unknown) {
       console.log(getErrorMessage(error, "Error in updating user !"));
       return false;
+    }
+  },
+  logOut: async () => {
+    try {
+      set({ isLoading: true });
+      const token = getTokenFromLocalStorage() || getTokenFromSessionStorage();
+      if (token === "" || !token) {
+        return false;
+      }
+      const tokenRequest: LogoutRequest = {
+        token: token,
+      };
+      await logoutService(tokenRequest);
+      removeToken();
+      set({ authUser: null });
+      return true;
+    } catch (error: unknown) {
+      console.log(getErrorMessage(error, "Error in logging out user !"));
+      return false;
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));

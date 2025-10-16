@@ -5,19 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faKey } from '@fortawesome/free-solid-svg-icons';
 import UserSidebar from '../../components/UserSidebar';
 
-// Static user data
-const staticUserData = {
-  id: 1,
-  username: "user123",
-  fullName: "Nguyễn Văn A",
-  email: "user@example.com",
-  avatar_url: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYVcJXjU8HnMTXVmjER0yIET4AwAuHp0LO_YCiQjUsf1228qq0lYbABHFTSasYlk61e6Y-1ygAjWXFLEUTCloPcTvbAwe7nNba7SW9ot9QMce7BYus-H6eDIUvyFXh9UmAmV5eVTMultDo57c048MmDws-a65QYOzoBfUkHLv5OiMhMaUfh2WeP_3ej9du/s1600/istockphoto-1337144146-612x612.jpg",
-  roles: [{ name: "USER" }]
-};
+
 
 const ChangePassword: React.FC = () => {
   const navigate = useNavigate();
-  const userData = staticUserData;
+
 
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -26,74 +18,11 @@ const ChangePassword: React.FC = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    oldPassword?: string;
-    newPassword?: string;
-    confirmPassword?: string;
-  }>({});
 
-  const validateForm = (): boolean => {
-    const newErrors: {
-      oldPassword?: string;
-      newPassword?: string;
-      confirmPassword?: string;
-    } = {};
 
-    // Old password validation
-    if (!oldPassword) {
-      newErrors.oldPassword = "Vui lòng nhập mật khẩu cũ";
-    }
-
-    // New password validation
-    if (!newPassword) {
-      newErrors.newPassword = "Vui lòng nhập mật khẩu mới";
-    } else if (newPassword.length < 6) {
-      newErrors.newPassword = "Mật khẩu mới phải có ít nhất 6 ký tự";
-    } 
-
-    // Confirm password validation
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu mới";
-    } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      // Simulate password change
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const changePasswordData = {
-        old_password: oldPassword,
-        new_password: newPassword,
-        confirm_password: confirmPassword
-      };
-
-      console.log("Static password change for user:", userData.id, changePasswordData);
-      toast.success("Đổi mật khẩu thành công!");
-      
-      // Redirect to profile page after successful password change
-      setTimeout(() => {
-        navigate('/user/profile');
-      }, 2000);
-    } catch (error: any) {
-      const errorMessage = error?.message || "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại thông tin.";
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+   
   };
 
   return (
@@ -124,7 +53,7 @@ const ChangePassword: React.FC = () => {
                 id="oldPassword"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className={`w-full px-4 py-2 border ${errors.oldPassword ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 ${errors.oldPassword ? 'focus:ring-red-200' : 'focus:ring-[#C92127]'}`}
+                className={`w-full px-4 py-2 border  rounded-md focus:outline-none focus:ring-2 `}
                 required
               />
               <button
@@ -135,9 +64,7 @@ const ChangePassword: React.FC = () => {
                 <FontAwesomeIcon icon={showOldPassword ? faEyeSlash : faEye} />
               </button>
             </div>
-            {errors.oldPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.oldPassword}</p>
-            )}
+           
           </div>
 
           {/* New Password */}
@@ -151,7 +78,7 @@ const ChangePassword: React.FC = () => {
                 id="newPassword"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className={`w-full px-4 py-2 border ${errors.newPassword ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 ${errors.newPassword ? 'focus:ring-red-200' : 'focus:ring-[#C92127]'}`}
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 `}
                 required
               />
               <button
@@ -162,9 +89,7 @@ const ChangePassword: React.FC = () => {
                 <FontAwesomeIcon icon={showNewPassword ? faEyeSlash : faEye} />
               </button>
             </div>
-            {errors.newPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.newPassword}</p>
-            )}
+            
           </div>
 
           {/* Confirm Password */}
@@ -178,7 +103,7 @@ const ChangePassword: React.FC = () => {
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`w-full px-4 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 ${errors.confirmPassword ? 'focus:ring-red-200' : 'focus:ring-[#C92127]'}`}
+                className={`w-full px-4 py-2 border  rounded-md focus:outline-none focus:ring-2`}
                 required
               />
               <button
@@ -189,9 +114,7 @@ const ChangePassword: React.FC = () => {
                 <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
               </button>
             </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
-            )}
+            
           </div>
 
           {/* Password requirements */}

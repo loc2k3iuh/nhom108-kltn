@@ -1,4 +1,4 @@
-import { VerifyRegistrationRequest, VerifyResetTokenRequest } from './../types/requests/authRequest';
+import { VerifyRegistrationRequest, VerifyResetTokenRequest, LogoutRequest } from './../types/requests/authRequest';
 import axiosInstance from "@/lib/axios";
 import {
   LoginRequest,
@@ -20,6 +20,10 @@ export const login = async (
   return (reponse.data.result as LoginResponse) || null;
 };
 
+
+export const logoutService = async (data: LogoutRequest) : Promise<void> => {
+  await axiosInstance.post("/auth/logout", data);
+}
 
 export const sendMailForgotPasswordService = async (email: string) : Promise<void> => {
   await axiosInstance.post(`/auth/send-forgot-password?email=${email}&is_admin=false`);

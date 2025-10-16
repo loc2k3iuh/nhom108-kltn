@@ -13,5 +13,7 @@ public interface IUserService {
 
   UserResponse getUserDetailsFromToken();
 
+  void changePassword(ChangePasswordRequest changePasswordRequest);
+
   UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) throws IOException;
 }

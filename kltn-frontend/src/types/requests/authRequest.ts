@@ -24,3 +24,7 @@ export interface VerifyResetTokenRequest {
     password: string;
     retype_password: string;
 }
+
+export interface LogoutRequest {
+    token: string;
+}

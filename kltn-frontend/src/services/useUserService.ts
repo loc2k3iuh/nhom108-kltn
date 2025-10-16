@@ -1,7 +1,8 @@
 import axiosInstance from "@/lib/axios";
 import { RegisterUserRequest, VerifyRegistrationRequest } from "@/types/requests/authRequest";
-import { UpdateUserRequest } from "@/types/requests/useRequest";
+import { changePasswordRequest, UpdateUserRequest } from "@/types/requests/useRequest";
 import { UserResponse } from "@/types/responses/userResponse";
+import axios from "axios";
 
 export const getUserDetailFromToken = async (): Promise<UserResponse> => {
   const response = await axiosInstance.get("/users/my-information");
@@ -46,4 +47,8 @@ export const updateUserService = async (userId: number, data: UpdateUserRequest)
   });
 
   return response.data.result as UserResponse;
+}
+
+export const changePasswordService = async(data: changePasswordRequest): Promise<void> => {
+   await axios.post("/users/change-password", data);
 }
