@@ -1,5 +1,9 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "sonner";
+import {
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { toast, Toaster } from "sonner";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import OtpVerification from "./pages/AuthPages/OtpVerification";
@@ -15,9 +19,14 @@ import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
-import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
+import Products from "./pages/Forms/Products.tsx";
+import ProductVariants from "./pages/Forms/ProductVariants.tsx";
+import CategoryProductList from "./pages/Tables/CategoryProductList.tsx";
+import ProductList from "./pages/Tables/ProductList.tsx";
+import EditVariant from "./pages/Tables/EditVariant.tsx";
+import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
@@ -100,6 +109,37 @@ export default function App() {
             <Route
               path="/basic-tables"
               element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
+               />
+          
+            <Route
+              path="/forms/form-elements"
+              element={authUser ? <FormElements /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/forms/products"
+                element={authUser ? <Products /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/forms/products-variants"
+                element={authUser ? <ProductVariants /> : <Navigate to="/signin" />}
+            />
+
+            {/* Tables */}
+            <Route
+              path="/tables/category-product-list"
+              element={authUser ? <CategoryProductList /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/tables/product-list/:id"
+                element={authUser ? <ProductList /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/tables/basic-tables"
+                element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/tables/edit-variant/:variantId"
+                element={authUser ? <EditVariant /> : <Navigate to="/signin" />}
             />
 
             {/* Ui Elements */}

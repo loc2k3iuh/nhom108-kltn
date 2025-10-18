@@ -72,7 +72,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   verifyOtp: async (data, isChecked) => {
     try {
       set({ isLoading: true });
@@ -86,7 +85,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   checkAuth: async () => {
     try {
       set({ isLoading: true });
@@ -104,7 +102,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   resendOtp: async (data: ResendOtpRequest) => {
     try {
       set({ isLoading: true });
@@ -145,7 +142,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   updateUser: async (data: UpdateUserRequest) => {
     try {
       set({ isLoading: true });
@@ -162,7 +158,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   sendResetPassword: async (email: string) => {
     try {
       set({ isLoading: true });
@@ -174,7 +169,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   verifyResetPassword: async (data: VerifyResetTokenRequest) => {
     try {
       set({ isLoading: true });

@@ -4,7 +4,6 @@ import { UserListResponse, UserResponse } from "@/types/responses/authResponse";
 import axiosInstance from "../lib/axios";
 import { ChangePasswordRequest, UpdateClientRequest, UpdateUserRequest } from "@/types/requests/authRequest";
 import { getAllUsersRequest } from "@/types/requests/userRequest";
-import { aW } from "node_modules/@fullcalendar/core/internal-common";
 
 export const checkAuthUser = async (): Promise<UserResponse> => {
   const response = await axiosInstance.get("/users/my-information");
