@@ -248,7 +248,15 @@ public class UserServiceImpl implements IUserService {
     return userMapper.toUserResponse(userRepository.save(existUser));
   }
 
-  private String safeUpload(MultipartFile file, String username) {
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserDetails(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(user);
+    }
+
+    private String safeUpload(MultipartFile file, String username) {
     try {
       return is3Service.uploadFile(file, username);
     } catch (IOException e) {

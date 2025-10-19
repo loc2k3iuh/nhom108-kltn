@@ -106,11 +106,11 @@ public class UserController {
 
   @MessageMapping("/users/update-client")
   @SendTo("/topic/my-information")
-  public APIResponse<UserResponse> sendUpdatedClientInformation(@Payload UserResponse userResponse){
-      log.info("Change User Websocket {}", userResponse);
+  public APIResponse<UserResponse> sendUpdatedClientInformation(@Payload String userId) throws Exception {
+      log.info("Change User Websocket {}", userId);
       return  APIResponse.<UserResponse>builder()
               .message("Sent updated client successfully ! ")
-              .result(userResponse)
+              .result(iUserService.getUserDetails(Long.valueOf(userId)))
               .build();
   }
 }

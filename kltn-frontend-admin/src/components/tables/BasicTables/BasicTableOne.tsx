@@ -26,6 +26,7 @@ import EditUserModal from "./EditUserModal";
 import { useModal } from "@/hooks/useModal";
 import { useState } from "react";
 
+
 const parseAsState = createParser<"" | "true" | "false">({
   parse: (value) => (value === "true" || value === "false" ? value : ""),
   serialize: (value) => value,

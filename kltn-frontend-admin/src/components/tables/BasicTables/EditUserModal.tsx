@@ -12,7 +12,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { updateClient } from "@/services/useUserService";
-
+import { webSocketService } from "@/services/useSocketService";
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -153,8 +153,8 @@ export default function EditUserModal({
     };
 
     updateUserMutation({ userId: user.id, updateData });
+    webSocketService.send("/app/users/update-client", user.id);
   };
-
 
 
   if (!user) {

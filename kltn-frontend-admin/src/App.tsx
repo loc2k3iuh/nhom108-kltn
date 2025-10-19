@@ -31,15 +31,20 @@ import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
 export default function App() {
   const { checkAuth, authUser, isLoading, isInitialized } =
     useAuthStore();
+  const {disconnectWebSocket} = useAuthStore();
 
   useEffect(() => {
       checkAuth();
+     return () => {
+       disconnectWebSocket();
+     }
   }, [checkAuth]);
   console.log("authUser in App.jsx: ", authUser);
 
   useEffect(() => {
     const handleUnload = async () => {
         await deleteRefreshTokenFromRedis();
+       
     };
 
     window.addEventListener("beforeunload", handleUnload);

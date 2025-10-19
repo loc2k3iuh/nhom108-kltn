@@ -15,7 +15,7 @@ class WebSocketService {
     this.isConnecting = true;
 
     return new Promise((resolve, reject) => {
-      const socket = new SockJS(`${this.BASE_URL}/ws`); 
+      const socket = new SockJS(`${this.BASE_URL}/luther/ws`); 
       
       this.stompClient = new Client({
         webSocketFactory: () => socket,
@@ -78,6 +78,7 @@ class WebSocketService {
     this.stompClient.publish({
       destination,
       body: JSON.stringify(body),
+       headers: { 'content-type': 'application/json' }
     });
   }
 

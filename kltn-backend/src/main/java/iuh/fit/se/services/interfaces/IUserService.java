@@ -22,4 +22,7 @@ public interface IUserService {
   UserResponse updateMyInfo(Long id, UpdateUserRequest updateUserRequest) throws IOException;
 
   UserResponse updateClient(Long id, UpdateUserRequest updateUserRequest);
+
+  UserResponse getUserDetails(Long userId) throws Exception;
+
 }

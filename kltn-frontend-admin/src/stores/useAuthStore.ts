@@ -77,6 +77,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await verify(data, isChecked);
+      get().connectWebSocket();
       return response ?? null;
     } catch (error: unknown) {
       console.error(getErrorMessage(error, "Error in verifying OTP !"));
@@ -91,6 +92,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isLoading: true });
       const response = await checkAuthUser();
       set({ authUser: response, isInitialized: true });
+      get().connectWebSocket();
       return response;
     } catch (error: unknown) {
       console.error(getErrorMessage(error, "Error in checking user !"));
@@ -132,6 +134,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       await signOut(data);
       removeToken();
       set({ authUser: null });
+      get().disconnectWebSocket();
       return true;
     } catch (error: unknown) {
       console.error(getErrorMessage(error, "Error in logging out !"));

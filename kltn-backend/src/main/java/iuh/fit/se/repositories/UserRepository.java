@@ -42,4 +42,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
               + "AND (:isActive IS NULL OR u.isActive = :isActive)")
   Page<User> searchCustomer(
       @Param("fullName") String fullName, @Param("isActive") Boolean isActive, Pageable pageable);
+
+    @Query("select u from User u " +
+            "left join fetch u.roles r " +
+            "left join fetch r.permissions " +
+            "where u.id = :id")
+    Optional<User> findByIdWithRolesAndPermissions(@Param("id") Long id);
+
 }
