@@ -4,7 +4,6 @@ import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.*;
 import iuh.fit.se.dtos.responses.UserListResponse;
 import iuh.fit.se.dtos.responses.UserResponse;
-import iuh.fit.se.entities.User;
 import iuh.fit.se.services.interfaces.IUserService;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -16,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -70,13 +72,15 @@ public class UserController {
         .message("Updated user successfully !")
         .build();
   }
-@PutMapping("/client/{userId}")
-public APIResponse<UserResponse> updateClient(@PathVariable String userId, @Valid @ModelAttribute UpdateUserRequest updateUserRequest){
-      return  APIResponse.<UserResponse>builder()
-              .result(iUserService.updateClient(Long.valueOf(userId), updateUserRequest))
-              .message("Update client successfully !")
-              .build();
-}
+
+  @PutMapping("/client/{userId}")
+  public APIResponse<UserResponse> updateClient(
+      @PathVariable String userId, @Valid @ModelAttribute UpdateUserRequest updateUserRequest) {
+    return APIResponse.<UserResponse>builder()
+        .result(iUserService.updateClient(Long.valueOf(userId), updateUserRequest))
+        .message("Update client successfully !")
+        .build();
+  }
 
   @PostMapping("/change-password")
   public APIResponse<Void> changePassword(
@@ -98,5 +102,14 @@ public APIResponse<UserResponse> updateClient(@PathVariable String userId, @Vali
     return APIResponse.<UserListResponse>builder()
         .result(UserListResponse.builder().users(users).totalPage(totalPage).build())
         .build();
+  }
+
+  @MessageMapping("/users/update-client")
+  @SendTo("/topic/my-information")
+  public APIResponse<UserResponse> sendUpdatedClientInformation(@Payload UserResponse userResponse){
+      return  APIResponse.<UserResponse>builder()
+              .message("Sent updated client successfully ! ")
+              .result(userResponse)
+              .build();
   }
 }

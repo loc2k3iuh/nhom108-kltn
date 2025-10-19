@@ -51,7 +51,7 @@ public class SecurityConfig {
     "/api/v1/auth/verify-reset-token"
   };
 
-  String[] PUBLIC_GET_ENDPOINTS = {};
+  String[] PUBLIC_GET_ENDPOINTS = {"/swagger-ui/**", "/v3/api-docs/**"};
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -62,6 +62,8 @@ public class SecurityConfig {
             auth.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS)
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
+                .permitAll()
+                .requestMatchers("/ws/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated());
