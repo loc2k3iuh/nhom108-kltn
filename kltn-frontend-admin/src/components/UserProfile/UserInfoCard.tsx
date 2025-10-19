@@ -20,12 +20,14 @@ const updateSchema = yup.object({
   firstName: yup
     .string()
     .nullable()
+    .trim()
     .notRequired()
     .min(3, "First name must be at least 3 characters !")
     .max(50, "First name must not exceed 50 characters !"),
   lastName: yup
     .string()
     .nullable()
+    .trim()
     .notRequired()
     .min(2, "Last name must be at least 3 characters !")
     .max(50, "Last name must not exceed 50 characters !"),
@@ -42,6 +44,7 @@ const updateSchema = yup.object({
   address: yup
     .string()
     .nullable()
+    .trim()
     .notRequired()
     .min(5, "Address must be at least 5 characters !")
     .max(100, "Address must not exceed 100 character !"),

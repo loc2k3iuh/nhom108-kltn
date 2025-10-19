@@ -17,7 +17,7 @@ import {
   verifyPassword,
 } from "@/services/useAuthenticationService";
 import { LoginResponse, UserResponse } from "@/types/responses/authResponse";
-import { checkAuthUser, updateUser } from "@/services/useUserService";
+import { checkAuthUser, updateMyInfor } from "@/services/useUserService";
 import { getTokenFromLocalStorage, getTokenFromSessionStorage, getUserIdFromToken, removeToken } from "@/services/useTokenService";
 
 interface AuthStore {
@@ -135,7 +135,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ isLoading: true });
       const userId = getUserIdFromToken();
       if (userId) {
-        const response = await updateUser(userId, data);
+        const response = await updateMyInfor(userId, data);
         set({ authUser: response });
       }
       return true;

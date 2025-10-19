@@ -9,7 +9,6 @@ import { useQuery } from "@tanstack/react-query";
 import Badge from "../../ui/badge/Badge";
 import { getAllUsers } from "@/services/useUserService";
 import { UserResponse } from "@/types/responses/authResponse";
-import { use, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,21 +20,42 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { getAllUsersRequest } from "@/types/requests/userRequest";
+import { createParser, parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import { Button } from "@/components/ui/button";
+import EditUserModal from "./EditUserModal";
+import { useModal } from "@/hooks/useModal";
+import { useState } from "react";
+
+const parseAsState = createParser<"" | "true" | "false">({
+  parse: (value) => (value === "true" || value === "false" ? value : ""),
+  serialize: (value) => value,
+});
 
 export default function BasicTableOne() {
   const { authUser } = useAuthStore();
-  const [searchParams, setSearchParams] = useState<getAllUsersRequest>({
-    searchTerm: "",
-    stateParam: "",
-    currentPage: 0,
-    itemsPerPage: 10,
-  });
-
-  const { data, isError, error, isLoading } = useQuery({
-    queryKey: ["users", searchParams],
-    queryFn: () => {
-      return getAllUsers(searchParams);
+  const { isOpen: isEditModalOpen, openModal: openEditModal, closeModal: closeEditModal } = useModal();
+  const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
+  
+  const [query, setQuery] = useQueryStates(
+    {
+      keyword: parseAsString.withDefault(""),
+      page: parseAsInteger.withDefault(1),
+      limit: parseAsInteger.withDefault(10),
+      state: parseAsState.withDefault(""),
     },
+    { history: "replace" }
+  );
+
+  const searchParams: getAllUsersRequest = {
+    searchTerm: query.keyword,
+    stateParam: query.state,
+    currentPage: query.page - 1, 
+    itemsPerPage: query.limit,
+  };
+
+  const { data, isError, error } = useQuery({
+    queryKey: ["users", searchParams],
+    queryFn: () => getAllUsers(searchParams),
     staleTime: 5 * 60 * 1000,
     enabled: !!authUser,
   });
@@ -44,33 +64,31 @@ export default function BasicTableOne() {
   const totalPages = data?.total_page || 0;
 
   const handlePageChange = (page: number) => {
-    if (page >= 0 && page < totalPages) {
-      setSearchParams((prev) => ({
-        ...prev,
-        currentPage: page,
-      }));
+    if (page >= 1 && page <= totalPages) {
+      setQuery({ page });
     }
   };
 
   const handleSearch = (searchTerm: string) => {
-    setSearchParams((prev) => ({
-      ...prev,
-      searchTerm,
-      currentPage: 0, // Reset to first page when searching
-    }));
+    setQuery({ keyword: searchTerm, page: 1 });
+  };
+
+  const handleEditUser = (user: UserResponse) => {
+    setSelectedUser(user);
+    openEditModal();
   };
 
   const renderPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
     let startPage = Math.max(
-      0,
-      searchParams.currentPage - Math.floor(maxVisiblePages / 2)
+      1,
+      query.page - Math.floor(maxVisiblePages / 2)
     );
-    let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(0, endPage - maxVisiblePages + 1);
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
     for (let i = startPage; i <= endPage; i++) {
@@ -79,18 +97,23 @@ export default function BasicTableOne() {
           key={i}
           onClick={() => handlePageChange(i)}
           className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-            i === searchParams.currentPage
+            i === query.page
               ? "bg-blue-500 text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           }`}
         >
-          {i + 1}
+          {i}
         </button>
       );
     }
 
     return pages;
   };
+
+  const convertDate = (date: string) : string => {
+      const [month, day, year] = date.split("/");
+      return  `${day}-${month}-${year}`;
+  }
 
   if (isError) {
     return (
@@ -114,10 +137,10 @@ export default function BasicTableOne() {
               type="text"
               placeholder="Search users by name, email, username..."
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
-              value={searchParams.searchTerm}
+              value={query.keyword}
               onChange={(e) => handleSearch(e.target.value)}
             />
-            {searchParams.searchTerm && (
+            {query.keyword && (
               <button
                 onClick={() => handleSearch("")}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -146,15 +169,8 @@ export default function BasicTableOne() {
             </div>
             <select
               className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors appearance-none cursor-pointer"
-              value={searchParams.stateParam}
-              onChange={(e) =>
-                setSearchParams((prev) => ({
-                  ...prev,
-                  stateParam: e.target
-                    .value as getAllUsersRequest["stateParam"],
-                  currentPage: 0,
-                }))
-              }
+              value={query.state}
+              onChange={(e) => setQuery({ state: e.target.value as "" | "true" | "false", page: 1 })}
             >
               <option value="">All Users</option>
               <option value="true">Active Users</option>
@@ -181,14 +197,8 @@ export default function BasicTableOne() {
           <div className="relative sm:w-32">
             <select
               className="w-full px-3 py-3 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors appearance-none cursor-pointer text-sm"
-              value={searchParams.itemsPerPage}
-              onChange={(e) =>
-                setSearchParams((prev) => ({
-                  ...prev,
-                  itemsPerPage: Number(e.target.value),
-                  currentPage: 0,
-                }))
-              }
+              value={query.limit}
+              onChange={(e) => setQuery({ limit: Number(e.target.value), page: 1 })}
             >
               <option value={5}>5 per page</option>
               <option value={10}>10 per page</option>
@@ -219,22 +229,22 @@ export default function BasicTableOne() {
             <Users className="h-4 w-4" />
             <span>Total: {users.length} users</span>
           </div>
-          {searchParams.stateParam === "true" && (
+          {query.state === "true" && (
             <div className="flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
               <UserCheck className="h-4 w-4" />
               <span>Active only</span>
             </div>
           )}
-          {searchParams.stateParam === "false" && (
+          {query.state === "false" && (
             <div className="flex items-center gap-2 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full">
               <UserX className="h-4 w-4" />
               <span>Inactive only</span>
             </div>
           )}
-          {searchParams.searchTerm && (
+          {query.keyword && (
             <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
               <Search className="h-4 w-4" />
-              <span>Searching: "{searchParams.searchTerm}"</span>
+              <span>Searching: "{query.keyword}"</span>
             </div>
           )}
         </div>
@@ -277,6 +287,13 @@ export default function BasicTableOne() {
                 >
                   Created Date
                 </TableCell>
+
+                 <TableCell
+                  isHeader
+                  className="px-4 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Action
+                </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -284,12 +301,12 @@ export default function BasicTableOne() {
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {users.length === 0 ? (
                 <TableRow>
-                  <TableCell
+                  <td 
                     colSpan={5}
                     className="text-center py-8 text-gray-500"
                   >
                     No users found
-                  </TableCell>
+                  </td>
                 </TableRow>
               ) : (
                 users.map((user: UserResponse) => (
@@ -339,8 +356,11 @@ export default function BasicTableOne() {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {user.created_date
-                        ? new Date(user.created_date).toLocaleDateString()
+                        ? convertDate(new Date(user.created_date).toLocaleDateString())
                         : "N/A"}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      <Button onClick={() => handleEditUser(user)}>Edit</Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -356,18 +376,18 @@ export default function BasicTableOne() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span>
-                Showing page {searchParams.currentPage + 1} of {totalPages}
+                Showing page {query.page} of {totalPages}
               </span>
               <span className="hidden sm:inline">
-                ({searchParams.itemsPerPage} items per page)
+                ({query.limit} items per page)
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               {/* Previous Button */}
               <button
-                onClick={() => handlePageChange(searchParams.currentPage - 1)}
-                disabled={searchParams.currentPage === 0}
+                onClick={() => handlePageChange(query.page - 1)}
+                disabled={query.page === 1}
                 className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -379,8 +399,8 @@ export default function BasicTableOne() {
 
               {/* Next Button */}
               <button
-                onClick={() => handlePageChange(searchParams.currentPage + 1)}
-                disabled={searchParams.currentPage === totalPages - 1}
+                onClick={() => handlePageChange(query.page + 1)}
+                disabled={query.page === totalPages}
                 className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               >
                 Next
@@ -390,6 +410,13 @@ export default function BasicTableOne() {
           </div>
         </div>
       )}
+      
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        user={selectedUser}
+      />
     </div>
   );
 }

@@ -11,6 +11,23 @@ export const checkAuthUser = async (): Promise<UserResponse> => {
 };
 
 
+export const updateMyInfor = async (userId: number, data: UpdateUserRequest): Promise<UserResponse> => {
+  const formData = new FormData();
+
+  if(data.fullName) formData.append("fullName", data.fullName);
+  if(data.phoneNumber) formData.append("phoneNumber", data.phoneNumber);
+  if(data.address) formData.append("address", data.address);
+  if(data.dateOfBirth) formData.append("dateOfBirth", data.dateOfBirth);
+  if(data.file) formData.append("file", data.file);
+  const response = await axiosInstance.put(`/users/${userId}`, formData, {
+    headers: {
+      "Content-Type" : "multipart/form-data"
+    }
+  });
+
+  return response.data.result as UserResponse;
+}
+
 export const updateUser = async (userId: number, data: UpdateUserRequest): Promise<UserResponse> => {
   const formData = new FormData();
 
@@ -27,6 +44,7 @@ export const updateUser = async (userId: number, data: UpdateUserRequest): Promi
 
   return response.data.result as UserResponse;
 }
+
 
 export const changePassword = async(data: ChangePasswordRequest): Promise<void> => {
   await axiosInstance.post("/users/change-password", data);

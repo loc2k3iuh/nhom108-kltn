@@ -16,12 +16,16 @@ export interface SignOutRequest {
     token: string;
 }
 
-export interface UpdateUserRequest {
-    fullName?: string | null;
+export interface UpdateUserRequest{
+   fullName?: string | null;
     phoneNumber?: string | null;
     address?: string | null;
     dateOfBirth?: string | null;
     file?: File | null;
+}
+
+export interface UpdateClientRequest extends UpdateUserRequest {
+    isActive?: boolean | null;
 }
 
 export interface VerifyResetTokenRequest {
