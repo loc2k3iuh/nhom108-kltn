@@ -19,11 +19,13 @@ import {
 import { LoginResponse, UserResponse } from "@/types/responses/authResponse";
 import { checkAuthUser, updateMyInfor } from "@/services/useUserService";
 import { getTokenFromLocalStorage, getTokenFromSessionStorage, getUserIdFromToken, removeToken } from "@/services/useTokenService";
+import { webSocketService } from "@/services/useSocketService";
 
 interface AuthStore {
   isLoading: boolean;
-    isInitialized: boolean;
+  isInitialized: boolean;
   authUser: UserResponse | null;
+  isWebSocketConnected: boolean;
   logIn: (data: LoginRequest) => Promise<string | null>;
   verifyOtp: (
     data: OtpTokenRequest,
@@ -35,6 +37,9 @@ interface AuthStore {
   updateUser: (data: UpdateUserRequest) => Promise<boolean>;
   sendResetPassword: (email: string) => Promise<string>;
   verifyResetPassword: (data: VerifyResetTokenRequest) => Promise<boolean>;
+  connectWebSocket: () => Promise<void>;
+  disconnectWebSocket: () => void;
+
 }
 
 function getErrorMessage(err: unknown, fallback: string) {
@@ -42,10 +47,11 @@ function getErrorMessage(err: unknown, fallback: string) {
   return anyErr?.response?.data?.message ?? fallback;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   isLoading: false,
   isInitialized: false,
   authUser: null,
+  isWebSocketConnected: false,
 
   logIn: async (data) => {
     try {
@@ -66,6 +72,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ isLoading: false });
     }
   },
+
   verifyOtp: async (data, isChecked) => {
     try {
       set({ isLoading: true });
@@ -78,6 +85,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ isLoading: false });
     }
   },
+
   checkAuth: async () => {
     try {
       set({ isLoading: true });
@@ -92,6 +100,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ isLoading: false });
     }
   },
+
   resendOtp: async (data: ResendOtpRequest) => {
     try {
       set({ isLoading: true });
@@ -109,6 +118,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
     return false;
   },
+
   signOut: async () => {
     try {
       set({ isLoading: true });
@@ -130,6 +140,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ isLoading: false });
     }
   },
+
   updateUser: async (data: UpdateUserRequest) => {
     try {
       set({ isLoading: true });
@@ -146,6 +157,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ isLoading: false });
     }
   },
+
   sendResetPassword: async (email: string) => {
     try {
       set({ isLoading: true });
@@ -157,6 +169,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ isLoading: false });
     }
   },
+
   verifyResetPassword: async (data: VerifyResetTokenRequest) => {
     try {
       set({ isLoading: true });
@@ -171,4 +184,32 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({isLoading: false});
     }
   },
+
+ 
+
+  connectWebSocket: async () => {
+    if (get().isWebSocketConnected || webSocketService.isConnectedStatus()) {
+      console.log('WebSocket already connected');
+      return;
+    }
+    try {
+      await webSocketService.connect();
+      set({ isWebSocketConnected: true });
+      
+      console.log('WebSocket connected and subscriptions set up');
+      
+    } catch (error) {
+      console.error('WebSocket connection failed:', error);
+      set({ isWebSocketConnected: false });
+      throw error;
+    }
+  },
+
+  disconnectWebSocket: () => {
+    webSocketService.disconnect();
+    set({ isWebSocketConnected: false });
+    console.log('WebSocket disconnected');
+  },
+
+ 
 }));
