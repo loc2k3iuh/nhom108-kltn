@@ -1,8 +1,9 @@
 
 
-import { UserResponse } from "@/types/responses/authResponse";
+import { UserListResponse, UserResponse } from "@/types/responses/authResponse";
 import axiosInstance from "../lib/axios";
 import { ChangePasswordRequest, UpdateUserRequest } from "@/types/requests/authRequest";
+import { getAllUsersRequest } from "@/types/requests/userRequest";
 
 export const checkAuthUser = async (): Promise<UserResponse> => {
   const response = await axiosInstance.get("/users/my-information");
@@ -28,5 +29,10 @@ export const updateUser = async (userId: number, data: UpdateUserRequest): Promi
 }
 
 export const changePassword = async(data: ChangePasswordRequest): Promise<void> => {
-  await axiosInstance.post("/auth/change-password", data);
+  await axiosInstance.post("/users/change-password", data);
+}
+
+export const getAllUsers= async(data: getAllUsersRequest) : Promise<UserListResponse> => {
+  const response =  await axiosInstance.get(`/users?keyword=${data.searchTerm}&state=${data.stateParam}&page=${data.currentPage}&limit=${data.itemsPerPage}`);
+  return response.data?.result as UserListResponse;
 }

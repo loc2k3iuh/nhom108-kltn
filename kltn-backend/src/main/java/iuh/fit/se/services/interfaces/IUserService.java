@@ -3,6 +3,8 @@ package iuh.fit.se.services.interfaces;
 import iuh.fit.se.dtos.requests.*;
 import iuh.fit.se.dtos.responses.UserResponse;
 import java.io.IOException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 public interface IUserService {
   boolean createUser(RegisterUserRequest createUserRequest) throws Exception;
@@ -14,6 +16,8 @@ public interface IUserService {
   UserResponse getUserDetailsFromToken();
 
   void changePassword(ChangePasswordRequest changePasswordRequest);
+
+  Page<UserResponse> getAllCustomers(String keyword, Boolean isActive, PageRequest pageRequest);
 
   UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) throws IOException;
 }

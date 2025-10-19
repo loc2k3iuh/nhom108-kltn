@@ -2,14 +2,19 @@ package iuh.fit.se.controllers;
 
 import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.*;
+import iuh.fit.se.dtos.responses.UserListResponse;
 import iuh.fit.se.dtos.responses.UserResponse;
 import iuh.fit.se.services.interfaces.IUserService;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -65,12 +70,25 @@ public class UserController {
         .build();
   }
 
-    @PostMapping("/change-password")
-    public APIResponse<Void> changePassword(
-            @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
-      iUserService.changePassword(changePasswordRequest);
-        return APIResponse.<Void>builder()
-                .message("Change password successfully !")
-                .build();
-    }
+  @PostMapping("/change-password")
+  public APIResponse<Void> changePassword(
+      @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+    iUserService.changePassword(changePasswordRequest);
+    return APIResponse.<Void>builder().message("Change password successfully !").build();
+  }
+
+  @GetMapping("")
+  public APIResponse<UserListResponse> getAllCustomers(
+      @RequestParam(value = "keyword", required = false) String keyword,
+      @RequestParam(value = "state", required = false) Boolean state,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int limit) {
+    PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("id").ascending());
+    Page<UserResponse> userPage = iUserService.getAllCustomers(keyword, state, pageRequest);
+    int totalPage = userPage.getTotalPages();
+    List<UserResponse> users = userPage.getContent();
+    return APIResponse.<UserListResponse>builder()
+        .result(UserListResponse.builder().users(users).totalPage(totalPage).build())
+        .build();
+  }
 }

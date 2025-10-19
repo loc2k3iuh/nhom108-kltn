@@ -18,10 +18,11 @@ import {
 } from "@/services/useAuthenticationService";
 import { LoginResponse, UserResponse } from "@/types/responses/authResponse";
 import { checkAuthUser, updateUser } from "@/services/useUserService";
-import { getUserIdFromToken } from "@/services/useTokenService";
+import { getTokenFromLocalStorage, getTokenFromSessionStorage, getUserIdFromToken, removeToken } from "@/services/useTokenService";
 
 interface AuthStore {
   isLoading: boolean;
+    isInitialized: boolean;
   authUser: UserResponse | null;
   logIn: (data: LoginRequest) => Promise<string | null>;
   verifyOtp: (
@@ -30,7 +31,7 @@ interface AuthStore {
   ) => Promise<LoginResponse | null>;
   checkAuth: () => Promise<UserResponse | null>;
   resendOtp: (data: ResendOtpRequest) => Promise<boolean>;
-  signOut: (data: SignOutRequest) => Promise<boolean>;
+  signOut: () => Promise<boolean>;
   updateUser: (data: UpdateUserRequest) => Promise<boolean>;
   sendResetPassword: (email: string) => Promise<string>;
   verifyResetPassword: (data: VerifyResetTokenRequest) => Promise<boolean>;
@@ -41,8 +42,9 @@ function getErrorMessage(err: unknown, fallback: string) {
   return anyErr?.response?.data?.message ?? fallback;
 }
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
+export const useAuthStore = create<AuthStore>((set) => ({
   isLoading: false,
+  isInitialized: false,
   authUser: null,
 
   logIn: async (data) => {
@@ -80,10 +82,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await checkAuthUser();
-      set({ authUser: response });
+      set({ authUser: response, isInitialized: true });
       return response;
     } catch (error: unknown) {
       console.error(getErrorMessage(error, "Error in checking user !"));
+      set({ authUser: null, isInitialized: true });
       return null;
     } finally {
       set({ isLoading: false });
@@ -106,10 +109,18 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
     return false;
   },
-  signOut: async (data: SignOutRequest) => {
+  signOut: async () => {
     try {
       set({ isLoading: true });
+      const token = getTokenFromLocalStorage() || getTokenFromSessionStorage();
+      if(!token || token === ""){
+        return false;
+      }
+      const data : SignOutRequest = {
+        token
+      }
       await signOut(data);
+      removeToken();
       set({ authUser: null });
       return true;
     } catch (error: unknown) {

@@ -2,7 +2,11 @@ import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router-dom";
-import { getTokenFromLocalStorage, getTokenFromSessionStorage, removeToken } from "@/services/useTokenService";
+import {
+  getTokenFromLocalStorage,
+  getTokenFromSessionStorage,
+  removeToken,
+} from "@/services/useTokenService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { SignOutRequest } from "@/types/requests/authRequest";
 import { Button } from "../ui/button";
@@ -11,29 +15,18 @@ import { toast } from "sonner";
 export default function UserDropdown() {
   const { authUser } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
-  const { signOut} = useAuthStore();
+  const { signOut } = useAuthStore();
   const navigate = useNavigate();
   const handleSignOut = async () => {
-    const token  = getTokenFromLocalStorage() || getTokenFromSessionStorage();
-    const tokenRequest : SignOutRequest = {
-      token : token ? token : ""
-    }
-    if(tokenRequest.token === ""){
-      return;
-    }
-    removeToken();
-    const isSignedOut = await signOut(tokenRequest);
+    const isSuccess = await signOut();
 
-    if(isSignedOut){
+    if (isSuccess) {
       toast.success("Logout successfully !");
-    }else{
-      toast.error("Loggout failed !");
+      navigate("/");
+    } else {
+      toast.error("Logout failed !");
     }
-
-    navigate("/");
-    
-  }
-
+  };
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -49,10 +42,15 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src={authUser?.avatar_url  || "/images/user/7309681.jpg"} alt="User" />
+          <img
+            src={authUser?.avatar_url || "/images/user/7309681.jpg"}
+            alt="User"
+          />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">{authUser?.username}</span>
+        <span className="block mr-1 font-medium text-theme-sm">
+          {authUser?.username}
+        </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -183,9 +181,9 @@ export default function UserDropdown() {
               fill=""
             />
           </svg>
-         <span className="text-error-600 group-hover:text-white dark:group-hover:text-white dark:text-error-500">
-           Log out
-         </span>
+          <span className="text-error-600 group-hover:text-white dark:group-hover:text-white dark:text-error-500">
+            Log out
+          </span>
         </Button>
       </Dropdown>
     </div>

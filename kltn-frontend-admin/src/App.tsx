@@ -29,7 +29,7 @@ import Reloading from "./components/skeletions/Reloading";
 import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
 
 export default function App() {
-  const { checkAuth, authUser, isLoading } =
+  const { checkAuth, authUser, isLoading, isInitialized } =
     useAuthStore();
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function App() {
     };
   }, []);
   
-  if (isLoading) {
+  if (isLoading || !isInitialized) {
     return <Reloading />;
   }
 

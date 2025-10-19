@@ -22,6 +22,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -105,8 +107,8 @@ public class UserServiceImpl implements IUserService {
             .password(encodedPassword)
             .fullName(request.getFullName())
             .roles(Set.of(defaultRole))
-            .isActive(false)
-            .enabled(false)
+            .isActive(true)
+            .enabled(true)
             .build();
 
     MultipartFile file = request.getFile();
@@ -164,7 +166,8 @@ public class UserServiceImpl implements IUserService {
     if (authentication == null || !authentication.isAuthenticated()) {
       throw new AppException(ErrorCode.UNAUTHORIZED);
     }
-    return userMapper.toUserResponse(userRepository
+    return userMapper.toUserResponse(
+        userRepository
             .findByUsername(authentication.getName())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
   }
@@ -172,20 +175,32 @@ public class UserServiceImpl implements IUserService {
   @Override
   public void changePassword(ChangePasswordRequest changePasswordRequest) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
-    if(authentication == null || !authentication.isAuthenticated()){
-        throw new AppException(ErrorCode.UNAUTHORIZED);
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
     }
 
-    User existingUser = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    User existingUser =
+        userRepository
+            .findByUsername(authentication.getName())
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-    boolean isAuthenticated = passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), existingUser.getPassword());
-    if(!isAuthenticated){
-        throw  new AppException(ErrorCode.PASSWORD_MUST_MATCH);
+    boolean isAuthenticated =
+        passwordEncoder.matches(
+            changePasswordRequest.getCurrentPassword(), existingUser.getPassword());
+    if (!isAuthenticated) {
+      throw new AppException(ErrorCode.PASSWORD_MUST_MATCH);
     }
     String encodedPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
     existingUser.setPassword(encodedPassword);
     userRepository.save(existingUser);
+  }
+
+  @Override
+  public Page<UserResponse> getAllCustomers(
+      String keyword, Boolean isActive, PageRequest pageRequest) {
+    Page<User> userPage = userRepository.searchCustomer(keyword, isActive, pageRequest);
+    return userPage.map(userMapper::toUserResponse);
   }
 
   @Override

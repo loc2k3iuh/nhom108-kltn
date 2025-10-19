@@ -1,3 +1,4 @@
+
 export interface LoginResponse {
     authenticated: boolean;
     access_token: string;
@@ -34,4 +35,9 @@ export interface UserResponse {
   roles: Role[];
   status: string | null;
   created_date: string | null;
+}
+
+export interface UserListResponse{
+ users: UserResponse[];
+ total_page : number;
 }

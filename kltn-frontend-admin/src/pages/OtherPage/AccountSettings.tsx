@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "../../components/ui/input";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
@@ -10,6 +11,8 @@ import PageMeta from "../../components/common/PageMeta";
 import { changePassword } from "@/services/useUserService";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const validatedPasswordMessage = "Mật khẩu phải có ít nhất 8 ký tự !";
 const changePasswordSchema = yup.object({
@@ -17,8 +20,7 @@ const changePasswordSchema = yup.object({
     .string()
     .nonNullable()
     .required()
-    .trim()
-    .min(8, validatedPasswordMessage),
+    .trim(),
   new_password: yup
     .string()
     .nonNullable()
@@ -35,6 +37,8 @@ type ChangePasswordForm = yup.InferType<typeof changePasswordSchema>;
 type TabType = "profile" | "security" | "preferences";
 
 export default function AccountSettings() {
+  const navigate = useNavigate();
+  const { signOut } = useAuthStore();
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -44,25 +48,30 @@ export default function AccountSettings() {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<ChangePasswordForm>({
     resolver: yupResolver(changePasswordSchema) as any,
     defaultValues: {
-        current_password: "",
-        new_password: "",
-        retype_new_password: "",
-    }
+      current_password: "",
+      new_password: "",
+      retype_new_password: "",
+    },
   });
 
   const onSubmit = async (data: ChangePasswordForm) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       await changePassword(data);
-      toast.success("Password changed successfully!");
+
+      const response = await signOut();
+      if (response) {
+        navigate("/signin");
+        toast.success("Đổi mật khẩu thành công vui lòng đăng nhập lại !");
+      } else {
+        toast.error("Đổi mật khẩu thất bại !");
+      }
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || "Failed to change password"
-      );
+      console.error("Change password failed:", error?.response?.data?.message);
+      toast.error("Đổi mật khẩu thất bại !");
     } finally {
       setIsLoading(false);
     }
@@ -96,18 +105,29 @@ export default function AccountSettings() {
           <Label htmlFor="old_password">
             Current Password <span className="text-error-500">*</span>
           </Label>
-          <Input
-            id="old_password"
-            className="mt-2"
-            type="password"
-            placeholder="Enter your current password"
-            {...register("current_password", {
-              required: "Current password is required",
-            })}
-          />
+          <div className="relative mt-2">
+            <Input
+              id="old_password"
+              type={showOldPassword ? "text" : "password"}
+              placeholder="Enter your current password"
+              {...register("current_password", {
+                required: "Current password is required",
+              })}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowOldPassword(!showOldPassword)}
+            >
+              <FontAwesomeIcon
+                icon={showOldPassword ? faEyeSlash : faEye}
+                className="h-4 w-4 text-gray-400 hover:text-gray-600"
+              />
+            </button>
+          </div>
           {errors.current_password && (
             <p className="text-red-500 text-sm mt-1">
-              {errors.current_password.message}
+              {String(errors.current_password.message)}
             </p>
           )}
         </div>
@@ -116,22 +136,33 @@ export default function AccountSettings() {
           <Label htmlFor="password">
             New Password <span className="text-error-500">*</span>
           </Label>
-          <Input
-            id="password"
-            className="mt-2"
-            type="password"
-            placeholder="Enter new password"
-            {...register("new_password", {
-              required: "New password is required",
-              minLength: {
-                value: 6,
-                message: "Password must be at least 6 characters",
-              },
-            })}
-          />
+          <div className="relative mt-2">
+            <Input
+              id="password"
+              type={showNewPassword ? "text" : "password"}
+              placeholder="Enter new password"
+              {...register("new_password", {
+                required: "New password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+            >
+              <FontAwesomeIcon
+                icon={showNewPassword ? faEyeSlash : faEye}
+                className="h-4 w-4 text-gray-400 hover:text-gray-600"
+              />
+            </button>
+          </div>
           {errors.new_password && (
             <p className="text-red-500 text-sm mt-1">
-              {errors.new_password.message}
+              {String(errors.new_password.message)}
             </p>
           )}
         </div>
@@ -140,16 +171,27 @@ export default function AccountSettings() {
           <Label htmlFor="retype_password">
             Confirm New Password <span className="text-error-500">*</span>
           </Label>
-          <Input
-            id="retype_password"
-            className="mt-2"
-            type="password"
-            placeholder="Confirm new password"
-            {...register("retype_new_password")}
-          />
+          <div className="relative mt-2">
+            <Input
+              id="retype_password"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm new password"
+              {...register("retype_new_password")}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              <FontAwesomeIcon
+                icon={showConfirmPassword ? faEyeSlash : faEye}
+                className="h-4 w-4 text-gray-400 hover:text-gray-600"
+              />
+            </button>
+          </div>
           {errors.retype_new_password && (
             <p className="text-red-500 text-sm mt-1">
-              {errors.retype_new_password.message}
+              {String(errors.retype_new_password.message)}
             </p>
           )}
         </div>

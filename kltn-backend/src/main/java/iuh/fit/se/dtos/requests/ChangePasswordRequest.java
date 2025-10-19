@@ -12,7 +12,10 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@PasswordMatch(field = "newPassword", fieldMatch = "retypeNewPassword", message = "PASSWORD_MUST_MATCH")
+@PasswordMatch(
+    field = "newPassword",
+    fieldMatch = "retypeNewPassword",
+    message = "PASSWORD_MUST_MATCH")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChangePasswordRequest {
 

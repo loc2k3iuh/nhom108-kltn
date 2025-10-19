@@ -140,6 +140,4 @@ public class AuthenticationController {
     iAuthenticationService.verifyResetToken(verifyResetTokenRequest);
     return APIResponse.<Void>builder().message("Your password changed successfully !").build();
   }
-
-
 }
