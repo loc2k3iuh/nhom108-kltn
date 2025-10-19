@@ -31,4 +31,6 @@ public class UpdateUserRequest {
   LocalDate dateOfBirth;
 
   MultipartFile file;
+
+  Boolean isActive;
 }

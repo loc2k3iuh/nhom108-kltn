@@ -206,39 +206,50 @@ public class UserServiceImpl implements IUserService {
   @Override
   @Transactional
   @PostMapping("returnObject.username == authentication.username")
-  public UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) {
-    User existUser =
-        userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-    Optional.ofNullable(updateUserRequest.getFullName())
-        .filter(fn -> !fn.isBlank())
-        .ifPresent(existUser::setFullName);
-
-    Optional.ofNullable(updateUserRequest.getPhoneNumber())
-        .filter(pn -> !pn.isBlank())
-        .ifPresent(existUser::setPhoneNumber);
-
-    Optional.ofNullable(updateUserRequest.getDateOfBirth()).ifPresent(existUser::setDateOfBirth);
-
-    Optional.ofNullable(updateUserRequest.getAddress())
-        .filter(ad -> !ad.isBlank())
-        .ifPresent(existUser::setAddress);
-
-    Optional.ofNullable(updateUserRequest.getFile())
-        .filter(f -> !f.isEmpty())
-        .map(
-            f -> {
-              if (!existUser.getAvatarUrl().isBlank()) {
-                is3Service.deleteFile(existUser.getAvatarUrl());
-              }
-              return safeUpload(f, existUser.getUsername());
-            })
-        .ifPresent(existUser::setAvatarUrl);
-
-    return userMapper.toUserResponse(existUser);
+  public UserResponse updateMyInfo(Long id, UpdateUserRequest updateUserRequest) {
+    return userMapper.toUserResponse(userRepository.save(updateUser(id, updateUserRequest)));
   }
 
-  private String safeUpload(MultipartFile file, String username) {
+
+  private User updateUser(Long id, UpdateUserRequest updateUserRequest) {
+      User existUser =
+              userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+      Optional.ofNullable(updateUserRequest.getFullName())
+              .filter(fn -> !fn.isBlank())
+              .ifPresent(existUser::setFullName);
+
+      Optional.ofNullable(updateUserRequest.getPhoneNumber())
+              .filter(pn -> !pn.isBlank())
+              .ifPresent(existUser::setPhoneNumber);
+
+      Optional.ofNullable(updateUserRequest.getDateOfBirth()).ifPresent(existUser::setDateOfBirth);
+
+      Optional.ofNullable(updateUserRequest.getAddress())
+              .filter(ad -> !ad.isBlank())
+              .ifPresent(existUser::setAddress);
+
+      Optional.ofNullable(updateUserRequest.getFile())
+              .filter(f -> !f.isEmpty())
+              .map(
+                      f -> {
+                          if (!existUser.getAvatarUrl().isBlank()) {
+                              is3Service.deleteFile(existUser.getAvatarUrl());
+                          }
+                          return safeUpload(f, existUser.getUsername());
+                      })
+              .ifPresent(existUser::setAvatarUrl);
+      return  existUser;
+  }
+
+    @Override
+    public UserResponse updateClient(Long id, UpdateUserRequest updateUserRequest) {
+        User existUser = updateUser(id, updateUserRequest);
+        existUser.setIsActive(updateUserRequest.getIsActive());
+        return userMapper.toUserResponse(userRepository.save(existUser));
+    }
+
+    private String safeUpload(MultipartFile file, String username) {
     try {
       return is3Service.uploadFile(file, username);
     } catch (IOException e) {

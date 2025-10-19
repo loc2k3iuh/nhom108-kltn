@@ -2,8 +2,9 @@
 
 import { UserListResponse, UserResponse } from "@/types/responses/authResponse";
 import axiosInstance from "../lib/axios";
-import { ChangePasswordRequest, UpdateUserRequest } from "@/types/requests/authRequest";
+import { ChangePasswordRequest, UpdateClientRequest, UpdateUserRequest } from "@/types/requests/authRequest";
 import { getAllUsersRequest } from "@/types/requests/userRequest";
+import { aW } from "node_modules/@fullcalendar/core/internal-common";
 
 export const checkAuthUser = async (): Promise<UserResponse> => {
   const response = await axiosInstance.get("/users/my-information");
@@ -28,21 +29,21 @@ export const updateMyInfor = async (userId: number, data: UpdateUserRequest): Pr
   return response.data.result as UserResponse;
 }
 
-export const updateUser = async (userId: number, data: UpdateUserRequest): Promise<UserResponse> => {
+export const updateClient = async(clientId: number, data: UpdateClientRequest) : Promise<UserResponse> => {
   const formData = new FormData();
-
   if(data.fullName) formData.append("fullName", data.fullName);
   if(data.phoneNumber) formData.append("phoneNumber", data.phoneNumber);
   if(data.address) formData.append("address", data.address);
   if(data.dateOfBirth) formData.append("dateOfBirth", data.dateOfBirth);
   if(data.file) formData.append("file", data.file);
-  const response = await axiosInstance.put(`/users/${userId}`, formData, {
+  formData.append("isActive", data.isActive ? "true": "false");
+  const response = await axiosInstance.put(`/users/client/${clientId}`, formData, {
     headers: {
       "Content-Type" : "multipart/form-data"
     }
   });
-
   return response.data.result as UserResponse;
+  
 }
 
 

@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
-import { updateUser } from "@/services/useUserService";
+import { updateClient } from "@/services/useUserService";
+
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -110,7 +111,7 @@ export default function EditUserModal({
 
   const { mutate: updateUserMutation, isPending } = useMutation({
     mutationFn: (data: { userId: number; updateData: UpdateClientRequest }) =>
-      updateUser(data.userId, data.updateData),
+      updateClient(data.userId, data.updateData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("User updated successfully!");
@@ -130,7 +131,7 @@ export default function EditUserModal({
         phoneNumber: user.phone_number || "",
         address: user.address || "",
         dateOfBirth: user.date_of_birth || "",
-        isActive: user.is_active || true,
+        isActive: user.is_active,
         file: null,
       });
       setAvatarPreview(user.avatar_url);

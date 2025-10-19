@@ -4,6 +4,7 @@ import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.*;
 import iuh.fit.se.dtos.responses.UserListResponse;
 import iuh.fit.se.dtos.responses.UserResponse;
+import iuh.fit.se.entities.User;
 import iuh.fit.se.services.interfaces.IUserService;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -61,14 +62,21 @@ public class UserController {
   }
 
   @PutMapping("/{userId}")
-  public APIResponse<UserResponse> updateUser(
+  public APIResponse<UserResponse> updateMyInfo(
       @PathVariable String userId, @Valid @ModelAttribute UpdateUserRequest updateUserRequest)
       throws IOException {
     return APIResponse.<UserResponse>builder()
-        .result(iUserService.updateUser(Long.valueOf(userId), updateUserRequest))
+        .result(iUserService.updateMyInfo(Long.valueOf(userId), updateUserRequest))
         .message("Updated user successfully !")
         .build();
   }
+@PutMapping("/client/{userId}")
+public APIResponse<UserResponse> updateClient(@PathVariable String userId, @Valid @ModelAttribute UpdateUserRequest updateUserRequest){
+      return  APIResponse.<UserResponse>builder()
+              .result(iUserService.updateClient(Long.valueOf(userId), updateUserRequest))
+              .message("Update client successfully !")
+              .build();
+}
 
   @PostMapping("/change-password")
   public APIResponse<Void> changePassword(

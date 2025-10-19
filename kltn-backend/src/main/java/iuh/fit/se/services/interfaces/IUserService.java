@@ -19,5 +19,7 @@ public interface IUserService {
 
   Page<UserResponse> getAllCustomers(String keyword, Boolean isActive, PageRequest pageRequest);
 
-  UserResponse updateUser(Long id, UpdateUserRequest updateUserRequest) throws IOException;
+  UserResponse updateMyInfo(Long id, UpdateUserRequest updateUserRequest) throws IOException;
+
+  UserResponse updateClient(Long id, UpdateUserRequest updateUserRequest);
 }
