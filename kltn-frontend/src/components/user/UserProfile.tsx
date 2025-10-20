@@ -24,7 +24,7 @@ const updateSchema = yup.object({
     .notRequired()
     .matches(/^(09|03|02|07)\d{8}$/, {
       message: "Số điện thoại phải bắt đầu với 09, 03, 02, 07 và có 10 ký tự !",
-      skipEmptyString: true,
+      excludeEmptyString: true,
     }),
   address: yup
     .string()

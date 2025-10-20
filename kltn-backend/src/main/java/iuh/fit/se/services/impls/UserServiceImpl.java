@@ -107,8 +107,8 @@ public class UserServiceImpl implements IUserService {
             .password(encodedPassword)
             .fullName(request.getFullName())
             .roles(Set.of(defaultRole))
-            .isActive(true)
-            .enabled(true)
+            .isActive(false)
+            .enabled(false)
             .build();
 
     MultipartFile file = request.getFile();

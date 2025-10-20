@@ -26,6 +26,7 @@ const updateSchema = yup.object({
     .nullable()
     .trim()
     .notRequired()
+    .transform((value) => value === "" ? null : value)
     .min(3, "Full name must be at least 3 characters !")
     .max(100, "Full name must not exceed 100 characters !"),
   phoneNumber: yup
@@ -33,14 +34,17 @@ const updateSchema = yup.object({
     .nullable()
     .notRequired()
     .matches(
-      /^(09|03|02|07)\d{8}$/,
-      "Phone must start with 09, 03, 02, or 07 and have 10 digits !"
+      /^(09|03|02|07)\d{8}$/,{
+      message:  "Phone must start with 09, 03, 02, or 07 and have 10 digits !",
+      excludeEmptyString: true
+      }
     ),
   address: yup
     .string()
     .nullable()
     .trim()
     .notRequired()
+    .transform((value) => value === "" ? null : value)
     .min(5, "Address must be at least 5 characters !")
     .max(100, "Address must not exceed 100 characters !"),
   dateOfBirth: yup

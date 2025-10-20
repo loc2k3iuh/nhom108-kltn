@@ -1,5 +1,6 @@
 package iuh.fit.se.dtos.requests;
 
+import iuh.fit.se.validators.users.fullnames.FullNameConstraint;
 import iuh.fit.se.validators.users.passwords.PasswordMatch;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -23,6 +24,7 @@ public class RegisterUserRequest {
   String username;
 
   @NotBlank(message = "EMAIL_REQUIRED")
+  @FullNameConstraint(message = "FULLNAME_INVALID")
   @Pattern(regexp = "^[A-Za-z0-9._%+-]+@gmail\\.com$", message = "EMAIL_INVALID")
   String email;
 
