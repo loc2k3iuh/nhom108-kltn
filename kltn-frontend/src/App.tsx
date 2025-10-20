@@ -44,7 +44,7 @@ import EditAddress from './pages/EditAddress';
 import NotAuthenticatedPage from './pages/NotAuthenticatedPage';
 
 // Product & Category Pages
-// import Category from './pages/categories/Category';
+import ProductListPage from './pages/categories/CategoryProductList';
 import Product from './pages/product/Product';
 
 // Shopping Pages
@@ -77,8 +77,10 @@ export default function App() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+    console.log("authUser in App.jsx: ", authUser);
 
-  useEffect(() => {
+
+    useEffect(() => {
     const handleLoginSync = async () => {
       // Check if user has just logged in
       if (authUser && !prevAuthUser.current) {
@@ -183,7 +185,8 @@ export default function App() {
           <Route index path="/" element={<Home />} />
           
           {/* Product & Category Pages */}
-          {/*<Route path="/category" element={<Category />} />*/}
+          <Route path="/products" element={<ProductListPage />} />
+          <Route path="/category/:categoryId" element={<ProductListPage />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/search" element={<SearchPage />} />
 
@@ -220,7 +223,6 @@ export default function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/shipping-policy" element={<ShippingPolicy />} />
           
-          {/* Category API Test Route */}
         </Route>
 
         {/* Authentication Pages - No Layout */}

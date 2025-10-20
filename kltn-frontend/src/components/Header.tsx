@@ -3,7 +3,6 @@ import vuvisaLogo from '/logo_v2.png'
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
 import UserDropdown from '../components/header/UserDropdown';
-// import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 
 enum NotificationType {
@@ -24,62 +23,11 @@ interface NotificationResponseDTO {
   originalType: string; 
 }
 
-// Static user data
-const staticUserData = {
-  id: 1,
-  username: "user123",
-  fullName: "Nguyễn Văn A",
-  avatar_url: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYVcJXjU8HnMTXVmjER0yIET4AwAuHp0LO_YCiQjUsf1228qq0lYbABHFTSasYlk61e6Y-1ygAjWXFLEUTCloPcTvbAwe7nNba7SW9ot9QMce7BYus-H6eDIUvyFXh9UmAmV5eVTMultDo57c048MmDws-a65QYOzoBfUkHLv5OiMhMaUfh2WeP_3ej9du/s1600/istockphoto-1337144146-612x612.jpg",
-  role: "USER",
-  roles: [{ name: "USER" }]
-};
-
-// Static notifications data - commented out as not using in current implementation
-// const staticNotifications: NotificationResponseDTO[] = [
-//   {
-//     id: 1,
-//     title: "Đơn hàng của bạn đã được xác nhận",
-//     message: "Đơn hàng #DH001 đã được xác nhận và đang được chuẩn bị",
-//     createdAt: "2024-10-05T10:30:00",
-//     isRead: false,
-//     type: NotificationType.ORDER,
-//     originalType: 'ORDER'
-//   },
-//   {
-//     id: 2,
-//     title: "Khuyến mãi đặc biệt cho bạn",
-//     message: "Giảm giá 20% cho tất cả sản phẩm thời trang - Chỉ còn 2 ngày",
-//     createdAt: "2024-10-04T15:45:00",
-//     isRead: false,
-//     type: NotificationType.PROMOTION,
-//     originalType: 'PROMOTION'
-//   },
-//   {
-//     id: 3,
-//     title: "Cập nhật hệ thống",
-//     message: "Hệ thống sẽ bảo trì từ 2:00 - 4:00 sáng ngày mai",
-//     createdAt: "2024-10-03T14:20:00",
-//     isRead: true,
-//     type: NotificationType.SYSTEM,
-//     originalType: 'SYSTEM'
-//   },
-//   {
-//     id: 4,
-//     title: "Sản phẩm mới đã có mặt",
-//     message: "Khám phá bộ sưu tập thời trang mùa thu mới nhất",
-//     createdAt: "2024-10-02T09:15:00",
-//     isRead: true,
-//     type: NotificationType.PRODUCT,
-//     originalType: 'PRODUCT'
-//   }
-// ];
-
 interface ProductCategoriesProps {
   handleClick: () => void;
-  isOpen: boolean; // Thêm prop isOpen để kiểm soát từ component cha
+  isOpen: boolean;
 }
 
-// Import category service
 import { getCachedRootCategories, getSubCategories } from "../services/categoryService";
 import { CategoryResponse } from "@/types/responses/categoryResponse";
 
@@ -88,23 +36,20 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
   const [subCategoriesMap, setSubCategoriesMap] = useState<Record<number, CategoryResponse[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fetchedRef = useRef(false); // Thêm ref để track đã fetch chưa
+  const fetchedRef = useRef(false);
   const navigate = useNavigate(); 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // API fetch function
   const fetchCategories = async () => {
     if (fetchedRef.current || isLoading) return;
     
     setError(null);
     setIsLoading(true);
     try {
-      // Fetch root categories
       const rootCats = await getCachedRootCategories();
       setRootCategories(rootCats);
       
-      // Fetch subcategories for each root category
       const subCatsMap: Record<number, CategoryResponse[]> = {};
       const subCategoryPromises = rootCats.map(async (category) => {
         try {
@@ -134,40 +79,28 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
     }
   }, [isOpen]);
 
-    const handleCategoryClick = (categoryId: number, categoryName: string) => {
-    navigate(`/category/${categoryId}`, {
-      state: { 
-        categoryId, 
-        categoryName,
-        rootCategories,
-        subCategories: subCategoriesMap[categoryId] || []
-      }
-    });
+  const handleCategoryClick = (categoryId: number) => {
+    navigate(`/category/${categoryId}`);
     handleClick();
   };
 
-  const handleSubCategoryClick = (subCategory: CategoryResponse) => {
-    navigate(`/category/${subCategory.id}`, {
-      state: {
-        categoryId: subCategory.id,
-        categoryName: subCategory.name,
-        parentCategory: subCategory.parentCategory
-      }
-    });
+  const handleSubCategoryClick = (subCategoryId: number) => {
+    navigate(`/category/${subCategoryId}`);
     handleClick();
   };
 
+  const handleAllProductsClick = () => {
+    navigate('/products');
+    handleClick();
+  };
 
-  // đóng menu khi chuột ra ngoài
   const handleMouseLeave = () => {
-    // Đặt timeout 300ms trước khi đóng dropdown
     leaveTimerRef.current = setTimeout(() => {
       handleClick();
     }, 300);
   };
   
   const handleMouseEnter = () => {
-    // Nếu chuột quay lại dropdown, hủy timeout đóng
     if (leaveTimerRef.current) {
       clearTimeout(leaveTimerRef.current);
     }
@@ -175,24 +108,15 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
 
   useEffect(() => {
     return () => {
-      // Dọn dẹp timeout khi component unmount
       if (leaveTimerRef.current) {
         clearTimeout(leaveTimerRef.current);
       }
     };
   }, []);
 
-  // const handleMouseMove = (e: MouseEvent) => {
-  //   if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-  //     handleClick();
-  //   }
-  // };
-
   return (
-    <div   className="relative px-4">
-      <h2 
-        className="text-xl font-bold mb-4 text-white md:text-black flex cursor-pointer"
-      >
+    <div className="relative px-4">
+      <h2 className="text-xl font-bold mb-4 text-white md:text-black flex cursor-pointer">
         <div className="flex items-center justify-center md:hidden">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24">
             <rect className="fill-none" width="24" height="24" />
@@ -204,9 +128,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
       </h2>
 
       {isOpen && (
-        <div ref={dropdownRef} className="" 
-        onMouseLeave={handleMouseLeave}
-        onMouseEnter={handleMouseEnter} >
+        <div ref={dropdownRef} onMouseLeave={handleMouseLeave} onMouseEnter={handleMouseEnter}>
           {isLoading && (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
@@ -219,17 +141,13 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
             </div>
           )}
           
-          {!isLoading && !error && rootCategories.length > 0 && (
+          {!isLoading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {rootCategories.map((category) => (
                 <div key={category.id} className="border border-gray-200 p-3 rounded-lg">
                   <h3 
                     className="font-semibold text-lg text-gray-800 mb-2 cursor-pointer hover:text-red-600 transition-colors"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleCategoryClick(category.id, category.name);
-                    }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCategoryClick(category.id); }}
                   >
                     {category.name}
                   </h3>
@@ -237,11 +155,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
                     {(subCategoriesMap[category.id] || []).map((subCategory) => (
                       <li 
                         key={subCategory.id}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSubCategoryClick(subCategory);
-                        }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubCategoryClick(subCategory.id); }}
                         className="text-gray-600 hover:text-red-600 cursor-pointer transition-colors"
                       >
                         {subCategory.name}
@@ -250,6 +164,14 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
                   </ul>
                 </div>
               ))}
+               <div className="border border-dashed border-gray-300 p-3 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <h3 
+                    className="font-semibold text-lg text-red-600 text-center cursor-pointer"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAllProductsClick(); }}
+                  >
+                    Xem tất cả sản phẩm →
+                  </h3>
+                </div>
             </div>
           )}
         </div>
@@ -260,29 +182,17 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
   
 const Header: React.FC = () => {
   
-  //State variables
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  // const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  // Static notification state
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<NotificationType | 'all'>('all');
-  // const [displayLimit, setDisplayLimit] = useState(3);
-  const [notifications, setNotifications] = useState<NotificationResponseDTO[]>([]); // Empty notifications for non-logged-in users
-  
+  const [notifications, setNotifications] = useState<NotificationResponseDTO[]>([]); 
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0); // Static unread count - starts at 0, set when logged in
-
-  // Static user info (simulating logged in user)
-  // const [userInfo, setUserInfo] = useState<{ fullName: string; username: string; avatar_url: string; role: string } | null>(staticUserData);
-  // Categories state for dropdown
+  const [unreadCount, setUnreadCount] = useState(0); 
   const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
 
-  // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategoriesForHeader = async () => {
       try {
@@ -299,34 +209,25 @@ const Header: React.FC = () => {
     fetchCategoriesForHeader();
   }, []);
 
-
-  // Filter notifications based on active filter
   const getFilteredNotifications = () => {
-    if (activeFilter === 'all') {
-      return notifications;
-    }
+    if (activeFilter === 'all') return notifications;
     return (notifications ?? []).filter(notification => notification.type === activeFilter);
   };
 
-  // Cập nhật hàm thay đổi filter
   const changeFilter = (filter: NotificationType | 'all') => {
     setActiveFilter(filter);
-    // setDisplayLimit(3); // Reset display limit khi thay đổi filter - commented out
   };
 
-  // Handle notification click
+  const navigate = useNavigate();
   const toggleNotifications = () => {
     if (!isLoggedIn) {
-      // Redirect to login if not authenticated
-      navigate('/auth/login');
+      navigate('/signin');
       return;
     }
 
     setIsNotificationsOpen(prev => !prev);
     setIsOpen(false);
-    // setIsUserMenuOpen(false); // commented out
 
-    // Simulate loading for 500ms
     if (!isNotificationsOpen) {
       setIsLoadingNotifications(true);
       setTimeout(() => {
@@ -335,7 +236,6 @@ const Header: React.FC = () => {
     }
   };
 
-  // Mark a single notification as read
   const markAsReadFunction = (id: number) => {
     setNotifications(prev => 
       prev.map(notification => 
@@ -345,7 +245,6 @@ const Header: React.FC = () => {
     setUnreadCount(prev => Math.max(0, prev - 1));
   };
 
-  // Mark all notifications as read
   const markAllAsReadFunction = () => {
     setNotifications(prev => 
       prev.map(notification => ({ ...notification, isRead: true }))
@@ -354,38 +253,21 @@ const Header: React.FC = () => {
     toast.success("Đã đánh dấu tất cả là đã đọc!");
   };
 
-  // Format date for display
   const formatDate = (dateArray: number[]) => {
-    // Chuyển array thành Date object
-    const date = new Date(
-      dateArray[0], // year
-      dateArray[1] - 1, // month (0-11)
-      dateArray[2], // day
-      dateArray[3], // hour
-      dateArray[4], // minute
-      dateArray[5] // second
-    );
-    
+    const date = new Date(dateArray[0], dateArray[1] - 1, dateArray[2], dateArray[3], dateArray[4], dateArray[5]);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Format giờ và phút
     const hours = date.getHours();
     const minutes = date.getMinutes();
     const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
     
-    if (diffDays === 0) {
-      return `Hôm nay, ${formattedTime}`;
-    } else if (diffDays === 1) {
-      return `Hôm qua, ${formattedTime}`;
-    } else {
-      return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-    }
+    if (diffDays === 0) return `Hôm nay, ${formattedTime}`;
+    if (diffDays === 1) return `Hôm qua, ${formattedTime}`;
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
-  const [cartItemCount, setCartItemCount] = useState(0); // Static cart count - starts at 0, set to 3 when logged in
+  const [cartItemCount, setCartItemCount] = useState(0);
 
-  // Check authentication status
   useEffect(() => {
     const checkAuthStatus = () => {
       const token = localStorage.getItem("vuvisa_access_token");
@@ -393,31 +275,15 @@ const Header: React.FC = () => {
       
       if (token && userData) {
         setIsLoggedIn(true);
-        setCartItemCount(3); // Static cart count for logged-in users
-        setUnreadCount(5); // Static unread notifications count
-        // Static notifications for logged-in users
+        setCartItemCount(3); 
+        setUnreadCount(5); 
         setNotifications([
           { id: 1, title: "Đơn hàng #123 đã được xác nhận", message: "Đơn hàng của bạn đang được xử lý", createdAt: "2024-01-15T10:00:00", isRead: false, type: NotificationType.ORDER, originalType: "ORDER" },
           { id: 2, title: "Khuyến mãi đặc biệt", message: "Giảm giá 50% cho tất cả sản phẩm", createdAt: "2024-01-14T15:30:00", isRead: true, type: NotificationType.PROMOTION, originalType: "PROMOTION" },
           { id: 3, title: "Đơn hàng #124 đã giao thành công", message: "Cảm ơn bạn đã mua sắm tại VuVisa", createdAt: "2024-01-13T09:45:00", isRead: false, type: NotificationType.ORDER, originalType: "ORDER" },
         ]);
-
-        try {
-          // const user = JSON.parse(userData);
-          // setUserInfo({
-          //   fullName: user.full_name || user.fullName || "Người dùng",
-          //   username: user.username || "user",
-          //   avatar_url: user.avatar_url || staticUserData.avatar_url,
-          //   role: "USER"
-          // });
-        } catch (error) {
-          console.error("Error parsing user data:", error);
-          setIsLoggedIn(false);
-          // setUserInfo(null);
-        }
       } else {
         setIsLoggedIn(false);
-        // setUserInfo(null);
         setUnreadCount(0);
         setNotifications([]);
         setCartItemCount(0);
@@ -425,68 +291,25 @@ const Header: React.FC = () => {
     };
 
     checkAuthStatus();
-    
-    // Listen for storage changes (when user logs in from another tab)
     window.addEventListener('storage', checkAuthStatus);
-    
-    return () => {
-      window.removeEventListener('storage', checkAuthStatus);
-    };
+    return () => window.removeEventListener('storage', checkAuthStatus);
   }, []);
 
   const handleClick = () => {
     setIsNotificationsOpen(false);
     setIsOpen((prev) => !prev);
-    // setIsUserMenuOpen(false); // commented out
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
-  const navigate = useNavigate();
+
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(searchTerm);
+    if (searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
   }; 
-
-  // const handleLogout = () => {
-  //   if (isLoggingOut) return; // Prevent multiple clicks
-
-  //   setIsLoggingOut(true);
-    
-  //   // Simulate logout process
-  //   setTimeout(() => {
-  //     // Clear localStorage
-  //     localStorage.removeItem("vuvisa_access_token");
-  //     localStorage.removeItem("vuvisa_user_data");
-      
-  //     // Reset state
-  //     setIsLoggedIn(false);
-  //     // setUserInfo(null); // commented out
-  //     setUnreadCount(0);
-  //     setNotifications([]);
-  //     setCartItemCount(0);
-  //     // setIsUserMenuOpen(false); // commented out
-      
-  //     toast.success("Đăng xuất thành công!");
-  //     setIsLoggingOut(false);
-  //     window.location.href = "/";
-  //   }, 1000);
-  // }
-
-  // const toggleUserMenu = () => {
-  //   if (!isLoggedIn) {
-  //     // Redirect to login if not authenticated
-  //     navigate('/auth/login');
-  //     return;
-  //   }
-
-  //   // setIsUserMenuOpen((prev) => !prev); // commented out
-  //   setIsNotificationsOpen(false);
-  //   setIsOpen(false);
-  // };
-
-  // Static cart - no API calls needed
 
   return (
     <nav className="bg-white">
@@ -498,10 +321,7 @@ const Header: React.FC = () => {
         </div>
         <div className="flex items-center w-full justify-between">
           <div className="w-auto md:w-[200px] flex justify-end">
-            <div
-              className="cursor-pointer flex items-center relative"
-              onClick={handleClick}
-            >
+            <div className="cursor-pointer flex items-center relative" onClick={handleClick}>
               <svg className="fill-[#cdcfd0]" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
                 <rect className="fill-none stroke-white md:stroke-[#7a7e7f] stroke-[2.5] stroke-linecap-round stroke-linejoin-round" width="10" height="10" rx="1.667" transform="translate(6.667 6.667)" />
                 <rect className="fill-none stroke-white md:stroke-[#7a7e7f] stroke-[2.5] stroke-linecap-round stroke-linejoin-round" width="10" height="10" rx="1.667" transform="translate(6.667 23.333)" />
@@ -532,11 +352,7 @@ const Header: React.FC = () => {
                 onChange={handleSearchChange} />
               <span 
                 className="button-search hidden md:flex absolute top-[calc(50%)] right-4 transform translate-y-[-50%] w-[72px] h-[30px] bg-[#C92127] justify-center items-center cursor-pointer rounded-md"
-                onClick={() => {
-                  if (searchTerm.trim()) {
-                    navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
-                  }
-                }}
+                onClick={handleSearchSubmit}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                   <rect className="fill-none" width="24" height="24" />
@@ -568,10 +384,7 @@ const Header: React.FC = () => {
                   <h3 className="font-semibold text-lg">Thông báo</h3>
                   {isLoggedIn && unreadCount > 0 && (
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        markAllAsReadFunction();
-                      }}
+                      onClick={(e) => { e.stopPropagation(); markAllAsReadFunction(); }}
                       className="text-xs text-[#C92127] hover:text-[#a71b20]"
                     >
                       Đánh dấu đã đọc tất cả
@@ -581,7 +394,6 @@ const Header: React.FC = () => {
 
                 {isLoggedIn ? (
                 <>
-                {/* Filter tabs */}
                 <div className="flex mb-3 border-b border-gray-300">
                   <button 
                     onClick={() => changeFilter('all')}
@@ -609,7 +421,6 @@ const Header: React.FC = () => {
                   </button>
                 </div>
                 
-                {/* Notifications list */}
                 <div className="max-h-[300px] overflow-y-auto">
                   {isLoadingNotifications ? (
                     <div className="flex items-center justify-center py-8">
@@ -620,12 +431,7 @@ const Header: React.FC = () => {
                       <div 
                         key={notification.id} 
                         className={`p-2 mb-2 rounded-md ${notification.isRead ? 'bg-white' : 'bg-[#f8f9fa]'} hover:bg-gray-100 cursor-pointer border-b border-gray-300`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!notification.isRead) {
-                            markAsReadFunction(notification.id);
-                          }
-                        }}
+                        onClick={(e) => { e.stopPropagation(); if (!notification.isRead) markAsReadFunction(notification.id); }}
                       >
                         <div className="flex justify-between">
                           <h4 className={`text-sm ${notification.isRead ? 'font-normal' : 'font-semibold'}`}>{notification.title}</h4>
@@ -638,7 +444,6 @@ const Header: React.FC = () => {
                           {Array.isArray(notification.createdAt)
                             ? formatDate(notification.createdAt)
                             : (() => {
-                                // Try to parse ISO string to Date and format
                                 const date = new Date(notification.createdAt);
                                 const now = new Date();
                                 const diffTime = Math.abs(now.getTime() - date.getTime());
@@ -646,13 +451,9 @@ const Header: React.FC = () => {
                                 const hours = date.getHours();
                                 const minutes = date.getMinutes();
                                 const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
-                                if (diffDays === 0) {
-                                  return `Hôm nay, ${formattedTime}`;
-                                } else if (diffDays === 1) {
-                                  return `Hôm qua, ${formattedTime}`;
-                                } else {
-                                  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-                                }
+                                if (diffDays === 0) return `Hôm nay, ${formattedTime}`;
+                                if (diffDays === 1) return `Hôm qua, ${formattedTime}`;
+                                return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
                               })()
                           }
                         </p>
@@ -663,22 +464,6 @@ const Header: React.FC = () => {
                   )}
                 </div>
                 
-                {/* Load more button
-                {getFilteredNotifications().length > displayLimit && (
-                  <div className="text-center mt-2">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        loadMore();
-                      }}
-                      className="text-[#C92127] text-sm hover:text-[#a71b20]"
-                    >
-                      Xem thêm
-                    </button>
-                  </div>
-                )} */}
-                
-                {/* View all notifications link */}
                 <div className="text-center mt-3 pt-2 border-t border-gray-300">
                   <a 
                     href="/notifications" 
@@ -691,7 +476,6 @@ const Header: React.FC = () => {
 
                 </>
               ) : (
-                // Content for non-logged in users
                 <div className="py-8 px-4 text-center">
                   <div className="flex justify-center mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#C92127" strokeWidth="1.5">
@@ -701,13 +485,13 @@ const Header: React.FC = () => {
                   <p className="text-gray-600 mb-4">Chức năng này chỉ hỗ trợ cho người dùng đã đăng nhập</p>
                   <div className="flex justify-center gap-2">
                     <a 
-                      href="/user/login" 
+                      href="/signin" 
                       className="bg-[#C92127] text-white px-4 py-2 rounded-md text-sm hover:bg-[#a71b20] transition-colors"
                     >
                       Đăng nhập
                     </a>
                     <a 
-                      href="/user/register" 
+                      href="/signup" 
                       className="border border-[#C92127] text-[#C92127] px-4 py-2 rounded-md text-sm hover:bg-[#f8d7da] transition-colors"
                     >
                       Đăng ký

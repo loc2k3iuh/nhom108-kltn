@@ -10,14 +10,14 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Schema(description = "Request to add a product to favorites")
-public class AddFavoriteRequest {
+@Schema(description = "Request to remove a product from favorites")
+public class RemoveFavoriteRequest {
 
   @NotNull(message = "User ID cannot be null")
   @Schema(description = "ID of the user", example = "1")
   Long userId;
 
   @NotNull(message = "Product ID cannot be null")
-  @Schema(description = "ID of the product to add to favorites", example = "1")
+  @Schema(description = "ID of the product to remove from favorites", example = "1")
   Long productId;
 }
