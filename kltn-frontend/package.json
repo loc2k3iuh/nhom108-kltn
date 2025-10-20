@@ -21,7 +21,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@mui/material": "^7.0.2",
     "@radix-ui/react-slot": "^1.2.3",
-    "@stomp/stompjs": "^7.1.1",
+    "@stomp/stompjs": "^7.2.1",
     "@tailwindcss/vite": "^4.0.10",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",

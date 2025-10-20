@@ -23,6 +23,5 @@ public interface IUserService {
 
   UserResponse updateClient(Long id, UpdateUserRequest updateUserRequest);
 
-  UserResponse getUserDetails(Long userId) throws Exception;
-
+  UserResponse getUserDetails(String username) throws Exception;
 }

@@ -15,6 +15,7 @@ import {
 } from "@/services/useTokenService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import Reloading from "@/components/skeletons/Reloading";
+import { webSocketService } from "@/services/useSocketService";
 
 interface LoginForm {
   username: string;
@@ -74,7 +75,6 @@ const LoginPage: React.FC = () => {
         : setAccessTokenToSessionStorage(response.access_token);
 
         await checkAuth();
-
         navigate("/");
     } catch (error: any) {
       console.log("Error in Logging in :", error.response?.data?.message);

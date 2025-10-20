@@ -38,21 +38,34 @@ import UserReviews from "./pages/review/Review";
 import OrderSuccess from "./pages/payment/OrderSuccess";
 import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletons/Reloading";
+import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
 
 function App() {
-  const { checkAuth, authUser, isLoading } = useAuthStore();
+  const { checkAuth, authUser, isLoading, isInitialized } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
+  useEffect(() => {
+    const handleUnload = async () => {
+      await deleteRefreshTokenFromRedis();
+    };
 
-  if(!isLoading){
-      <Reloading/>
-    }
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+      handleUnload();
+    };
+  }, []);
+
+  if (isLoading || !isInitialized) {
+    return <Reloading />;
+  }
 
   return (
-    <Router>
+   
       <Routes>
         {/* Home and About Pages */}
         <Route
@@ -114,17 +127,25 @@ function App() {
 
         {/* Authentication Pages */}
         <Route
-      
           path="/reset-password/success"
-        
-          element={ <ForgotPasswordSuccessPage /> }
-          
+          element={<ForgotPasswordSuccessPage />}
         />
         <Route
           path="/reset-password"
-          element={ <Layout><ChangeForgotPasswordPage /> </Layout>}
+          element={
+            <Layout>
+              <ChangeForgotPasswordPage />{" "}
+            </Layout>
+          }
         />
-        <Route path="/forgot-password" element={  <Layout><ForgotPasswordPage /> </Layout>} />
+        <Route
+          path="/forgot-password"
+          element={
+            <Layout>
+              <ForgotPasswordPage />{" "}
+            </Layout>
+          }
+        />
         <Route
           path="/login"
           element={
@@ -142,10 +163,7 @@ function App() {
           }
         />
         <Route path="/register-mail" element={<RegisterMailPage />} />
-        <Route
-          path="/register-success"
-          element={<RegisterSuccessPage />}
-        />
+        <Route path="/register-success" element={<RegisterSuccessPage />} />
 
         {/* Search and Categories */}
         <Route
@@ -269,7 +287,7 @@ function App() {
         />
         <Route
           path="/change-password"
-          element={ 
+          element={
             <Layout>
               <ChangePassword />
             </Layout>
@@ -323,7 +341,6 @@ function App() {
           }
         />
       </Routes>
-    </Router>
   );
 }
 

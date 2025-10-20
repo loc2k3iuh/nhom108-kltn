@@ -9,11 +9,12 @@ import {
 } from "../services/useTokenService";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const PREFIX_URL = import.meta.env.VITE_API_PREFIX;
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
 const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BASE_URL + PREFIX_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

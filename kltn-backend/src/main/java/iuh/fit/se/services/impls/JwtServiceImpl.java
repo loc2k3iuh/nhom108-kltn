@@ -97,4 +97,15 @@ public class JwtServiceImpl implements IJwtService {
       throw new AppException(ErrorCode.UNAUTHENTICATED);
     }
   }
+
+  @Override
+  public String getUsernameFromToken(String token) throws JOSEException, ParseException {
+    JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
+    SignedJWT signedJWT = SignedJWT.parse(token);
+    boolean isVerified = signedJWT.verify(verifier);
+    if (!isVerified) {
+      throw new AppException(ErrorCode.UNAUTHENTICATED);
+    }
+    return signedJWT.getJWTClaimsSet().getSubject();
+  }
 }

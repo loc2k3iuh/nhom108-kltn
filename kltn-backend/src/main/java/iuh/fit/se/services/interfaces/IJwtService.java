@@ -11,4 +11,6 @@ public interface IJwtService {
   String buildScope(User user);
 
   SignedJWT verifyToken(String token) throws JOSEException, ParseException;
+
+  String getUsernameFromToken(String token) throws JOSEException, ParseException;
 }

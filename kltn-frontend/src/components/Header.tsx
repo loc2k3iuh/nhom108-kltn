@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { use, useState } from 'react';
 import vuvisaLogo from '/logo_v2.png';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -7,6 +7,7 @@ import NotificationsDropdown, { NotificationResponseDTO, NotificationType } from
 import SearchBar from './header/SearchBar';
 import CartButton from './header/CartButton';
 import UserMenu from './header/UserMenu';
+import { useNavigate } from 'react-router-dom';
 
 // Demo notifications (replace with API later)
 const demoNotifications: NotificationResponseDTO[] = [
@@ -17,7 +18,7 @@ const demoNotifications: NotificationResponseDTO[] = [
 ];
 
 const Header: React.FC = () => {
-  // UI state
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -66,11 +67,11 @@ const Header: React.FC = () => {
 
   return (
     <nav className="bg-white">
-      <div className="max-w-7xl h-auto md:h-[68px] mx-auto px-4 py-2 flex flex-col md:flex-row items-center justify-between bg-[#C92127] md:bg-white gap-3 md:gap-0 pt-2">
+      <div className="max-w-7xl h-auto md:h-[68px] mx-auto px-4 py-2 flex flex-col md:flex-row items-center justify-between bg-[#C92127] md:bg-white gap-3 md:gap-0 pt-2 cursor-pointer">
         <div className="flex items-center">
-          <a href="/">
+          <span onClick={() => navigate("/")}>
             <img src={vuvisaLogo} alt="Vuvia Logo" className="h-auto w-[130px] md:w-[200px]" />
-          </a>
+          </span>
         </div>
 
         <div className="flex items-center w-full justify-between">

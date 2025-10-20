@@ -115,6 +115,7 @@ export default function EditUserModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("User updated successfully!");
+       webSocketService.send("/app/users/update-client", user?.username);
       onClose();
     },
     onError: (error: any) => {
@@ -153,7 +154,7 @@ export default function EditUserModal({
     };
 
     updateUserMutation({ userId: user.id, updateData });
-    webSocketService.send("/app/users/update-client", user.id);
+    
   };
 
 
