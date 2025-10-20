@@ -98,7 +98,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ isWebSocketConnected: true });
 
       webSocketService.subscribe(
-        `/topic/user-updated/${get().authUser?.username}`,
+        `/user/queue/user-updated`,
         (data) => {
           console.log("Received user update:", data);
 

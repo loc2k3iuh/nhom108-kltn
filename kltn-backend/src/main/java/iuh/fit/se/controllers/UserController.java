@@ -110,6 +110,7 @@ public class UserController {
     log.info("Change User Websocket {}", username);
     UserResponse userResponse = iUserService.getUserDetails(username);
     log.info("Sending user data: {}", userResponse);
-    messagingTemplate.convertAndSend("/topic/user-updated/" + username, userResponse);
+//    messagingTemplate.convertAndSend("/topic/user-updated/" + username, userResponse);
+      messagingTemplate.convertAndSendToUser(username, "/queue/user-updated", userResponse);
   }
 }

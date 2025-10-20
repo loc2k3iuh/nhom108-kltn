@@ -1,5 +1,6 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import { getTokenFromLocalStorage, getTokenFromSessionStorage } from './useTokenService';
 
 class WebSocketService {
   private stompClient: Client | null = null;
@@ -8,6 +9,14 @@ class WebSocketService {
   private BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   async connect(): Promise<void> {
+
+    
+    const token = getTokenFromLocalStorage() || getTokenFromSessionStorage();
+
+     if(!token) {
+      console.log("Not found token to connect Websocket");
+      return;
+    }
     if (this.isConnected || this.isConnecting) {
       return;
     }
@@ -15,7 +24,7 @@ class WebSocketService {
     this.isConnecting = true;
 
     return new Promise((resolve, reject) => {
-      const socket = new SockJS(`${this.BASE_URL}/luther/ws`); 
+      const socket = new SockJS(`${this.BASE_URL}/luther/ws?token=${token}`); 
       
       this.stompClient = new Client({
         webSocketFactory: () => socket,

@@ -69,7 +69,7 @@ axiosInstance.interceptors.response.use(
           console.error("UserId not found in token, cannot refresh token");
         } else {
           const res = await axios.post(
-            `${BASE_URL}/auth/refresh-token/${userId}`,
+            `${BASE_URL}${PREFIX_URL}/auth/refresh-token/${userId}`,
             {},
             {
               withCredentials: true,
