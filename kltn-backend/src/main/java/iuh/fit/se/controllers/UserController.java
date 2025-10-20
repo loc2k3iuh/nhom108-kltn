@@ -7,7 +7,6 @@ import iuh.fit.se.dtos.responses.UserResponse;
 import iuh.fit.se.services.interfaces.IUserService;
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -111,7 +109,7 @@ public class UserController {
   public void sendUpdatedClientInformation(@Payload String username) throws Exception {
     log.info("Change User Websocket {}", username);
     UserResponse userResponse = iUserService.getUserDetails(username);
-      log.info("Sending user data: {}", userResponse);
-      messagingTemplate.convertAndSend("/topic/user-updated/" + username, userResponse);
+    log.info("Sending user data: {}", userResponse);
+    messagingTemplate.convertAndSend("/topic/user-updated/" + username, userResponse);
   }
 }

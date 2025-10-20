@@ -1,9 +1,7 @@
 package iuh.fit.se.components;
 
-import java.net.URI;
-import java.util.Map;
-
 import iuh.fit.se.services.interfaces.IJwtService;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,7 +16,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@FieldDefaults(level =  AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
   IJwtService iJwtService;
@@ -30,18 +28,19 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
       WebSocketHandler wsHandler,
       Map<String, Object> attributes)
       throws Exception {
-//        String token = ((ServletServerHttpRequest) request).getServletRequest().getHeader("token");
-//        String username = iJwtService.getUsernameFromToken(token.replace("Bearer ", ""));
-//        attributes.put("username", username);
+    //        String token = ((ServletServerHttpRequest)
+    // request).getServletRequest().getHeader("token");
+    //        String username = iJwtService.getUsernameFromToken(token.replace("Bearer ", ""));
+    //        attributes.put("username", username);
 
-      if (request instanceof ServletServerHttpRequest servletRequest) {
-          String token = servletRequest.getServletRequest().getParameter("token");
-          if (token != null) {
-              String username = iJwtService.getUsernameFromToken(token);
-              attributes.put("username", username);
-          }
+    if (request instanceof ServletServerHttpRequest servletRequest) {
+      String token = servletRequest.getServletRequest().getParameter("token");
+      if (token != null) {
+        String username = iJwtService.getUsernameFromToken(token);
+        attributes.put("username", username);
       }
-      return true;
+    }
+    return true;
   }
 
   @Override

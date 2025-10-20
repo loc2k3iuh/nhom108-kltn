@@ -252,7 +252,9 @@ public class UserServiceImpl implements IUserService {
   @Transactional(readOnly = true)
   public UserResponse getUserDetails(String username) {
     User user =
-        userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        userRepository
+            .findByUsername(username)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     return userMapper.toUserResponse(user);
   }
 

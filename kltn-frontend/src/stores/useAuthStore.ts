@@ -102,24 +102,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         (data) => {
           console.log("Received user update:", data);
 
-          try {
-            // Tạo object mới hoàn toàn
-            const updatedUser = {
-              ...get().authUser,
-              ...data,
-              // Đảm bảo có timestamp để force update
-              lastUpdated: new Date().toISOString(),
-            };
-
             set((state) => ({
               ...state,
               authUser: data,
             }));
 
-            console.log("Successfully updated authUser");
-          } catch (error) {
-            console.error("Error updating authUser:", error);
-          }
         }
       );
 
