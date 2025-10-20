@@ -7,6 +7,7 @@ import {
   setAccessTokenToLocalStorage,
   setAccessTokenToSessionStorage,
 } from "../services/useTokenService";
+import { getUserIdFromStorage } from "@/services/useUserService";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const PREFIX_URL  = import.meta.env.VITE_API_PREFIX;
@@ -65,12 +66,12 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const userId = getUserIdFromToken();
+        const userId = getUserIdFromStorage();
         if (!userId) {
           console.error("UserId not found in token, cannot refresh token");
         } else {
           const res = await axios.post(
-            `${BASE_URL}/auth/refresh-token/${userId}`,
+            `${BASE_URL}${PREFIX_URL}/auth/refresh-token/${userId}`,
             {},
             {
               withCredentials: true,

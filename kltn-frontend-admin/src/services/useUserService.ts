@@ -55,3 +55,15 @@ export const getAllUsers= async(data: getAllUsersRequest) : Promise<UserListResp
   const response =  await axiosInstance.get(`/users?keyword=${data.searchTerm}&state=${data.stateParam}&page=${data.currentPage}&limit=${data.itemsPerPage}`);
   return response.data?.result as UserListResponse;
 }
+
+export const setUserIdToStorage = (userId: string): void => {
+    localStorage.setItem("userId", userId);
+}
+
+export const getUserIdFromStorage = (): string | null => {
+  return localStorage.getItem("userId");
+}
+
+export const deleteUserIdFromStorage = (): void => {
+  localStorage.removeItem("userId");
+}

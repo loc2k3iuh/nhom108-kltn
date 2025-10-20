@@ -77,8 +77,7 @@ const LoginPage: React.FC = () => {
         await checkAuth();
         navigate("/");
     } catch (error: any) {
-      console.log("Error in Logging in :", error.response?.data?.message);
-      toast.error("Username or password is incorrect !");
+      toast.error(error.response?.data?.message);
     } finally {
       setIsLoading(false);
     }

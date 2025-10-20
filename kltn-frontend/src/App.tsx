@@ -64,6 +64,10 @@ function App() {
     return <Reloading />;
   }
 
+  if(authUser && !authUser.is_active){
+    return <NotAuthenticated/>
+  }
+
   return (
    
       <Routes>
@@ -328,8 +332,7 @@ function App() {
           }
         />
 
-        {/* Error Pages */}
-        <Route path="/unauthenticated" element={<NotAuthenticated />} />
+      
 
         {/* Fallback route */}
         <Route

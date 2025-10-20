@@ -17,7 +17,7 @@ import {
   verifyPassword,
 } from "@/services/useAuthenticationService";
 import { LoginResponse, UserResponse } from "@/types/responses/authResponse";
-import { checkAuthUser, updateMyInfor } from "@/services/useUserService";
+import { checkAuthUser, setUserIdToStorage, updateMyInfor } from "@/services/useUserService";
 import { getTokenFromLocalStorage, getTokenFromSessionStorage, getUserIdFromToken, removeToken } from "@/services/useTokenService";
 import { webSocketService } from "@/services/useSocketService";
 
@@ -91,7 +91,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await checkAuthUser();
+        setUserIdToStorage(response.id.toString() || "");
       set({ authUser: response, isInitialized: true });
+    
       get().connectWebSocket();
       return response;
     } catch (error: unknown) {

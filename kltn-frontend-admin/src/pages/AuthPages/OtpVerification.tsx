@@ -7,6 +7,7 @@ import Reloading from "@/components/skeletions/Reloading";
 import { OtpTokenRequest, ResendOtpRequest } from "@/types/requests/authRequest";
 import { setAccessTokenToLocalStorage, setAccessTokenToSessionStorage } from "@/services/useTokenService";
 import { toast } from "sonner";
+import { setUserIdToStorage } from "@/services/useUserService";
 
 
 
@@ -16,7 +17,7 @@ export default function OtpVerification() {
   const location = useLocation();
   const email = location.state?.email;
   const isChecked = location.state?.isChecked;
-  const {isVerifyingOtp, verifyOtp, resendOtp, checkAuth } = useAuthStore();
+  const { isLoading,verifyOtp, resendOtp, checkAuth } = useAuthStore();
   const navigate = useNavigate();
 
   const handleVerifyOtp = async (otp: string) => {
@@ -28,7 +29,7 @@ export default function OtpVerification() {
 
     if(response != null){
       isChecked ? setAccessTokenToLocalStorage(response.access_token) : setAccessTokenToSessionStorage(response.access_token);
-     
+      
       await checkAuth();
 
       navigate("/");
@@ -48,7 +49,7 @@ export default function OtpVerification() {
      }
   };
 
-  if(isVerifyingOtp){
+  if(isLoading){
     return  <Reloading/>
   }
 
