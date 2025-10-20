@@ -44,7 +44,7 @@ import EditAddress from './pages/EditAddress';
 import NotAuthenticatedPage from './pages/NotAuthenticatedPage';
 
 // Product & Category Pages
-// import Category from './pages/categories/Category';
+import ProductListPage from './pages/categories/CategoryProductList';
 import Product from './pages/product/Product';
 
 // Shopping Pages
@@ -79,6 +79,7 @@ export default function App() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+    console.log("authUser in App.jsx: ", authUser);
 
   useEffect(() => {
 
@@ -183,104 +184,16 @@ export default function App() {
   return (
    
       <Routes>
-        {/* Home and About Pages */}
-        <Route
-          path="/"
-          element={
-            <Layout>
-              <Home />
-            </Layout>
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <Layout>
-              <AboutPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/terms-of-service"
-          element={
-            <Layout>
-              <TermsOfService />
-            </Layout>
-          }
-        />
-        <Route
-          path="/privacy-policy"
-          element={
-            <Layout>
-              <PrivacyPolicy />
-            </Layout>
-          }
-        />
-        <Route
-          path="/shipping-policy"
-          element={
-            <Layout>
-              <ShippingPolicy />
-            </Layout>
-          }
-        />
-        <Route
-          path="/faq"
-          element={
-            <Layout>
-              <FAQ />
-            </Layout>
-          }
-        />
-        <Route
-          path="/help"
-          element={
-            <Layout>
-              <Help />
-            </Layout>
-          }
-        />
-
-        {/* Authentication Pages */}
-        <Route
-          path="/reset-password/success"
-          element={<ForgotPasswordSuccessPage />}
-        />
-        <Route
-          path="/reset-password"
-          element={
-            <Layout>
-              <ChangeForgotPasswordPage />{" "}
-            </Layout>
-          }
-        />
-        <Route
-          path="/forgot-password"
-          element={
-            <Layout>
-              <ForgotPasswordPage />{" "}
-            </Layout>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <Layout>
-              <LoginPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <Layout>
-              <RegisterPage />
-            </Layout>
-          }
-        />
-        <Route path="/register-mail" element={<RegisterMailPage />} />
-        <Route path="/register-success" element={<RegisterSuccessPage />} />
-
+        {/* Main Fashion E-commerce Layout */}
+        <Route element={<AppLayout />}>
+          {/* Home Page */}
+          <Route index path="/" element={<Home />} />
+          
+          {/* Product & Category Pages */}
+          <Route path="/products" element={<ProductListPage />} />
+          <Route path="/category/:categoryId" element={<ProductListPage />} />
+          <Route path="/product/:id" element={<Product />} />
+          <Route path="/search" element={<SearchPage />} />
 
           {/* User Profile Pages - Require Authentication */}
           <Route path="/user" element={authUser ? <UserPage /> : <Navigate to="/signin" />} />
@@ -317,8 +230,7 @@ export default function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/shipping-policy" element={<ShippingPolicy />} />
           
-          {/* Category API Test Route */}
-      
+        </Route>
 
         {/* Authentication Pages - No Layout */}
         <Route path="/signin" element={!authUser ? <SignIn /> : <Navigate to="/" />} />

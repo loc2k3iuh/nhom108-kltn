@@ -60,12 +60,12 @@ export default function UserDropdown() {
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
           <img 
             src={authUser?.avatar_url || "/logo_v4.png"} 
-            alt={authUser ? "User Avatar" : "Guest"} 
+            alt={authUser ? "User Avatar" : "Khách"} 
           />
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
-          {authUser?.username || "Guest"}
+          {authUser?.username || "Khách"}
         </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${

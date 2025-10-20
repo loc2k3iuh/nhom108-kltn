@@ -18,7 +18,8 @@ public class ProductVariant {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
 
-  String sku;
+    @Column(unique = true, nullable = false)
+    private String sku;
 
   Double price;
 
