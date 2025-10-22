@@ -5,7 +5,6 @@ import iuh.fit.se.dtos.requests.CalendarEventRequest;
 import iuh.fit.se.dtos.responses.CalendarEventResponse;
 import iuh.fit.se.services.interfaces.ICalendarEventService;
 import jakarta.validation.Valid;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
@@ -36,39 +35,6 @@ public class CalendarEventController {
         .build();
   }
 
-  @GetMapping("/my/day")
-  public APIResponse<List<CalendarEventResponse>> getMyEventsByDay(
-      @RequestParam(value = "date", required = false)
-          @DateTimeFormat(pattern = "yyyy-MM-dd")
-          LocalDate date) {
-    return APIResponse.<List<CalendarEventResponse>>builder()
-        .result(calendarEventService.getMyEventsByDay(date))
-        .message("Fetched day events successfully !")
-        .build();
-  }
-
-  @GetMapping("/my/week")
-  public APIResponse<List<CalendarEventResponse>> getMyEventsByWeek(
-      @RequestParam(value = "date", required = false)
-          @DateTimeFormat(pattern = "yyyy-MM-dd")
-          LocalDate date) {
-    return APIResponse.<List<CalendarEventResponse>>builder()
-        .result(calendarEventService.getMyEventsByWeek(date))
-        .message("Fetched week events successfully !")
-        .build();
-  }
-
-  @GetMapping("/my/month")
-  public APIResponse<List<CalendarEventResponse>> getMyEventsByMonth(
-      @RequestParam(value = "date", required = false)
-          @DateTimeFormat(pattern = "yyyy-MM-dd")
-          LocalDate date) {
-    return APIResponse.<List<CalendarEventResponse>>builder()
-        .result(calendarEventService.getMyEventsByMonth(date))
-        .message("Fetched month events successfully !")
-        .build();
-  }
-
   @GetMapping("/all")
   public APIResponse<List<CalendarEventResponse>> getAllEvents(
       @RequestParam(value = "start", required = false)
@@ -80,47 +46,6 @@ public class CalendarEventController {
     return APIResponse.<List<CalendarEventResponse>>builder()
         .result(calendarEventService.getAllEvents(start, end))
         .message("Fetched all events successfully !")
-        .build();
-  }
-
-  @GetMapping("/all/day")
-  public APIResponse<List<CalendarEventResponse>> getAllEventsByDay(
-      @RequestParam(value = "date", required = false)
-          @DateTimeFormat(pattern = "yyyy-MM-dd")
-          LocalDate date) {
-    return APIResponse.<List<CalendarEventResponse>>builder()
-        .result(calendarEventService.getAllEventsByDay(date))
-        .message("Fetched all day events successfully !")
-        .build();
-  }
-
-  @GetMapping("/all/week")
-  public APIResponse<List<CalendarEventResponse>> getAllEventsByWeek(
-      @RequestParam(value = "date", required = false)
-          @DateTimeFormat(pattern = "yyyy-MM-dd")
-          LocalDate date) {
-    return APIResponse.<List<CalendarEventResponse>>builder()
-        .result(calendarEventService.getAllEventsByWeek(date))
-        .message("Fetched all week events successfully !")
-        .build();
-  }
-
-  @GetMapping("/all/month")
-  public APIResponse<List<CalendarEventResponse>> getAllEventsByMonth(
-      @RequestParam(value = "date", required = false)
-          @DateTimeFormat(pattern = "yyyy-MM-dd")
-          LocalDate date) {
-    return APIResponse.<List<CalendarEventResponse>>builder()
-        .result(calendarEventService.getAllEventsByMonth(date))
-        .message("Fetched all month events successfully !")
-        .build();
-  }
-
-  @GetMapping("/{id}")
-  public APIResponse<CalendarEventResponse> getById(@PathVariable Long id) {
-    return APIResponse.<CalendarEventResponse>builder()
-        .result(calendarEventService.getById(id))
-        .message("Fetched event successfully !")
         .build();
   }
 

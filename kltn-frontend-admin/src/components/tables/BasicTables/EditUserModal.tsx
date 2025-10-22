@@ -209,7 +209,7 @@ export default function EditUserModal({
                       const f = e.target.files?.[0];
                       setAvatarPreview(f ? URL.createObjectURL(f) : user.avatar_url || "");
                     }}
-                    className="mt-1"
+                    className="mt-1 cursor-pointer"
                   />
                 );
               })()}

@@ -24,6 +24,5 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
   @Query(
       "SELECT e FROM CalendarEvent e WHERE e.startTime <= :end AND e.endTime >= :start ORDER BY e.startTime ASC")
   List<CalendarEvent> findOverlappingAll(
-      @Param("start") LocalDateTime start,
-      @Param("end") LocalDateTime end);
+      @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
