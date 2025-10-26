@@ -29,7 +29,6 @@ interface CalendarEvent extends EventInput {
   };
 }
 
-// Helper function to format time to 12-hour format
 const formatTo12Hour = (date: Date): string => {
   const hours = date.getHours();
   const minutes = date.getMinutes();
@@ -39,7 +38,7 @@ const formatTo12Hour = (date: Date): string => {
   return `${displayHours}:${displayMinutes} ${ampm}`;
 };
 
-// Helper function to parse 12-hour format to 24-hour format
+
 const parseTo24Hour = (time: string): { hours: number; minutes: number } => {
   const [timePart, ampm] = time.split(" ");
   const [hoursStr, minutesStr] = timePart.split(":");
@@ -66,13 +65,13 @@ const Calendar: React.FC = () => {
   const [eventEndTime, setEventEndTime] = useState("");
   const [eventLevel, setEventLevel] = useState("");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [viewFilter, setViewFilter] = useState<"my" | "all">("all"); // Filter state
-  const [isDeleting, setIsDeleting] = useState(false); // Prevent double delete
+  const [viewFilter, setViewFilter] = useState<"my" | "all">("all"); 
+  const [isDeleting, setIsDeleting] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
   const { authUser } = useAuthStore();
 
-  // Helper function to parse time string
+
   const parseTime = (timeStr: string) => {
     if (!timeStr) return { hour: 12, minute: 0, ampm: "AM" };
     const [timePart, ampm] = timeStr.split(" ");
@@ -84,13 +83,12 @@ const Calendar: React.FC = () => {
     };
   };
 
-  // Build a Date object in local time from a YYYY-MM-DD string
+
   const makeDateFromYMD = (dateStr: string, hours = 0, minutes = 0) => {
     const [y, m, d] = dateStr.split("-").map((s) => parseInt(s, 10));
     return new Date(y, (m || 1) - 1, d || 1, hours, minutes, 0, 0);
   };
 
-  // Format a Date to YYYY-MM-DD (local) — safe for display in inputs
   const formatYMD = (date: Date) => {
     const pad = (n: number) => n.toString().padStart(2, "0");
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
@@ -98,14 +96,13 @@ const Calendar: React.FC = () => {
     )}`;
   };
 
-  // Subtract one day from a YYYY-MM-DD string and return YYYY-MM-DD
+
   const subtractOneDayYMD = (dateStr: string) => {
     const d = makeDateFromYMD(dateStr);
     d.setDate(d.getDate() - 1);
     return formatYMD(d);
   };
 
-  // Format a Date to ISO_LOCAL_DATE_TIME (YYYY-MM-DDTHH:mm:ss) — compatible with Java LocalDateTime
   const formatForBackend = (date: Date) => {
     const pad = (n: number) => n.toString().padStart(2, "0");
     return (
@@ -123,13 +120,13 @@ const Calendar: React.FC = () => {
     );
   };
 
-  // Helper function to format time
+
   const formatTime = (hour: number, minute: number, ampm: string) => {
     const formattedMinute = minute.toString().padStart(2, "0");
     return `${hour}:${formattedMinute} ${ampm}`;
   };
 
-  // Handle start time changes
+
   const handleStartTimeChange = (
     hour: number,
     minute: number,
@@ -143,7 +140,7 @@ const Calendar: React.FC = () => {
     }
   };
 
-  // Handle end time changes
+
   const handleEndTimeChange = (hour: number, minute: number, ampm: string) => {
     if (hour && minute !== undefined && ampm) {
       const newTime = formatTime(hour, minute, ampm);
@@ -160,18 +157,17 @@ const Calendar: React.FC = () => {
     CRITICAL: "CRITICAL",
   };
 
-  // Map priority to colors (used for event background/border)
+
   const priorityColors: Record<
     string,
     { background: string; border: string; text?: string }
   > = {
-    LOW: { background: "#34D399", border: "#10B981", text: "#ffffff" }, // green
-    MEDIUM: { background: "#F59E0B", border: "#D97706", text: "#ffffff" }, // amber
-    HIGH: { background: "#F97316", border: "#EA580C", text: "#ffffff" }, // orange
-    CRITICAL: { background: "#EF4444", border: "#DC2626", text: "#ffffff" }, // red
+    LOW: { background: "#34D399", border: "#10B981", text: "#ffffff" },
+    MEDIUM: { background: "#F59E0B", border: "#D97706", text: "#ffffff" },
+    HIGH: { background: "#F97316", border: "#EA580C", text: "#ffffff" },
+    CRITICAL: { background: "#EF4444", border: "#DC2626", text: "#ffffff" },
   };
 
-  // Helper function to map backend events to FullCalendar events
   const mapEventsFromBackend = (
     data: CalendarEventResponse[]
   ): CalendarEvent[] => {
@@ -179,18 +175,16 @@ const Calendar: React.FC = () => {
       const priority = (e.priority || "LOW").toUpperCase();
       const colors = priorityColors[priority] || priorityColors.LOW;
 
-      // For all-day events, ensure the end date is converted to exclusive format (next day 00:00:00)
-      // because FullCalendar expects exclusive end dates for all-day events
+   
       let mappedEnd = e.endTime;
       if (e.allDay && e.endTime) {
         const endDate = new Date(e.endTime);
-        // Check if this is an inclusive end time (23:59:59 or 23:59:xx)
         const h = endDate.getHours();
         const m = endDate.getMinutes();
 
-        // If the end time is at 23:59 or later, it's an inclusive end time that should be converted to exclusive
+  
         if (h === 23 && m >= 59) {
-          // Convert to next day 00:00:00 for FullCalendar's exclusive end format
+    
           endDate.setDate(endDate.getDate() + 1);
           endDate.setHours(0, 0, 0, 0);
           mappedEnd = endDate.toISOString();
@@ -215,7 +209,6 @@ const Calendar: React.FC = () => {
     });
   };
 
-  // Load events based on current filter
   const loadEvents = async () => {
     try {
       const data =
@@ -231,18 +224,15 @@ const Calendar: React.FC = () => {
     loadEvents();
   }, [viewFilter]);
 
-  // Cleanup tooltips on unmount
+
   useEffect(() => {
     return () => {
-      // Remove all tooltips when component unmounts
       document.querySelectorAll(".event-tooltip").forEach((el) => el.remove());
     };
   }, []);
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
     resetModalFields();
-    // FullCalendar returns an exclusive end for all-day selections (end is day after the last selected)
-    // Convert endStr to inclusive end for display by subtracting one day when endStr exists
     setEventStartDate(selectInfo.startStr);
     if (selectInfo.endStr) {
       setEventEndDate(subtractOneDayYMD(selectInfo.endStr));
@@ -256,14 +246,11 @@ const Calendar: React.FC = () => {
     const event = clickInfo.event;
     setSelectedEvent(event as unknown as CalendarEvent);
     setEventTitle(event.title);
-    // Use local Y-M-D without timezone shift
     setEventStartDate(event.start ? formatYMD(new Date(event.start)) : "");
-    // If the event has an end date, determine whether it's exclusive midnight or an actual end-of-day
     if (event.end) {
       const endDateObj = new Date(event.end);
       const endYmd = formatYMD(endDateObj);
       if (event.allDay) {
-        // Only treat as exclusive (subtract one day) if end time is exactly 00:00:00 local
         const h = endDateObj.getHours();
         const m = endDateObj.getMinutes();
         const s = endDateObj.getSeconds();
@@ -279,7 +266,7 @@ const Calendar: React.FC = () => {
       setEventEndDate(event.start ? formatYMD(new Date(event.start)) : "");
     }
 
-    // Handle time extraction
+
     if (event.start && !event.allDay) {
       const startTime = formatTo12Hour(event.start);
       setEventStartTime(startTime);
@@ -298,14 +285,12 @@ const Calendar: React.FC = () => {
     openModal();
   };
 
-  // Check if current user is the owner of the event
   const isEventOwner = () => {
     if (!selectedEvent || !authUser) return false;
     return selectedEvent.extendedProps.createdByUsername === authUser.username;
   };
 
   const handleAddOrUpdateEvent = () => {
-    // Create start and end datetime strings (ISO_LOCAL_DATE_TIME, no trailing Z)
     let startDateTime: string;
     let endDateTime: string;
 
@@ -319,7 +304,6 @@ const Calendar: React.FC = () => {
       );
       startDateTime = formatForBackend(startDate);
     } else {
-      // all-day or date-only: start at 00:00:00 local
       const startDate = makeDateFromYMD(eventStartDate, 0, 0);
       startDateTime = formatForBackend(startDate);
     }
@@ -334,12 +318,10 @@ const Calendar: React.FC = () => {
       );
       endDateTime = formatForBackend(endDate);
     } else if (eventStartTime) {
-      // If start time is set but end time isn't, default end time to 11:59 PM of the same day (or end date)
       const endDate = makeDateFromYMD(eventEndDate || eventStartDate, 23, 59);
       endDate.setSeconds(59);
       endDateTime = formatForBackend(endDate);
     } else {
-      // date-only all-day: end at 23:59:59 local
       const endDate = makeDateFromYMD(eventEndDate || eventStartDate, 23, 59);
       endDate.setSeconds(59);
       endDateTime = formatForBackend(endDate);
@@ -363,11 +345,9 @@ const Calendar: React.FC = () => {
         if (selectedEvent && selectedEvent.id) {
           const updated = await updateEvent(Number(selectedEvent.id), payload);
 
-          // Convert backend response to FullCalendar format
           const priority = (updated.priority || "LOW").toUpperCase();
           const colors = priorityColors[priority] || priorityColors.LOW;
 
-          // Apply the same conversion for all-day events
           let mappedEnd = updated.endTime;
           if (updated.allDay && updated.endTime) {
             const endDate = new Date(updated.endTime);
@@ -381,7 +361,6 @@ const Calendar: React.FC = () => {
             }
           }
 
-          // Update event in local state
           setEvents((prevEvents) =>
             prevEvents.map((event) =>
               event.id === selectedEvent.id
@@ -406,11 +385,9 @@ const Calendar: React.FC = () => {
         } else {
           const created = await createEvent(payload);
 
-          // Convert backend response to FullCalendar format
           const priority = (created.priority || "LOW").toUpperCase();
           const colors = priorityColors[priority] || priorityColors.LOW;
 
-          // Apply the same conversion for all-day events
           let mappedEnd = created.endTime;
           if (created.allDay && created.endTime) {
             const endDate = new Date(created.endTime);
@@ -424,7 +401,6 @@ const Calendar: React.FC = () => {
             }
           }
 
-          // Add new event to local state
           const newEvent: CalendarEvent = {
             id: created.id.toString(),
             title: created.title,
@@ -444,7 +420,6 @@ const Calendar: React.FC = () => {
         }
       } catch (err) {
         console.error("Failed to save event", err);
-        // If save fails, reload to ensure consistency
         await loadEvents();
       }
     };
@@ -465,13 +440,11 @@ const Calendar: React.FC = () => {
     setIsDeleting(false);
   };
 
-  // Handle event mouse enter to show tooltip
   const handleEventMouseEnter = (info: any) => {
     const event = info.event;
     const tooltip = document.createElement("div");
     tooltip.className = "event-tooltip";
 
-    // Check if dark mode is active
     const isDarkMode = document.documentElement.classList.contains("dark");
 
     tooltip.style.cssText = `
@@ -571,20 +544,16 @@ const Calendar: React.FC = () => {
 
     document.body.appendChild(tooltip);
 
-    // Position tooltip
     const rect = info.el.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
 
-    // Default position: below the event
     let left = rect.left + window.scrollX;
     let top = rect.bottom + window.scrollY + 8;
 
-    // Adjust if tooltip goes off screen horizontally
     if (left + tooltipRect.width > window.innerWidth) {
       left = rect.right + window.scrollX - tooltipRect.width;
     }
 
-    // Adjust if tooltip goes off screen vertically (show above instead)
     if (top + tooltipRect.height > window.innerHeight + window.scrollY) {
       top = rect.top + window.scrollY - tooltipRect.height - 8;
     }
@@ -592,11 +561,9 @@ const Calendar: React.FC = () => {
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
 
-    // Store tooltip reference
     info.el.tooltip = tooltip;
   };
 
-  // Handle event mouse leave to hide tooltip
   const handleEventMouseLeave = (info: any) => {
     if (info.el.tooltip) {
       info.el.tooltip.remove();
@@ -948,12 +915,12 @@ const Calendar: React.FC = () => {
               {selectedEvent && isEventOwner() ? (
                 <button
                   onClick={async () => {
-                    if (isDeleting) return; // Prevent double click
+                    if (isDeleting) return; 
 
                     try {
                       setIsDeleting(true);
                       await deleteEvent(Number(selectedEvent.id));
-                      // Remove event from local state immediately for better UX
+                
                       setEvents((prevEvents) =>
                         prevEvents.filter((e) => e.id !== selectedEvent.id)
                       );
@@ -961,7 +928,6 @@ const Calendar: React.FC = () => {
                       resetModalFields();
                     } catch (err) {
                       console.error("Failed to delete event", err);
-                      // If delete fails, reload to ensure consistency
                       await loadEvents();
                     } finally {
                       setIsDeleting(false);
@@ -995,12 +961,10 @@ const Calendar: React.FC = () => {
 
 const renderEventContent = (eventInfo: any) => {
   const ev = eventInfo.event;
-  // prefer explicit color fields set on the event, otherwise fallback to priority class
   const bg = ev.backgroundColor || undefined;
   const border = ev.borderColor || undefined;
   const color = ev.textColor || undefined;
 
-  // Render only dot and title to keep the event bar compact
   return (
     <div
       className={`event-fc-color flex fc-event-main items-center p-1 rounded-sm relative cursor-pointer`}

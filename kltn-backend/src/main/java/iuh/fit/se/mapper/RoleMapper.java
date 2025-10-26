@@ -23,7 +23,7 @@ public interface RoleMapper {
   // Map String → RoleType
   default RoleType map(String roleName) {
     if (roleName == null) return null;
-    return RoleType.valueOf(roleName.toUpperCase()); // tránh lỗi case sensitive
+    return RoleType.valueOf(roleName.toUpperCase());
   }
 
   default Set<Permission> mapPermissions(Set<String> ids, @Context PermissionRepository repo) {
