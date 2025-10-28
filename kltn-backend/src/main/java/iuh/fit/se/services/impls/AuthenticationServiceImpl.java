@@ -69,7 +69,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
             Map.entry(User::getEnabled, ErrorCode.USER_DISABLED),
             Map.entry(User::getIsActive, ErrorCode.USER_INACTIVATED));
 
-    rules.stream()
+      rules.stream()
         .filter(rule -> !rule.getKey().test(user))
         .findFirst()
         .ifPresent(
