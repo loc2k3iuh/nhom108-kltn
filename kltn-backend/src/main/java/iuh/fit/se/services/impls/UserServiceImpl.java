@@ -1,11 +1,7 @@
 package iuh.fit.se.services.impls;
 
-import iuh.fit.se.dtos.requests.RegisterUserRequest;
-import iuh.fit.se.dtos.requests.ResendTokenRequest;
-import iuh.fit.se.dtos.requests.TokenRequest;
-import iuh.fit.se.dtos.requests.UpdateUserRequest;
+import iuh.fit.se.dtos.requests.*;
 import iuh.fit.se.dtos.responses.UserResponse;
-import iuh.fit.se.entities.ConfirmationToken;
 import iuh.fit.se.entities.Role;
 import iuh.fit.se.entities.User;
 import iuh.fit.se.enums.RoleType;
@@ -43,245 +39,232 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements IUserService {
 
-  UserRepository userRepository;
-  RoleRepository roleRepository;
-  IS3Service is3Service;
-  IEmailService iEmailService;
-  IConfirmationTokenService iConfirmationTokenService;
-  UserMapper userMapper;
+    IS3Service is3Service;
+    UserMapper userMapper;
+    IEmailService iEmailService;
+    UserRepository userRepository;
+    RoleRepository roleRepository;
+    IConfirmationTokenService iConfirmationTokenService;
 
-  @NonFinal
-  @Value("${client.url}")
-  String clientUrl;
+    @NonFinal
+    @Value("${client.url}")
+    String clientUrl;
 
-  @Override
-  @Transactional
-  public boolean createUser(RegisterUserRequest request) throws Exception {
+    @Override
+    @Transactional
+    public boolean createUser(RegisterUserRequest request) throws Exception {
 
-    Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());
+        Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());
 
-    // Nếu đã có email rồi
-    if (existingUserOpt.isPresent()) {
-      User existingUser = existingUserOpt.get();
+        // Nếu đã có email rồi
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
 
-      if (existingUser.getEnabled()) {
-        throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
-      }
+            if (existingUser.getEnabled()) {
+                throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            }
 
-      // Cập nhật thông tin user chưa xác thực
-      existingUser.setUsername(request.getUsername());
-      existingUser.setFullName(request.getFullName());
+            // Cập nhật thông tin user chưa xác thực
+            existingUser.setUsername(request.getUsername());
+            existingUser.setFullName(request.getFullName());
 
-      PasswordEncoder encoder = new BCryptPasswordEncoder(10);
-      existingUser.setPassword(encoder.encode(request.getPassword()));
+            PasswordEncoder encoder = new BCryptPasswordEncoder(10);
+            existingUser.setPassword(encoder.encode(request.getPassword()));
 
-      MultipartFile file = request.getMultipartFile();
-      if (file != null && !file.isEmpty()) {
-        String avatarUrl = is3Service.uploadFile(file, existingUser.getUsername());
-        existingUser.setAvatarUrl(avatarUrl);
-      }
+            MultipartFile file = request.getFile();
+            if (file != null && !file.isEmpty()) {
+                String avatarUrl = is3Service.uploadFile(file, existingUser.getUsername());
+                existingUser.setAvatarUrl(avatarUrl);
+            }
 
-      existingUser.setCreatedDate(new Date());
-      existingUser.setEnabled(false);
-      existingUser.setIsActive(false);
+            existingUser.setCreatedDate(new Date());
+            existingUser.setEnabled(false);
+            existingUser.setIsActive(false);
 
-      iConfirmationTokenService.deleteTokensByUser(existingUser);
+            iConfirmationTokenService.deleteTokensByUser(existingUser);
 
-      userRepository.save(existingUser);
-      String token = iConfirmationTokenService.createConfirmationToken(existingUser);
-      String link = clientUrl + "/user/register-success?token=" + token;
-      iEmailService.sendEmail(request.getEmail(), link);
-      return true;
+            userRepository.save(existingUser);
+            iEmailService.sendEmail(existingUser);
+            return true;
+        }
+
+        // Nếu email chưa tồn tại => tạo user mới
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS);
+        }
+
+        Role defaultRole =
+                roleRepository
+                        .findByName(RoleType.CUSTOMER)
+                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+        PasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        String encodedPassword = encoder.encode(request.getPassword());
+
+        User user =
+                User.builder()
+                        .username(request.getUsername())
+                        .email(request.getEmail())
+                        .password(encodedPassword)
+                        .fullName(request.getFullName())
+                        .roles(Set.of(defaultRole))
+                        .isActive(false)
+                        .enabled(false)
+                        .build();
+
+        MultipartFile file = request.getFile();
+        if (file != null && !file.isEmpty()) {
+            String avatarUrl = is3Service.uploadFile(file, user.getUsername());
+            user.setAvatarUrl(avatarUrl);
+        }
+
+        userRepository.save(user);
+
+        iEmailService.sendEmail(user);
+
+        return false;
     }
 
-    // Nếu email chưa tồn tại => tạo user mới
-    if (userRepository.existsByUsername(request.getUsername())) {
-      throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS);
+    @Override
+    public void confirmToken(VerifyRegistrationRequest verifyRegistrationRequest) {
+        boolean isValidToken = iEmailService.verifyRegistration(verifyRegistrationRequest);
+        if (!isValidToken) {
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+
+        User existingUser =
+                userRepository
+                        .findByEmail(verifyRegistrationRequest.getEmail())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        existingUser.setEnabled(true);
+        existingUser.setIsActive(true);
+
+        userRepository.save(existingUser);
     }
 
-    Role defaultRole =
-        roleRepository
-            .findByName(RoleType.CUSTOMER)
-            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+    @Override
+    public void resendConfirmationToken(ResendTokenRequest resendTokenRequest) {
+        User existUser =
+                userRepository
+                        .findByEmail(resendTokenRequest.getEmail())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    PasswordEncoder encoder = new BCryptPasswordEncoder(10);
-    String encodedPassword = encoder.encode(request.getPassword());
+        if (existUser.getEnabled()) {
+            throw new AppException(ErrorCode.USER_ALREADY_CONFIRMED);
+        }
 
-    User user =
-        User.builder()
-            .username(request.getUsername())
-            .email(request.getEmail())
-            .password(encodedPassword)
-            .fullName(request.getFullName())
-            .roles(Set.of(defaultRole))
-            .isActive(false)
-            .enabled(false)
-            .build();
+        iConfirmationTokenService.deleteTokensByUser(existUser);
 
-    MultipartFile file = request.getMultipartFile();
-    if (file != null && !file.isEmpty()) {
-      String avatarUrl = is3Service.uploadFile(file, user.getUsername());
-      user.setAvatarUrl(avatarUrl);
+        String token = iConfirmationTokenService.createConfirmationToken(existUser);
+
+        String link = clientUrl + "/user/register-success?token=" + token;
     }
 
-    userRepository.save(user);
-
-    String token = iConfirmationTokenService.createConfirmationToken(user);
-    String link = clientUrl + "/user/register-success?token=" + token;
-    iEmailService.sendEmail(request.getEmail(), link);
-    return false;
-  }
-
-  @Override
-  public UserResponse confirmToken(TokenRequest tokenRequest) {
-
-    ConfirmationToken confirmationToken =
-        iConfirmationTokenService
-            .getToken(tokenRequest.getToken())
-            .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOT_FOUND));
-
-    if (confirmationToken.getConfirmedAt() != null) {
-      throw new AppException(ErrorCode.TOKEN_CONFIRMED);
+    @Override
+    public UserResponse getUserDetailsFromToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        return userMapper.toUserResponse(
+                userRepository
+                        .findByUsername(authentication.getName())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
     }
 
-    if (confirmationToken.getExpiresAt().before(new Date())) {
-      throw new AppException(ErrorCode.TOKEN_EXPIRED);
+    @Override
+    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        User existingUser =
+                userRepository
+                        .findByUsername(authentication.getName())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        boolean isAuthenticated =
+                passwordEncoder.matches(
+                        changePasswordRequest.getCurrentPassword(), existingUser.getPassword());
+        if (!isAuthenticated) {
+            throw new AppException(ErrorCode.PASSWORD_MUST_MATCH);
+        }
+        String encodedPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
+        existingUser.setPassword(encodedPassword);
+        userRepository.save(existingUser);
     }
 
-    confirmationToken.setConfirmedAt(new Date());
-    iConfirmationTokenService.saveToken(confirmationToken);
-
-    User user = confirmationToken.getUser();
-
-    user.setEnabled(true);
-    user.setIsActive(true);
-    userRepository.save(user);
-    return userMapper.toUserResponse(user);
-  }
-
-  @Override
-  public void resendConfirmationToken(ResendTokenRequest resendTokenRequest) {
-    User existUser =
-        userRepository
-            .findByEmail(resendTokenRequest.getEmail())
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-    if (existUser.getEnabled()) {
-      throw new AppException(ErrorCode.USER_ALREADY_CONFIRMED);
+    @Override
+    public Page<UserResponse> getAllCustomers(
+            String keyword, Boolean isActive, PageRequest pageRequest) {
+        Page<User> userPage = userRepository.searchCustomer(keyword, isActive, pageRequest);
+        return userPage.map(userMapper::toUserResponse);
     }
 
-    iConfirmationTokenService.deleteTokensByUser(existUser);
-
-    String token = iConfirmationTokenService.createConfirmationToken(existUser);
-
-    String link = clientUrl + "/user/register-success?token=" + token;
-    iEmailService.sendEmail(resendTokenRequest.getEmail(), link);
-  }
-
-  @Override
-  public UserResponse getUserDetailsFromToken() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !authentication.isAuthenticated()) {
-      throw new AppException(ErrorCode.UNAUTHORIZED);
-    }
-    return userMapper.toUserResponse(
-        userRepository
-            .findByUsername(authentication.getName())
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
-  }
-
-  @Override
-  public void changePassword(ChangePasswordRequest changePasswordRequest) {
-    var authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !authentication.isAuthenticated()) {
-      throw new AppException(ErrorCode.UNAUTHORIZED);
+    @Override
+    @Transactional
+    @PostMapping("returnObject.username == authentication.username")
+    public UserResponse updateMyInfo(Long id, UpdateUserRequest updateUserRequest) {
+        return userMapper.toUserResponse(userRepository.save(updateUser(id, updateUserRequest)));
     }
 
-    User existingUser =
-        userRepository
-            .findByUsername(authentication.getName())
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    private User updateUser(Long id, UpdateUserRequest updateUserRequest) {
+        User existUser =
+                userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-    boolean isAuthenticated =
-        passwordEncoder.matches(
-            changePasswordRequest.getCurrentPassword(), existingUser.getPassword());
-    if (!isAuthenticated) {
-      throw new AppException(ErrorCode.PASSWORD_MUST_MATCH);
+        Optional.ofNullable(updateUserRequest.getFullName())
+                .filter(fn -> !fn.isBlank())
+                .ifPresent(existUser::setFullName);
+
+        Optional.ofNullable(updateUserRequest.getPhoneNumber())
+                .filter(pn -> !pn.isBlank())
+                .ifPresent(existUser::setPhoneNumber);
+
+        Optional.ofNullable(updateUserRequest.getDateOfBirth()).ifPresent(existUser::setDateOfBirth);
+
+        Optional.ofNullable(updateUserRequest.getAddress())
+                .filter(ad -> !ad.isBlank())
+                .ifPresent(existUser::setAddress);
+
+        Optional.ofNullable(updateUserRequest.getFile())
+                .filter(f -> !f.isEmpty())
+                .map(
+                        f -> {
+                            if (!existUser.getAvatarUrl().isBlank()) {
+                                is3Service.deleteFile(existUser.getAvatarUrl());
+                            }
+                            return safeUpload(f, existUser.getUsername());
+                        })
+                .ifPresent(existUser::setAvatarUrl);
+        return existUser;
     }
-    String encodedPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
-    existingUser.setPassword(encodedPassword);
-    userRepository.save(existingUser);
-  }
 
-  @Override
-  public Page<UserResponse> getAllCustomers(
-      String keyword, Boolean isActive, PageRequest pageRequest) {
-    Page<User> userPage = userRepository.searchCustomer(keyword, isActive, pageRequest);
-    return userPage.map(userMapper::toUserResponse);
-  }
-
-  @Override
-  @Transactional
-  @PostMapping("returnObject.username == authentication.username")
-  public UserResponse updateMyInfo(Long id, UpdateUserRequest updateUserRequest) {
-    return userMapper.toUserResponse(userRepository.save(updateUser(id, updateUserRequest)));
-  }
-
-  private User updateUser(Long id, UpdateUserRequest updateUserRequest) {
-    User existUser =
-        userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-    Optional.ofNullable(updateUserRequest.getFullName())
-        .filter(fn -> !fn.isBlank())
-        .ifPresent(existUser::setFullName);
-
-    Optional.ofNullable(updateUserRequest.getPhoneNumber())
-        .filter(pn -> !pn.isBlank())
-        .ifPresent(existUser::setPhoneNumber);
-
-    Optional.ofNullable(updateUserRequest.getDateOfBirth()).ifPresent(existUser::setDateOfBirth);
-
-    Optional.ofNullable(updateUserRequest.getAddress())
-        .filter(ad -> !ad.isBlank())
-        .ifPresent(existUser::setAddress);
-
-    Optional.ofNullable(updateUserRequest.getFile())
-        .filter(f -> !f.isEmpty())
-        .map(
-            f -> {
-              if (!existUser.getAvatarUrl().isBlank()) {
-                is3Service.deleteFile(existUser.getAvatarUrl());
-              }
-              return safeUpload(f, existUser.getUsername());
-            })
-        .ifPresent(existUser::setAvatarUrl);
-    return existUser;
-  }
-
-  @Override
-  public UserResponse updateClient(Long id, UpdateUserRequest updateUserRequest) {
-    User existUser = updateUser(id, updateUserRequest);
-    Optional.ofNullable(updateUserRequest.getIsActive()).ifPresent(existUser::setIsActive);
-    return userMapper.toUserResponse(userRepository.save(existUser));
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public UserResponse getUserDetails(String username) {
-    User user =
-        userRepository
-            .findByUsername(username)
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    return userMapper.toUserResponse(user);
-  }
-
-  private String safeUpload(MultipartFile file, String username) {
-    try {
-      return is3Service.uploadFile(file, username);
-    } catch (IOException e) {
-      log.error("Error in Upload Image of user:", e);
-      throw new AppException(ErrorCode.UPLOAD_ERROR);
+    @Override
+    public UserResponse updateClient(Long id, UpdateUserRequest updateUserRequest) {
+        User existUser = updateUser(id, updateUserRequest);
+        Optional.ofNullable(updateUserRequest.getIsActive()).ifPresent(existUser::setIsActive);
+        return userMapper.toUserResponse(userRepository.save(existUser));
     }
-  }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserDetails(String username) {
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(user);
+    }
+
+    private String safeUpload(MultipartFile file, String username) {
+        try {
+            return is3Service.uploadFile(file, username);
+        } catch (IOException e) {
+            log.error("Error in Upload Image of user:", e);
+            throw new AppException(ErrorCode.UPLOAD_ERROR);
+        }
+    }
 }

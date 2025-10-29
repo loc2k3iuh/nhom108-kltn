@@ -6,14 +6,11 @@ import {
   getUserIdFromToken,
   removeToken,
 } from "@/services/useTokenService";
-import {
-
-} from "@/services/useUserService";
+import { checkAuthUser } from "@/services/useUserService";
 import { LogoutRequest } from "@/types/requests/authRequest";
 import { UpdateUserRequest } from "@/types/requests/useRequest";
 import { UserResponse } from "@/types/responses/authResponse";
 
-import { data } from "react-router-dom";
 import { create } from "zustand";
 
 interface AuthStore {
@@ -41,7 +38,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true });
-      const response = await getUserDetailFromToken();
+      const response = await checkAuthUser();
       set({ authUser: response, isInitialized: true });
       get().connectWebSocket();
       return response;

@@ -11,25 +11,30 @@ import java.text.ParseException;
 
 public interface IAuthenticationService {
 
-  PreLoginResponse authenticate(LoginRequest loginRequest) throws JOSEException, MessagingException;
+    PreLoginResponse authenticateAdmin(LoginRequest loginRequest)
+            throws JOSEException, MessagingException;
 
-  LoginResponse verifyOtp(
-      VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
-      throws JOSEException;
+    LoginResponse authenticateClient(
+            LoginRequest loginRequest, boolean isRemembered, HttpServletResponse httpServletResponse)
+            throws JOSEException;
 
-  void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException;
+    LoginResponse verifyOtp(
+            VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
+            throws JOSEException;
 
-  boolean introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException;
+    void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException;
 
-  void logout(LogoutRequest logoutRequest, String refreshToken)
-      throws ParseException, JOSEException;
+    boolean introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException;
 
-  TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
-      throws JOSEException;
+    void logout(LogoutRequest logoutRequest, String refreshToken)
+            throws ParseException, JOSEException;
 
-  void deleteRefreshTokenFromRedis(String userId);
+    TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
+            throws JOSEException;
 
-  void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException;
+    void deleteRefreshTokenFromRedis(String userId);
 
-  void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest);
+    void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException;
+
+    void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest);
 }

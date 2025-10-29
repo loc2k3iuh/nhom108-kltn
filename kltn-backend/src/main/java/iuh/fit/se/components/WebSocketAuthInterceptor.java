@@ -28,10 +28,6 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
       WebSocketHandler wsHandler,
       Map<String, Object> attributes)
       throws Exception {
-    //        String token = ((ServletServerHttpRequest)
-    // request).getServletRequest().getHeader("token");
-    //        String username = iJwtService.getUsernameFromToken(token.replace("Bearer ", ""));
-    //        attributes.put("username", username);
 
     if (request instanceof ServletServerHttpRequest servletRequest) {
       String token = servletRequest.getServletRequest().getParameter("token");

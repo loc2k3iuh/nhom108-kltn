@@ -39,177 +39,195 @@ import org.springframework.transaction.annotation.Transactional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationServiceImpl implements IAuthenticationService {
 
-  UserMapper userMapper;
-  IJwtService iJwtService;
-  IEmailService iEmailService;
-  UserRepository userRepository;
-  StringRedisTemplate stringRedisTemplate;
-  IRefreshTokenService iRefreshTokenService;
-  InvalidatedTokenRepository invalidatedTokenRepository;
-
-  private boolean isGmailAddress(String email) {
-    String regex = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
-    return email != null && email.matches(regex);
-  }
-
-  @Override
-  public PreLoginResponse authenticate(LoginRequest loginRequest) throws MessagingException {
-    User user =
-        (!isGmailAddress(loginRequest.getUsername())
-                ? userRepository.findByUsername(loginRequest.getUsername())
-                : userRepository.findByEmail(loginRequest.getUsername()))
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
+    UserMapper userMapper;
+    IJwtService iJwtService;
+    IEmailService iEmailService;
+    UserRepository userRepository;
+    StringRedisTemplate stringRedisTemplate;
+    IRefreshTokenService iRefreshTokenService;
+    InvalidatedTokenRepository invalidatedTokenRepository;
     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
-    List<Map.Entry<Predicate<User>, ErrorCode>> rules =
-        List.of(
-            Map.entry(
-                u -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()),
-                ErrorCode.UNAUTHENTICATED),
-            Map.entry(User::getEnabled, ErrorCode.USER_DISABLED),
-            Map.entry(User::getIsActive, ErrorCode.USER_INACTIVATED));
-
-      rules.stream()
-        .filter(rule -> !rule.getKey().test(user))
-        .findFirst()
-        .ifPresent(
-            rule -> {
-              throw new AppException(rule.getValue());
-            });
-
-    iEmailService.sentOtp(user);
-    return userMapper.toPreLoginResponse(user);
-  }
-
-  @Override
-  public LoginResponse verifyOtp(
-      VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
-      throws JOSEException {
-    boolean isValidOtp = iEmailService.verifyOtp(verifyOtpRequest);
-    if (!isValidOtp) {
-      throw new AppException(ErrorCode.OTP_NOT_FOUND);
-    }
-    User user =
-        userRepository
-            .findByEmail(verifyOtpRequest.getEmail())
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    String accessToken = iJwtService.generateToken(user);
-    RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(user.getId(), isChecked);
-
-    iRefreshTokenService.createRefreshTokenCookie(
-        httpServletResponse, isChecked, refreshToken.getToken());
-    return LoginResponse.builder().authenticated(true).accessToken(accessToken).build();
-  }
-
-  @Override
-  public void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException {
-    iEmailService.resendOtp(resenOtpRequest);
-  }
-
-  @Override
-  public boolean introspect(IntrospectRequest request) throws JOSEException, ParseException {
-    var token = request.getToken();
-    boolean isValid = true;
-    try {
-      iJwtService.verifyToken(token);
-    } catch (AppException e) {
-      isValid = false;
+    private boolean isGmailAddress(String email) {
+        String regex = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
+        return email != null && email.matches(regex);
     }
 
-    return isValid;
-  }
+    private User checkAuth(LoginRequest loginRequest) {
 
-  @Override
-  @Transactional
-  public void logout(LogoutRequest logoutRequest, String refreshToken)
-      throws ParseException, JOSEException {
-    try {
-      var signToken = iJwtService.verifyToken(logoutRequest.getToken());
-      String jit = signToken.getJWTClaimsSet().getJWTID();
-      Date expiryDate = signToken.getJWTClaimsSet().getExpirationTime();
+        User user =
+                (!isGmailAddress(loginRequest.getUsername())
+                        ? userRepository.findByUsername(loginRequest.getUsername())
+                        : userRepository.findByEmail(loginRequest.getUsername()))
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-      invalidatedTokenRepository.save(
-          InvalidatedToken.builder().expiryTime(expiryDate).id(jit).build());
+        List<Map.Entry<Predicate<User>, ErrorCode>> rules =
+                List.of(
+                        Map.entry(
+                                u -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()),
+                                ErrorCode.UNAUTHENTICATED),
+                        Map.entry(User::getEnabled, ErrorCode.USER_DISABLED),
+                        Map.entry(User::getIsActive, ErrorCode.USER_INACTIVATED));
 
-      Optional.ofNullable(refreshToken).ifPresent(iRefreshTokenService::deleteByToken);
+        rules.stream()
+                .filter(rule -> !rule.getKey().test(user))
+                .findFirst()
+                .ifPresent(
+                        rule -> {
+                            throw new AppException(rule.getValue());
+                        });
 
-      String userId = "refresh-token: " + signToken.getJWTClaimsSet().getLongClaim("userId");
-      if (stringRedisTemplate.opsForValue().get(userId) != null) {
-        stringRedisTemplate.delete(userId);
-      }
-
-    } catch (AppException e) {
-      throw new AppException(ErrorCode.UNAUTHENTICATED);
+        return user;
     }
-  }
 
-  @Override
-  @Transactional
-  public TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
-      throws JOSEException {
-    Optional<RefreshToken> refreshToken =
-        iRefreshTokenService.findByToken(refreshRequest.getRefreshToken());
-
-    if (refreshToken.isPresent()) {
-      if (iRefreshTokenService.isTokenExpired(refreshToken.get())) {
-        iRefreshTokenService.deleteByToken(refreshRequest.getRefreshToken());
-        throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
-      }
-      return TokenResponse.builder()
-          .token(iJwtService.generateToken(refreshToken.get().getUser()))
-          .build();
-    } else {
-      User user =
-          userRepository
-              .findById(Long.valueOf(userId))
-              .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-      String refreshTokenRedis =
-          stringRedisTemplate.opsForValue().get(String.valueOf(user.getId()));
-      assert refreshTokenRedis != null;
-      if (!refreshTokenRedis.equals(refreshRequest.getRefreshToken())) {
-        throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
-      }
-      return TokenResponse.builder().token(iJwtService.generateToken(user)).build();
+    @Override
+    public PreLoginResponse authenticateAdmin(LoginRequest loginRequest) throws MessagingException {
+        User user = checkAuth(loginRequest);
+        iEmailService.sentOtp(user);
+        return userMapper.toPreLoginResponse(user);
     }
-  }
 
-  @Override
-  public void deleteRefreshTokenFromRedis(String userId) {
-    String userIdKey = "refresh-token: " + userId;
-    if (stringRedisTemplate.opsForValue().get(userIdKey) != null) {
-      stringRedisTemplate.delete(userIdKey);
+    @Override
+    public LoginResponse authenticateClient(
+            LoginRequest loginRequest, boolean isRemembered, HttpServletResponse httpServletResponse)
+            throws JOSEException {
+        User user = checkAuth(loginRequest);
+        String accessToken = iJwtService.generateToken(user);
+        RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(user.getId(), isRemembered);
+        iRefreshTokenService.createRefreshTokenCookie(
+                httpServletResponse, isRemembered, refreshToken.getToken());
+        return LoginResponse.builder()
+                .authenticated(true)
+                .roles(userMapper.toPreLoginResponse(user).getRoles())
+                .accessToken(accessToken)
+                .build();
     }
-  }
 
-  @Override
-  public void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException {
-    iEmailService.sendForgotPasswordToken(email, isAdminPage);
-  }
+    @Override
+    public LoginResponse verifyOtp(
+            VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
+            throws JOSEException {
+        boolean isValidOtp = iEmailService.verifyOtp(verifyOtpRequest);
+        if (!isValidOtp) {
+            throw new AppException(ErrorCode.OTP_NOT_FOUND);
+        }
+        User user =
+                userRepository
+                        .findByEmail(verifyOtpRequest.getEmail())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        String accessToken = iJwtService.generateToken(user);
+        RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(user.getId(), isChecked);
 
-  @Override
-  @Transactional
-  public void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest) {
-    User existUser =
-        userRepository
-            .findByEmail(verifyResetTokenRequest.getEmail())
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    String resetToken =
-        stringRedisTemplate.opsForValue().get("reset:token:userId=" + existUser.getId());
-
-
-
-
-    if (resetToken == null || resetToken.isBlank()) {
-      throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        iRefreshTokenService.createRefreshTokenCookie(
+                httpServletResponse, isChecked, refreshToken.getToken());
+        return LoginResponse.builder().authenticated(true).accessToken(accessToken).build();
     }
-    if (!resetToken.equals(verifyResetTokenRequest.getResetToken())) {
-      throw new AppException(ErrorCode.TOKEN_INVALID);
-    }
-    PasswordEncoder encoder = new BCryptPasswordEncoder(10);
-    existUser.setPassword(encoder.encode(verifyResetTokenRequest.getPassword()));
-    userRepository.save(existUser);
 
-    stringRedisTemplate.delete("reset-token: " + existUser.getId());
-  }
+    @Override
+    public void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException {
+        iEmailService.resendOtp(resenOtpRequest);
+    }
+
+    @Override
+    public boolean introspect(IntrospectRequest request) throws JOSEException, ParseException {
+        var token = request.getToken();
+        boolean isValid = true;
+        try {
+            iJwtService.verifyToken(token);
+        } catch (AppException e) {
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    @Override
+    @Transactional
+    public void logout(LogoutRequest logoutRequest, String refreshToken)
+            throws ParseException, JOSEException {
+        try {
+            var signToken = iJwtService.verifyToken(logoutRequest.getToken());
+            String jit = signToken.getJWTClaimsSet().getJWTID();
+            Date expiryDate = signToken.getJWTClaimsSet().getExpirationTime();
+
+            invalidatedTokenRepository.save(
+                    InvalidatedToken.builder().expiryTime(expiryDate).id(jit).build());
+
+            Optional.ofNullable(refreshToken).ifPresent(iRefreshTokenService::deleteByToken);
+
+            String key = "refresh:token:userId=" + signToken.getJWTClaimsSet().getLongClaim("userId");
+            if (stringRedisTemplate.opsForValue().get(key) != null) {
+                stringRedisTemplate.delete(key);
+            }
+
+        } catch (AppException e) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+    }
+
+    @Override
+    @Transactional
+    public TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
+            throws JOSEException {
+        Optional<RefreshToken> refreshToken =
+                iRefreshTokenService.findByToken(refreshRequest.getRefreshToken());
+
+        if (refreshToken.isPresent()) {
+            if (iRefreshTokenService.isTokenExpired(refreshToken.get())) {
+                iRefreshTokenService.deleteByToken(refreshRequest.getRefreshToken());
+                throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
+            }
+            return TokenResponse.builder()
+                    .token(iJwtService.generateToken(refreshToken.get().getUser()))
+                    .build();
+        } else {
+            User user =
+                    userRepository
+                            .findById(Long.valueOf(userId))
+                            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+            String refreshTokenRedis =
+                    stringRedisTemplate.opsForValue().get(String.valueOf(user.getId()));
+            assert refreshTokenRedis != null;
+            if (!refreshTokenRedis.equals(refreshRequest.getRefreshToken())) {
+                throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
+            }
+            return TokenResponse.builder().token(iJwtService.generateToken(user)).build();
+        }
+    }
+
+    @Override
+    public void deleteRefreshTokenFromRedis(String userId) {
+        String key = "refresh:token:userId=" + userId;
+        if (stringRedisTemplate.opsForValue().get(key) != null) {
+            stringRedisTemplate.delete(key);
+        }
+    }
+
+    @Override
+    public void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException {
+        iEmailService.sendForgotPasswordToken(email, isAdminPage);
+    }
+
+    @Override
+    @Transactional
+    public void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest) {
+        User existUser =
+                userRepository
+                        .findByEmail(verifyResetTokenRequest.getEmail())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        String resetToken =
+                stringRedisTemplate.opsForValue().get("reset:token:userId=" + existUser.getId());
+
+        if (resetToken == null || resetToken.isBlank()) {
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        if (!resetToken.equals(verifyResetTokenRequest.getResetToken())) {
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        PasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        existUser.setPassword(encoder.encode(verifyResetTokenRequest.getPassword()));
+        userRepository.save(existUser);
+
+        stringRedisTemplate.delete("reset:token:userId=" + existUser.getId());
+    }
 }

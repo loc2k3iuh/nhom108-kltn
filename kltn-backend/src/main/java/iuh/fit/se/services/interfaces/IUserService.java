@@ -1,5 +1,5 @@
 package iuh.fit.se.services.interfaces;
-
+import iuh.fit.se.dtos.requests.ChangePasswordRequest;
 import iuh.fit.se.dtos.requests.RegisterUserRequest;
 import iuh.fit.se.dtos.requests.ResendTokenRequest;
 import iuh.fit.se.dtos.requests.TokenRequest;

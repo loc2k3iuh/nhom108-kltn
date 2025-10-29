@@ -39,5 +39,5 @@ public class RegisterUserRequest {
   @NotBlank(message = "RETYPE_PASSWORD_REQUIRED")
   String retypePassword;
 
-  MultipartFile multipartFile;
+  MultipartFile file;
 }
