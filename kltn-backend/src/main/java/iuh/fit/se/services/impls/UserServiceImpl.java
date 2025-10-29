@@ -46,9 +46,7 @@ public class UserServiceImpl implements IUserService {
     RoleRepository roleRepository;
     IConfirmationTokenService iConfirmationTokenService;
 
-    @NonFinal
-    @Value("${client.url}")
-    String clientUrl;
+
 
     @Override
     @Transactional
@@ -125,6 +123,7 @@ public class UserServiceImpl implements IUserService {
         return false;
     }
 
+
     @Override
     public void confirmToken(VerifyRegistrationRequest verifyRegistrationRequest) {
         boolean isValidToken = iEmailService.verifyRegistration(verifyRegistrationRequest);
@@ -158,7 +157,7 @@ public class UserServiceImpl implements IUserService {
 
         String token = iConfirmationTokenService.createConfirmationToken(existUser);
 
-        String link = clientUrl + "/user/register-success?token=" + token;
+       
     }
 
     @Override

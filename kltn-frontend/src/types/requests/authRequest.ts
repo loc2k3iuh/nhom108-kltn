@@ -1,28 +1,22 @@
-export interface LoginRequest {
+export interface LoginRequest{
     username: string;
+    password: string
+}
+
+export interface RegisterUserRequest{
+    username: string;
+    email: string;
+    fullName: string;
     password: string;
+    retypePassword: string;
+    file?: File | null | undefined;
 }
 
-export interface OtpTokenRequest {
-    email: string;
-    otp_token: string;
-}
-
-export interface ResendOtpRequest {
-    email: string;
-}
-
-export interface SignOutRequest {
+export interface VerifyRegistrationRequest{
+    email : string;
     token: string;
 }
 
-export interface UpdateUserRequest {
-    fullName?: string | null;
-    phoneNumber?: string | null;
-    address?: string | null;
-    dateOfBirth?: string | null;
-    file?: File | null;
-}
 
 export interface VerifyResetTokenRequest {
     email: string;

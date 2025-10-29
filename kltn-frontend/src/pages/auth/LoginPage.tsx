@@ -14,18 +14,17 @@ import {
   setAccessTokenToSessionStorage,
 } from "@/services/useTokenService";
 import { useAuthStore } from "@/stores/useAuthStore";
-import Reloading from "@/components/skeletons/Reloading";
-import { webSocketService } from "@/services/useSocketService";
+import Reloading from "@/components/skeletions/Reloading";
 
 interface LoginForm {
   username: string;
   password: string;
 }
 
-
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { checkAuth } = useAuthStore();
+  const [showPassword, setShowPassord] = useState(false);
 
   const {
     register,
@@ -74,8 +73,8 @@ const LoginPage: React.FC = () => {
         ? setAccessTokenToLocalStorage(response.access_token)
         : setAccessTokenToSessionStorage(response.access_token);
 
-        await checkAuth();
-        navigate("/");
+      await checkAuth();
+      navigate("/");
     } catch (error: any) {
       toast.error(error.response?.data?.message);
     } finally {
@@ -83,8 +82,8 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  if(!isLoading){
-    <Reloading/>
+  if (!isLoading) {
+    <Reloading />;
   }
 
   return (
@@ -176,70 +175,72 @@ const LoginPage: React.FC = () => {
 
             {/* Login Form */}
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-              <div className="relative">
-                <div
-                  className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 ${
-                    activeInput === "username" ? "text-[#C92127]" : ""
-                  }`}
-                >
-                  <FaUser />
+              <div>
+                <div className="relative">
+                  <div
+                    className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 ${
+                      activeInput === "username" ? "text-[#C92127]" : ""
+                    }`}
+                  >
+                    <FaUser />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Tên đăng nhập hoặc email"
+                    {...register("username", {
+                      required: "Vui lòng nhập tên đăng nhập!",
+                    })}
+                    className={`w-full py-3 pl-10 pr-4 rounded-lg border ${
+                      errors.username ? "border-red-500" : "border-gray-300"
+                    } ${
+                      activeInput === "username"
+                        ? "border-[#C92127] ring-1 ring-[#C92127]"
+                        : ""
+                    } focus:outline-none transition-all duration-200`}
+                    disabled={isLoading}
+                    onFocus={() => setActiveInput("username")}
+                    onBlur={() => setActiveInput(null)}
+                  />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Tên đăng nhập hoặc email"
-                  {...register("username", {
-                    required: "Vui lòng nhập tên đăng nhập!",
-                  })}
-                  className={`w-full py-3 pl-10 pr-4 rounded-lg border ${
-                    errors.username ? "border-red-500" : "border-gray-300"
-                  } ${
-                    activeInput === "username"
-                      ? "border-[#C92127] ring-1 ring-[#C92127]"
-                      : ""
-                  } focus:outline-none transition-all duration-200`}
-                  disabled={isLoading}
-                  onFocus={() => setActiveInput("username")}
-                  onBlur={() => setActiveInput(null)}
-                />
                 {errors.username && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.username.message}
                   </p>
                 )}
               </div>
-
-              <div className="relative">
-                <div
-                  className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 ${
-                    activeInput === "password" ? "text-[#C92127]" : ""
-                  }`}
-                >
-                  <FaLock />
+              <div>
+                <div className="relative">
+                  <div
+                    className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 ${
+                      activeInput === "password" ? "text-[#C92127]" : ""
+                    }`}
+                  >
+                    <FaLock />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Mật khẩu"
+                    {...register("password", {
+                      required: "Vui lòng nhập mật khẩu!",
+                    })}
+                    className={`w-full py-3 pl-10 pr-4 rounded-lg border ${
+                      errors.password ? "border-red-500" : "border-gray-300"
+                    } ${
+                      activeInput === "password"
+                        ? "border-[#C92127] ring-1 ring-[#C92127]"
+                        : ""
+                    } focus:outline-none transition-all duration-200`}
+                    disabled={isLoading}
+                    onFocus={() => setActiveInput("password")}
+                    onBlur={() => setActiveInput(null)}
+                  />
                 </div>
-                <input
-                  type="password"
-                  placeholder="Mật khẩu"
-                  {...register("password", {
-                    required: "Vui lòng nhập mật khẩu!",
-                  })}
-                  className={`w-full py-3 pl-10 pr-4 rounded-lg border ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  } ${
-                    activeInput === "password"
-                      ? "border-[#C92127] ring-1 ring-[#C92127]"
-                      : ""
-                  } focus:outline-none transition-all duration-200`}
-                  disabled={isLoading}
-                  onFocus={() => setActiveInput("password")}
-                  onBlur={() => setActiveInput(null)}
-                />
                 {errors.password && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.password.message}
                   </p>
                 )}
               </div>
-
               <div className="flex justify-between items-center">
                 <label className="flex items-center text-sm text-gray-600 cursor-pointer">
                   <input

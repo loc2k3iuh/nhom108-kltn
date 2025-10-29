@@ -2,16 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import { faEye, faEyeSlash, faKey } from "@fortawesome/free-solid-svg-icons";
-
+import UserSidebar from "../../components/UserSidebar";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { changePasswordService } from "@/services/useUserService";
 import { useAuthStore } from "@/stores/useAuthStore";
-import UserSidebar from "@/components/UserSidebar";
-
 
 const validatedPasswordMessage = "Mật khẩu phải có ít nhất 8 ký tự !";
 const changePasswordSchema = yup.object({
@@ -77,9 +74,8 @@ const ChangePassword: React.FC = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      <div className="max-w-6xl mx-auto p-4 flex flex-col md:flex-row p-8">
-
-        <UserSidebar  />
+  <div className="max-w-6xl mx-auto p-8 flex flex-col md:flex-row">
+        <UserSidebar />
 
         <div className="w-full md:w-3/4 space-y-4 ml-0 mt-3 md:mt-0 md:ml-6 bg-white p-4 rounded shadow-md">
           <div className="flex items-center justify-center mb-6">

@@ -1,18 +1,37 @@
-
 import axiosInstance from "@/lib/axios";
+import { RegisterUserRequest, VerifyRegistrationRequest } from "@/types/requests/authRequest";
 import { changePasswordRequest, UpdateUserRequest } from "@/types/requests/useRequest";
-import { UserResponse } from "@/types/responses/authResponse";
+import { UserResponse } from "@/types/responses/userResponse";
 
-
-
-
-export const checkAuthUser = async (): Promise<UserResponse> => {
+export const getUserDetailFromToken = async (): Promise<UserResponse> => {
   const response = await axiosInstance.get("/users/my-information");
-  return response.data.result as UserResponse;
+  return (response.data.result as UserResponse) || null;
 };
 
+export const registerUser = async (
+  data: RegisterUserRequest
+): Promise<void> => {
+  const formData = new FormData();
 
-export const updateUser = async (userId: number, data: UpdateUserRequest): Promise<UserResponse> => {
+  if (data.username) formData.append("username", data.username);
+  if (data.email) formData.append("email", data.email);
+  if (data.fullName) formData.append("fullName", data.fullName);
+  if (data.password) formData.append("password", data.password);
+  if (data.retypePassword)
+    formData.append("retypePassword", data.retypePassword);
+  if (data.file) formData.append("file", data.file);
+  await axiosInstance.post("/users/register", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const verifyRegistration = async (data : VerifyRegistrationRequest) : Promise<void> => {
+  await axiosInstance.post("/users/confirm_user", data);
+}
+
+export const updateUserService = async (userId: number, data: UpdateUserRequest): Promise<UserResponse> => {
   const formData = new FormData();
 
   if(data.fullName) formData.append("fullName", data.fullName);

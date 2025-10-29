@@ -6,10 +6,11 @@ import {
   getUserIdFromToken,
   removeToken,
 } from "@/services/useTokenService";
-import { checkAuthUser } from "@/services/useUserService";
+import { getUserDetailFromToken, updateUserService } from "@/services/useUserService";
 import { LogoutRequest } from "@/types/requests/authRequest";
 import { UpdateUserRequest } from "@/types/requests/useRequest";
-import { UserResponse } from "@/types/responses/authResponse";
+import { UserResponse } from "@/types/responses/userResponse";
+
 
 import { create } from "zustand";
 
@@ -38,7 +39,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true });
-      const response = await checkAuthUser();
+      const response = await getUserDetailFromToken();
       set({ authUser: response, isInitialized: true });
       get().connectWebSocket();
       return response;

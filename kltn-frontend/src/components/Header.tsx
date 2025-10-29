@@ -4,7 +4,6 @@ import vuvisaLogo from '/logo_v2.png'
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
 import UserDropdown from '../components/header/UserDropdown';
-import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 
 
 enum NotificationType {
@@ -524,10 +523,7 @@ const Header: React.FC = () => {
               </a>
             </div>
 
-            <div className="flex flex-col cursor-pointer justify-center items-center group">
-              <ThemeToggleButton />
-            </div>
-
+       
 
             <div className="flex flex-col cursor-pointer justify-center items-center group">
               <UserDropdown/>

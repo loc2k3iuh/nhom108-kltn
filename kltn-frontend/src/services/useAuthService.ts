@@ -1,12 +1,10 @@
 import {
   VerifyResetTokenRequest,
   LogoutRequest,
+  LoginRequest,
 } from "./../types/requests/authRequest";
 import axiosInstance from "@/lib/axios";
-import {
-  LoginRequest,
-  RegisterUserRequest,
-} from "@/types/requests/authRequest";
+
 import { LoginResponse } from "@/types/responses/authResponse";
 
 export const login = async (

@@ -15,18 +15,13 @@ import { addToCart } from "./services/cartService";
 import { AddToCartPayload } from "./types/cart";
 
 // Auth Pages
-import SignIn from "./pages/AuthPages/SignIn";
-import SignUp from "./pages/AuthPages/SignUp";
-import OtpVerification from "./pages/AuthPages/OtpVerification";
-import ForgotPassword from "./pages/AuthPages/ForgotPassword";
-import ResetPassword from "./pages/AuthPages/ResetPassword";
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import RegisterMailPage from './pages/RegisterMailPage';
-import RegisterSuccessPage from './pages/RegisterSuccessPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ForgotPasswordSuccessPage from './pages/ForgotPasswordSuccessPage';
-import ChangeForgotPasswordPage from './pages/ChangeForgotPasswordPage';
+
+import RegisterPage from './pages/auth/RegisterPage';
+import RegisterMailPage from './pages/auth/RegisterMailPage';
+import RegisterSuccessPage from './pages/auth/RegisterSuccessPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ForgotPasswordSuccessPage from './pages/auth/ForgotPasswordSuccessPage';
+import ChangeForgotPasswordPage from './pages/auth/ChangeForgotPasswordPage';
 
 // Main Pages
 import Home from './pages/Home';
@@ -37,7 +32,7 @@ import SearchPage from './pages/SearchPage';
 import UserPage from './pages/UserPage';
 import UserProfiles from "./pages/UserProfiles";
 import EditUser from './pages/EditUser';
-import ChangePassword from './pages/ChangePassword';
+import ChangePassword from './pages/auth/ChangePassword';
 import AddressesPage from './pages/AddressesPage';
 import NewAddress from './pages/NewAddress';
 import EditAddress from './pages/EditAddress';
@@ -70,6 +65,7 @@ import TermsOfService from './pages/TermsOfService';
 import ShippingPolicy from './pages/ShippingPolicy';
 import Layout from "./components/Layout";
 import NotAuthenticated from "./pages/NotAuthenticatedPage";
+import LoginPage from "./pages/auth/LoginPage";
 
 export default function App() {
   const { checkAuth, authUser, isLoading, isInitialized } = useAuthStore();
@@ -233,17 +229,13 @@ export default function App() {
         </Route>
 
         {/* Authentication Pages - No Layout */}
-        <Route path="/signin" element={!authUser ? <SignIn /> : <Navigate to="/" />} />
-        <Route path="/signup" element={!authUser ? <SignUp /> : <Navigate to="/" />} />
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
         <Route path="/register" element={!authUser ? <RegisterPage /> : <Navigate to="/" />} />
         <Route path="/register-mail" element={!authUser ? <RegisterMailPage /> : <Navigate to="/" />} />
         <Route path="/register-success" element={<RegisterSuccessPage />} />
-        <Route path="/otp-verification" element={!authUser ? <OtpVerification /> : <Navigate to="/" />} />
-        <Route path="/forgot-password" element={!authUser ? <ForgotPassword /> : <Navigate to="/" />} />
-        <Route path="/forgot-password-page" element={!authUser ? <ForgotPasswordPage /> : <Navigate to="/" />} />
+  
+        <Route path="/forgot-password" element={!authUser ? <ForgotPasswordPage /> : <Navigate to="/" />} />
         <Route path="/forgot-password-success" element={<ForgotPasswordSuccessPage />} />
-        <Route path="/reset-password" element={!authUser ? <ResetPassword /> : <Navigate to="/" />} />
         <Route path="/change-forgot-password" element={<ChangeForgotPasswordPage />} />
         <Route path="/not-authenticated" element={<NotAuthenticatedPage />} />
 
