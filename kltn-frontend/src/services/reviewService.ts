@@ -21,8 +21,8 @@ export interface ReviewResponse {
   comment: string;
   product: Product;
   user: UserResponse;
-  createdAt?: string | number[];
-  updatedAt?: string | number[];
+  createdAt?: string ;
+  updatedAt?: string ;
 }
 
 export interface PaginatedResponse<T> {

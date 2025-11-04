@@ -1,129 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { toast, Toaster } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-import { District, fetchDistrictsByProvince, fetchWardsByDistrict, Province, Ward } from '../../services/addressService';
-
-const staticCartData = {
-    items: [
-        {
-            id: 1,
-            product_id: 1,
-            product_name: 'Áo Polo Nam Classic Premium',
-            price: 299250, // Giá sau giảm 25%
-            quantity: 2,
-            stockQuantity: 45,
-            image_url: 'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=500'
-        },
-        {
-            id: 2,
-            product_id: 2,
-            product_name: 'Áo T-shirt Nữ Basic Cotton',
-            price: 199500, // Giá sau giảm 30% 
-            quantity: 1,
-            stockQuantity: 62,
-            image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500'
-        },
-        {
-            id: 3,
-            product_id: 3,
-            product_name: 'Túi Thể Thao Nike Premium',
-            price: 849150, // Giá sau giảm 15%
-            quantity: 1,
-            stockQuantity: 28,
-            image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'
-        }
-    ],
-    total_price: 1347900
-};
-
-// Dữ liệu tĩnh cho voucher thời trang
-const staticVouchersData = [
-    {
-        id: 1,
-        code: 'FASHION15',
-        discount_name: 'Giảm giá thời trang 15%',
-        discount_amount: 150000,
-        min_order_value: 500000,
-        start_date: [2024, 1, 1],
-        end_date: [2024, 12, 31]
-    },
-    {
-        id: 2,
-        code: 'DAVINCI20',
-        discount_name: 'Ưu đãi DAVINCI 20%',
-        discount_amount: 200000,
-        min_order_value: 800000,
-        start_date: [2024, 1, 1],
-        end_date: [2024, 12, 31]
-    }
-];
-
-// Dữ liệu tĩnh cho địa chỉ
-const staticAddressesData = [
-    {
-        id: 1,
-        userId: 1,
-        phoneNumber: '0987654321',
-        city: 'TP Hồ Chí Minh',
-        district: 'Quận 1',
-        ward: 'Phường Bến Nghé',
-        detailAddress: '123 Đường Nguyễn Huệ',
-        street: 'Nguyễn Huệ'
-    },
-    {
-        id: 2,
-        userId: 1,
-        phoneNumber: '0976543210',
-        city: 'Hà Nội',
-        district: 'Quận Hoàn Kiếm',
-        ward: 'Phường Hàng Bồ',
-        detailAddress: '456 Phố Hàng Bạc',
-        street: 'Hàng Bạc'
-    }
-];
-
-// Mock functions để thay thế API calls
-const mockCartService = {
-    getCartByUserId: async (userId: number) => {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return staticCartData;
-    },
-    searchVouchersByCode: async (code: string) => {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        return staticVouchersData.filter(v => v.code === code);
-    },
-    createPayment: async (paymentData: any) => {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=134790000&vnp_Command=pay&vnp_CreateDate=20241006143000&vnp_CurrCode=VND&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+thoi+trang&vnp_OrderType=other&vnp_ReturnUrl=http%3A%2F%2Flocalhost%3A3000%2Fvnpay-return&vnp_TmnCode=DAVINCI&vnp_TxnRef=12345&vnp_Version=2.1.0&vnp_SecureHash=abc123';
-    },
-    createOrder: async (orderData: any) => {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return { id: Math.floor(100000 + Math.random() * 900000) };
-    },
-    clearCart: async (userId: number) => {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        return true;
-    }
-};
-
-const mockAddressService = {
-    getAddresses: async (userId: number) => {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        return staticAddressesData;
-    }
-};
-
-
-interface Address {
-    id: number;
-    userId: number;
-    phoneNumber: string;
-    city: string;
-    district: string;
-    ward: string;
-    detailAddress: string;
-    street: string;
-}
+import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+    District, 
+    fetchDistrictsByProvince, 
+    fetchWardsByDistrict, 
+    fetchProvinces,
+    Province, 
+    Ward 
+} from '@/services/addressService';
+import { createOrder, CreateOrderItem } from '@/services/orderService';
+import { clearCart } from '@/services/cartService';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { getSuitableVouchersForOrder, VoucherResponse } from '@/services/voucherService';
 
 interface ValidationErrors {
     phone?: string;
@@ -135,57 +24,9 @@ interface ValidationErrors {
     ward?: string;
     orderItems?: string;
 }
-// Thêm interface ở đầu file
-interface OrderData {
-    user_id: number;
-    full_name: string;
-    email: string;
-    phone_number: string;
-    address: string;
-    city: string;
-    district: string;
-    ward: string;
-    shipping_method: string;
-    payment_method: string;
-    discount_code: string;
-    note: string;
-    voucher_ids: number[];
-    cart_items: Array<{
-        product_id: number;
-        quantity: number;
-    }>;
-}
 const Payment: React.FC = () => {
-    // Lấy dữ liệu user từ localStorage hoặc sử dụng dữ liệu mặc định
-    const getUserData = () => {
-        try {
-            const userData = localStorage.getItem('vuvisa_user_data');
-            if (userData) {
-                return JSON.parse(userData);
-            }
-            // Trả về dữ liệu mặc định cho demo
-            return {
-                id: 1,
-                full_name: 'Khách hàng',
-                email: 'khachhang@email.com',
-                phone_number: '0123456789',
-                address: 'Địa chỉ mặc định',
-                city: 'TP Hồ Chí Minh',
-                district: 'Quận 1',
-                ward: 'Phường Bến Nghé'
-            };
-        } catch (error) {
-            console.error('Error getting user data:', error);
-            return {
-                id: 1,
-                full_name: 'Khách hàng',
-                email: 'khachhang@email.com',
-                phone_number: '0123456789'
-            };
-        }
-    };
-    
-    const user = getUserData();
+    const navigate = useNavigate();
+    const { authUser } = useAuthStore();
 
     const formatPrice = (price: number): string => {
         return price.toLocaleString('vi-VN') + ' đ';
@@ -211,173 +52,25 @@ const Payment: React.FC = () => {
     const [shippingMethod, setShippingMethod] = useState('STANDARD');
 
     // Phương thức thanh toán
-    const [paymentMethod, setPaymentMethod] = useState('CASH_ON_DELIVERY'); // Mặc định là thanh toán khi nhận hàng
-
-    // Mã khuyến mãi / quà tặng
-    const [voucher, setVoucher] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('COD'); // Mặc định là thanh toán khi nhận hàng
 
     // Danh sách sản phẩm (ví dụ)
     const [orderItems, setOrderItems] = useState<any>([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [shippingCost, setShippingCost] = useState(30000); // Mặc định 30,000đ
+    
+    // Voucher states
+    const [suitableVouchers, setSuitableVouchers] = useState<VoucherResponse[]>([]);
+    const [selectedVoucher, setSelectedVoucher] = useState<VoucherResponse | null>(null);
+    const [voucherDiscount, setVoucherDiscount] = useState(0);
 
-
-    const [promoCode, setPromoCode] = useState('');
-    const [isApplying, setIsApplying] = useState(false);
-    const [voucherError, setVoucherError] = useState<string | null>(null);
-    const [appliedVouchers, setAppliedVouchers] = useState<any[]>([]);
-    const [appliedCodes, setAppliedCodes] = useState<string[]>([]);
-
-    //Address
-    const [addresses, setAddresses] = useState<Address[]>([]);
-    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-    const [loadingAddresses, setLoadingAddresses] = useState(false);
-    const [applyingAddressId, setApplyingAddressId] = useState<number | null>(null);
-
-    const navigate = useNavigate();
-
-    const fetchAddresses = async () => {
-        if (!user.id) return;
-
+    const loadProvinces = async () => {
         try {
-            setLoadingAddresses(true);
-            // Comment: Thay thế API call bằng mock service
-            const response = await mockAddressService.getAddresses(user.id);
-            if (response) {
-                const mappedAddresses: Address[] = response.map((addr: any) => ({
-                    id: addr.id,
-                    userId: addr.userId,
-                    phoneNumber: addr.phoneNumber,
-                    city: addr.city,
-                    district: addr.district,
-                    ward: addr.ward,
-                    detailAddress: addr.detailAddress,
-                    street: addr.street,
-                }));
-                setAddresses(mappedAddresses);
-            }
-        } catch (error) {
-            console.error("Error fetching addresses:", error);
-        } finally {
-            setLoadingAddresses(false);
-        }
-    };
-
-    useEffect(() => {
-        if (user.id) {
-            fetchAddresses();
-        }
-    }, [user.id]);
-
-    // Apply selected address to form
-    const applyAddress = async (address: Address) => {
-
-        try {
-
-            setApplyingAddressId(address.id);
-
-            setPhone(address.phoneNumber || '');
-            setAddressDetail(address.detailAddress || '');
-
-            // Tìm province trong danh sách provinces
-            const selectedProvince = provinces.find(p => p.name === address.city);
-            if (selectedProvince) {
-                setCity(selectedProvince.code);
-                setCityName(address.city);
-
-                // Fetch districts cho province đã chọn
-                const districtsList = await fetchDistrictsByProvince(selectedProvince.code);
-                setDistricts(districtsList);
-
-                // Tìm district trong danh sách districts
-                const selectedDistrict = districtsList.find((d: District) => d.name === address.district);
-                if (selectedDistrict) {
-                    setDistrict(selectedDistrict.code);
-                    setDistrictName(address.district);
-
-                    // Fetch wards cho district đã chọn
-                    const wardsList = await fetchWardsByDistrict(selectedDistrict.code);
-                    setWards(wardsList);
-
-                    // Tìm ward trong danh sách wards
-                    const selectedWard = wardsList.find((w: Ward) => w.name === address.ward);
-                    if (selectedWard) {
-                        setWard(selectedWard.code);
-                        setWardName(address.ward);
-                    }
-                }
-            }
-
-            // Thông báo thành công
-            toast.success("Đã áp dụng địa chỉ thành công!");
-        } catch (error) {
-            console.error("Lỗi khi áp dụng địa chỉ:", error);
-            toast.error("Có lỗi xảy ra khi áp dụng địa chỉ");
-        } finally {
-            // Reset trạng thái loading và đóng modal
-            setApplyingAddressId(null);
-            setIsAddressModalOpen(false);
-        }
-    };
-
-    const handleApplyCode = async () => {
-        setIsApplying(true);
-        setVoucherError(null);
-        try {
-            const code = promoCode.trim();
-            if (appliedCodes.includes(code)) {
-                setVoucherError('Mã này đã được áp dụng');
-                setIsApplying(false);
-                return;
-            }
-            // Comment: Thay thế API call bằng mock service
-            const result = await mockCartService.searchVouchersByCode(code);
-            if (result && result.length > 0) {
-                const voucher = result[0];
-                const startDate = new Date(voucher.start_date[0], voucher.start_date[1] - 1, voucher.start_date[2]);
-                const endDate = new Date(voucher.end_date[0], voucher.end_date[1] - 1, voucher.end_date[2]);
-                const now = new Date();
-
-                if (now < startDate || now > endDate) {
-                    setVoucherError('Mã này đã hết hạn hoặc chưa đến thời gian sử dụng');
-                    setIsApplying(false);
-                    return;
-                }
-                if (totalPrice < voucher.min_order_value) {
-                    setVoucherError(`Đơn hàng cần tối thiểu ${voucher.min_order_value.toLocaleString('vi-VN')} đ để áp dụng mã này`);
-                    setIsApplying(false);
-                    return;
-                }
-                setAppliedVouchers([...appliedVouchers, voucher]);
-                setAppliedCodes([...appliedCodes, code]);
-                setPromoCode('');
-                setVoucherError(null);
-            } else {
-                setVoucherError('Mã không hợp lệ hoặc đã hết hạn');
-            }
-        } catch (err) {
-            setVoucherError('Có lỗi khi kiểm tra mã');
-        } finally {
-            setIsApplying(false);
-        }
-    };
-
-    const handleRemoveVoucher = (code: string) => {
-        setAppliedVouchers(appliedVouchers.filter(v => v.code !== code));
-        setAppliedCodes(appliedCodes.filter(c => c !== code));
-    };
-
-    const totalDiscount = appliedVouchers.reduce(
-        (sum, v) => sum + (v.discount_amount || 0),
-        0
-    );
-
-    const fetchProvinces = async () => {
-        try {
-            const response = await fetch('https://provinces.open-api.vn/api/p/');
-            const data = await response.json();
+            const data = await fetchProvinces();
             setProvinces(data);
         } catch (error) {
             console.error('Error fetching provinces:', error);
+            toast.error('Không thể tải danh sách tỉnh/thành phố');
         }
     };
 
@@ -436,28 +129,115 @@ const Payment: React.FC = () => {
         setWardName(selectedWard?.name || '');
     };
 
-    const shippingCost = 0;
-
+    // Cập nhật phí ship khi thay đổi tỉnh/thành phố hoặc phương thức vận chuyển
     useEffect(() => {
-        const fetchCart = async () => {
-            // Comment: Thay thế API call bằng mock service
-            const data = await mockCartService.getCartByUserId(user.id);
-            setOrderItems(data.items);
-            setTotalPrice(data.total_price);
+        if (cityName) {
+            // Kiểm tra nếu là TP.HCM (các cách viết khác nhau)
+            const isHCM = cityName.toLowerCase().includes('hồ chí minh') || 
+                          cityName.toLowerCase().includes('hcm') ||
+                          cityName.toLowerCase().includes('tp hồ chí minh') ||
+                          cityName.toLowerCase().includes('thành phố hồ chí minh');
+            
+            if (isHCM) {
+                // TP.HCM có nhiều phương thức
+                switch (shippingMethod) {
+                    case 'STANDARD':
+                        setShippingCost(0); // Miễn phí
+                        break;
+                    case 'GRABEXPRESS':
+                        setShippingCost(30000); // Giao hàng nhanh
+                        break;
+                    case 'SHOPEEEXPRESS':
+                        setShippingCost(20000); // Giao hàng trong ngày
+                        break;
+                    default:
+                        setShippingCost(0);
+                }
+            } else {
+                // Tỉnh khác chỉ có giao hàng tiêu chuẩn
+                setShippingMethod('STANDARD');
+                setShippingCost(30000);
+            }
+        }
+    }, [cityName, shippingMethod]);
+
+    // Load order items from navigation state (buy now) or localStorage (cart checkout)
+    const location = useLocation();
+    
+    useEffect(() => {
+        // Prioritize buy now data from navigation state
+        const buyNowItems = location.state?.buyNowItems;
+        
+        let items = null;
+        
+        if (buyNowItems && buyNowItems.length > 0) {
+            // Buy now flow: use data from navigation state
+            items = buyNowItems;
+        } else {
+            // Cart checkout flow: use data from localStorage
+            const itemsData = localStorage.getItem('itemsToCheckout');
+            if (itemsData) {
+                items = JSON.parse(itemsData);
+            }
+        }
+        
+        if (items) {
+            setOrderItems(items);
+            
+            // Calculate total
+            const total = items.reduce((sum: number, item: any) => 
+                sum + (item.itemTotal || item.price * item.quantity), 0
+            );
+            setTotalPrice(total);
+        } else {
+            toast.error('Không tìm thấy sản phẩm để thanh toán');
+            navigate('/cart');
+        }
+        
+        // Load user info if logged in
+        if (authUser) {
+            setFullName(authUser.full_name || '');
+            setEmail(authUser.email || '');
+            setPhone(authUser.phone_number || '');
+        }
+        
+        loadProvinces();
+    }, [authUser, navigate, location.state]);
+
+    // Load suitable vouchers when totalPrice changes
+    useEffect(() => {
+        const loadSuitableVouchers = async () => {
+            if (authUser?.id && totalPrice > 0) {
+                try {
+                    const vouchers = await getSuitableVouchersForOrder(authUser.id, totalPrice);
+                    setSuitableVouchers(vouchers);
+                } catch (error) {
+                    console.error('Error loading suitable vouchers:', error);
+                }
+            }
         };
-        fetchCart();
-    }, []);
+        
+        loadSuitableVouchers();
+    }, [authUser?.id, totalPrice]);
 
+    // Calculate discount when voucher is selected
     useEffect(() => {
-        setFullName(user.full_name || '');
-        setEmail(user.email || '');
-        setPhone(user.phone_number || '');
-        setCity(user.city || '');
-        setDistrict(user.district || '');
-        setWard(user.ward || '');
-        setAddressDetail(user.address || '');
-        fetchProvinces();
-    }, []);
+        if (selectedVoucher) {
+            let discount = 0;
+            if (selectedVoucher.discountType === 'PERCENT') {
+                discount = totalPrice * (selectedVoucher.discountValue / 100);
+                // Apply maximum discount cap if exists
+                if (selectedVoucher.maximumDiscountAmount && discount > selectedVoucher.maximumDiscountAmount) {
+                    discount = selectedVoucher.maximumDiscountAmount;
+                }
+            } else if (selectedVoucher.discountType === 'FIXED') {
+                discount = selectedVoucher.discountValue;
+            }
+            setVoucherDiscount(Math.min(discount, totalPrice)); // Discount cannot exceed total price
+        } else {
+            setVoucherDiscount(0);
+        }
+    }, [selectedVoucher, totalPrice]);
 
     const validateOrderData = (): ValidationErrors | null => {
         const errors: ValidationErrors = {};
@@ -515,96 +295,90 @@ const Payment: React.FC = () => {
     };
 
     const handleCheckout = async () => {
+        if (!authUser) {
+            toast.error('Vui lòng đăng nhập để tiếp tục');
+            navigate('/signin');
+            return;
+        }
+
         const errors = validateOrderData();
         if (errors) {
             // Show first error message
             const firstError = Object.values(errors)[0];
-            alert(firstError);
+            toast.error(firstError);
             return;
         }
-        setIsLoading(true); // Bắt đầu loading
+        
+        setIsLoading(true);
         try {
-            // Chuẩn bị dữ liệu đơn hàng
-            const orderData: OrderData = {
-                user_id: user.id,
-                full_name: fullName,
-                email: email,
-                phone_number: phone,
+            // Prepare order items from cart
+            debugger
+            const items: CreateOrderItem[] = orderItems.map((item: any) => ({
+                product_variant_id: item.productVariant.id,
+                quantity: item.quantity
+            }));
+
+            // Chuẩn bị dữ liệu đơn hàng theo format backend
+            const orderData = {
+                user_id: authUser.id,
+                receiver_name: fullName,
+                receiver_phone: phone,
                 address: addressDetail,
                 city: cityName,
                 district: districtName,
                 ward: wardName,
-                shipping_method: shippingMethod,
-                payment_method: paymentMethod,
-                discount_code: voucher || '', // Add discount_code property
-                note: note,
-                voucher_ids: appliedVouchers.map((voucher) => voucher.id),
-                cart_items: orderItems.map((item: any) => ({
-                    product_id: item.product_id,
-                    quantity: item.quantity,
-                }))
+                shipping_method: shippingMethod.toUpperCase(),
+                payment_method: paymentMethod.toUpperCase(),
+                note: note || undefined,
+                discount_code: selectedVoucher?.code || undefined,
+                items: items,
+                shipping_cost: shippingCost,
             };
 
             console.log('Order Data:', orderData);
 
-
-
-
+            // For VNPay payment - handle later when VNPay integration is ready
             if (paymentMethod === 'VN_PAY') {
-
-                // Lưu orderData tạm vào localStorage
+                // Store order data for later processing
                 localStorage.setItem('pendingOrder', JSON.stringify(orderData));
-
-                // Gọi API tạo paymentUrl VNPAY
-                const paymentResponse = await mockCartService.createPayment({
-                    // order_id: orderResponse.id,
-                    amount: totalPrice + shippingCost - totalDiscount
-                });
-
-                // Chuyển hướng đến trang thanh toán VNPAY
-                // Kiểm tra xem paymentResponse có chứa payment_url không
-                // Nếu có, chuyển hướng đến payment_url
-                // Nếu không, hiển thị thông báo lỗi
-
-                if (paymentResponse) {
-                    window.location.href = paymentResponse;
-                    return;
-                } else {
-                    alert('Không tạo được liên kết thanh toán VNPAY');
-                }
+                toast.info('Tính năng thanh toán VNPay đang được phát triển');
+                return;
             }
-            if (paymentMethod === 'CASH_ON_DELIVERY') {
-                // Tạo đơn hàng
-                const orderResponse = await mockCartService.createOrder(orderData);
 
-                // Xóa giỏ hàng
-                await mockCartService.clearCart(user.id);
+            // For Cash on Delivery - create order directly
+            if (paymentMethod === 'COD') {
+                const orderResponse = await createOrder(orderData);
 
-                const orderSummary = {
-                    ...orderData,
-                    orderNumber: orderResponse.id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
-                    totalPrice: totalPrice,
-                    totalDiscount: totalDiscount,
-                    shippingCost: shippingCost,
-                    orderDate: new Date(),
-                };
+                // Clear cart after successful order
+                await clearCart(authUser.id);
 
+                // Navigate to success page
                 navigate('/order-success', {
                     state: {
-                        orderDetails: orderSummary,
-                        orderNumber: orderSummary.orderNumber
+                        orderNumber: orderResponse.id,
+                        orderDetails: {
+                            ...orderData,
+                            orderNumber: orderResponse.id,
+                            totalPrice: totalPrice,
+                            totalDiscount: voucherDiscount,
+                            shippingCost: shippingCost,
+                            orderDate: new Date(),
+                        }
                     }
                 });
 
+                toast.success('Đặt hàng thành công!');
                 return;
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Có lỗi xảy ra khi đặt hàng');
-            console.error('Checkout error:', error);
-        } finally {
-            setIsLoading(false); // Kết thúc loading
-        }
 
+            toast.error('Phương thức thanh toán không hợp lệ');
+        } catch (error: any) {
+            console.error('Checkout error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi đặt hàng';
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // if (orderItems.length === 0) {
@@ -666,18 +440,6 @@ const Payment: React.FC = () => {
                                     </svg>
                                     ĐỊA CHỈ GIAO HÀNG
                                 </h2>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setIsAddressModalOpen(true)}
-                                    className="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 rounded-md text-sm font-medium flex items-center transition-colors duration-200 cursor-pointer"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                    Chọn địa chỉ đã lưu
-                                </button>
-
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -837,21 +599,133 @@ const Payment: React.FC = () => {
                                 <h2 className="text-lg font-semibold">PHƯƠNG THỨC VẬN CHUYỂN</h2>
                             </div>
 
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                                <label className="flex items-center space-x-3 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="shippingMethod"
-                                        className="form-radio h-4 w-4 text-red-500 focus:ring-red-500 cursor-pointer"
-                                        value="STANDARD"
-                                        checked={shippingMethod === 'STANDARD'}
-                                        onChange={(e) => setShippingMethod(e.target.value)}
-                                    />
-                                    <div>
-                                        <span className="font-medium">Tiêu chuẩn</span>
-                                        <p className="text-sm text-gray-500 mt-1">Giao hàng trong vòng 3-5 ngày làm việc</p>
+                            <div className="space-y-3">
+                                {/* Phương thức tiêu chuẩn - luôn hiển thị */}
+                                <label className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition ${
+                                    shippingMethod === 'STANDARD' 
+                                        ? 'border-red-500 bg-red-50' 
+                                        : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                                }`}>
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="radio"
+                                            name="shippingMethod"
+                                            className="form-radio h-4 w-4 text-red-500 focus:ring-red-500 cursor-pointer"
+                                            value="STANDARD"
+                                            checked={shippingMethod === 'STANDARD'}
+                                            onChange={(e) => setShippingMethod(e.target.value)}
+                                        />
+                                        <div>
+                                            <div className="flex items-center">
+                                                <span className="font-medium">Giao hàng tiêu chuẩn</span>
+                                                {cityName && (cityName.toLowerCase().includes('hồ chí minh') || cityName.toLowerCase().includes('hcm')) && (
+                                                    <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                                                        Miễn phí
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-1">Giao hàng trong vòng 3-5 ngày làm việc</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="font-semibold text-gray-800">
+                                            {cityName && (cityName.toLowerCase().includes('hồ chí minh') || cityName.toLowerCase().includes('hcm')) 
+                                                ? 'Miễn phí' 
+                                                : formatPrice(30000)
+                                            }
+                                        </span>
                                     </div>
                                 </label>
+
+                                {/* Grab Express - chỉ hiển thị khi chọn TP.HCM */}
+                                {cityName && (cityName.toLowerCase().includes('hồ chí minh') || cityName.toLowerCase().includes('hcm')) && (
+                                    <>
+                                        <label className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition ${
+                                            shippingMethod === 'GRABEXPRESS' 
+                                                ? 'border-red-500 bg-red-50' 
+                                                : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                                        }`}>
+                                            <div className="flex items-center space-x-3">
+                                                <input
+                                                    type="radio"
+                                                    name="shippingMethod"
+                                                    className="form-radio h-4 w-4 text-red-500 focus:ring-red-500 cursor-pointer"
+                                                    value="GRABEXPRESS"
+                                                    checked={shippingMethod === 'GRABEXPRESS'}
+                                                    onChange={(e) => setShippingMethod(e.target.value)}
+                                                />
+                                                <div>
+                                                    <div className="flex items-center">
+                                                        <span className="font-medium">Giao hàng nhanh</span>
+                                                        <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+                                                            GrabExpress
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-500 mt-1">Giao hàng trong vòng 2-4 giờ</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-semibold text-gray-800">{formatPrice(30000)}</span>
+                                            </div>
+                                        </label>
+
+                                        <label className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition ${
+                                            shippingMethod === 'SHOPEEEXPRESS' 
+                                                ? 'border-red-500 bg-red-50' 
+                                                : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                                        }`}>
+                                            <div className="flex items-center space-x-3">
+                                                <input
+                                                    type="radio"
+                                                    name="shippingMethod"
+                                                    className="form-radio h-4 w-4 text-red-500 focus:ring-red-500 cursor-pointer"
+                                                    value="SHOPEEEXPRESS"
+                                                    checked={shippingMethod === 'SHOPEEEXPRESS'}
+                                                    onChange={(e) => setShippingMethod(e.target.value)}
+                                                />
+                                                <div>
+                                                    <div className="flex items-center">
+                                                        <span className="font-medium">Giao hàng trong ngày</span>
+                                                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                                                            ShopeeExpress
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-500 mt-1">Giao hàng trong cùng ngày (đặt trước 12h)</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-semibold text-gray-800">{formatPrice(20000)}</span>
+                                            </div>
+                                        </label>
+                                    </>
+                                )}
+                                
+                                {/* Thông báo */}
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div className="flex items-start">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                        </svg>
+                                        <div className="text-sm text-blue-700">
+                                            {cityName && (cityName.toLowerCase().includes('hồ chí minh') || cityName.toLowerCase().includes('hcm')) ? (
+                                                <>
+                                                    <span className="font-medium">🎉 Ưu đãi đặc biệt cho TP. Hồ Chí Minh:</span>
+                                                    <ul className="mt-1 ml-4 list-disc list-inside space-y-1">
+                                                        <li>Giao hàng tiêu chuẩn: <strong>Miễn phí</strong></li>
+                                                        <li>Giao hàng nhanh (GrabExpress): <strong>30,000₫</strong></li>
+                                                        <li>Giao hàng trong ngày (ShopeeExpress): <strong>20,000₫</strong></li>
+                                                    </ul>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="font-medium">Phí vận chuyển: {formatPrice(shippingCost)}</span>
+                                                    <br />
+                                                    <span className="text-xs">Miễn phí ship tiêu chuẩn cho đơn hàng tại TP. Hồ Chí Minh</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -872,8 +746,8 @@ const Payment: React.FC = () => {
                                             type="radio"
                                             name="paymentMethod"
                                             className="form-radio h-4 w-4 text-red-500 focus:ring-red-500 cursor-pointer"
-                                            value="CASH_ON_DELIVERY"
-                                            checked={paymentMethod === 'CASH_ON_DELIVERY'}
+                                            value="COD"
+                                            checked={paymentMethod === 'COD'}
                                             onChange={(e) => setPaymentMethod(e.target.value)}
                                         />
                                         <div className="ml-3">
@@ -911,86 +785,100 @@ const Payment: React.FC = () => {
                         </div>
 
                         <div className="mb-8">
-                            {/* Mã khuyến mãi / quà tặng */}
+                            {/* Voucher Selection */}
                             <div className="flex items-center border-b border-gray-300 pb-3 mb-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 012 2v2a2 2 0 01-2 2h-2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4H4a2 2 0 01-2-2V8a2 2 0 012-2h1.17A3 3 0 015 5zm4 1V5a1 1 0 10-2 0v1H5a1 1 0 100 2h2v1a1 1 0 102 0V8h2a1 1 0 100-2H9z" clipRule="evenodd" />
                                 </svg>
-                                <h2 className="text-lg font-semibold">MÃ KHUYẾN MÃI/MÃ QUÀ TẶNG</h2>
+                                <h2 className="text-lg font-semibold">CHỌN MÁ GIẢM GIÁ</h2>
                             </div>
 
                             <div className="bg-gray-50 p-4 rounded-lg">
-
-                                <div className="flex items-center mb-2">
-                                    <h3 className="text-gray-700 font-medium text-sm">Mã KM/Quà tặng</h3>
-                                </div>
-
-                                <div className="flex space-x-2">
-                                    <input
-                                        type="text"
-                                        value={promoCode}
-                                        onChange={(e) => setPromoCode(e.target.value)}
-                                        placeholder="Nhập mã khuyến mãi/Quà tặng"
-                                        className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
-                                    />
-                                    <button
-                                        onClick={handleApplyCode}
-                                        disabled={isApplying || !promoCode.trim()}
-                                        className="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition duration-200 disabled:bg-red-300 whitespace-nowrap cursor-pointer"
-                                    >
-                                        {isApplying ? 'Đang áp dụng...' : 'Áp dụng'}
-                                    </button>
-                                </div>
-
-                                {/* Validation error */}
-                                {voucherError && (
-                                    <div className="text-red-500 text-sm mt-2 flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        {voucherError}
-                                    </div>
-                                )}
-
-                                {/* Applied vouchers */}
-                                {appliedVouchers.length > 0 && (
-                                    <div className="mt-4 space-y-3">
-                                        {appliedVouchers.map(voucher => (
-                                            <div
-                                                key={voucher.code}
-                                                className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm flex justify-between items-center"
-                                            >
-                                                <div>
-                                                    <div className="font-medium text-gray-800">{voucher.code}</div>
-                                                    <div className="text-green-700 mt-1">
-                                                        Giảm: {voucher.discount_amount ? `${voucher.discount_amount.toLocaleString('vi-VN')}đ` : voucher.discount_percent ? `${voucher.discount_percent}%` : ''}
+                                {suitableVouchers.length > 0 ? (
+                                    <div className="space-y-3">
+                                        <p className="text-sm text-gray-600 mb-3">
+                                            Có {suitableVouchers.length} mã giảm giá phù hợp với đơn hàng của bạn
+                                        </p>
+                                        <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
+                                            {suitableVouchers.map((voucher) => (
+                                                <div
+                                                    key={voucher.id}
+                                                    onClick={() => {
+                                                        if (selectedVoucher?.id === voucher.id) {
+                                                            setSelectedVoucher(null);
+                                                            toast.info('Đã bỏ chọn mã giảm giá');
+                                                        } else {
+                                                            setSelectedVoucher(voucher);
+                                                            toast.success(`Đã áp dụng mã ${voucher.code}`);
+                                                        }
+                                                    }}
+                                                    className={`
+                                                        border-2 rounded-lg p-4 cursor-pointer transition-all
+                                                        ${selectedVoucher?.id === voucher.id 
+                                                            ? 'border-red-500 bg-red-50' 
+                                                            : 'border-gray-200 bg-white hover:border-red-300 hover:shadow-md'
+                                                        }
+                                                    `}
+                                                >
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className={`
+                                                                    px-3 py-1 rounded-full text-sm font-semibold
+                                                                    ${voucher.discountType === 'PERCENT' 
+                                                                        ? 'bg-orange-100 text-orange-600' 
+                                                                        : 'bg-blue-100 text-blue-600'
+                                                                    }
+                                                                `}>
+                                                                    {voucher.discountType === 'PERCENT' 
+                                                                        ? `Giảm ${voucher.discountValue}%` 
+                                                                        : `Giảm ${voucher.discountValue.toLocaleString('vi-VN')}đ`
+                                                                    }
+                                                                </span>
+                                                                <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+                                                                    {voucher.code}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-sm text-gray-700 mb-2">
+                                                                {voucher.description || 'Không có mô tả'}
+                                                            </p>
+                                                            <div className="text-xs text-gray-500 space-y-1">
+                                                                <p>• Đơn tối thiểu: {voucher.minimumOrderAmount.toLocaleString('vi-VN')}đ</p>
+                                                                {voucher.maximumDiscountAmount && (
+                                                                    <p>• Giảm tối đa: {voucher.maximumDiscountAmount.toLocaleString('vi-VN')}đ</p>
+                                                                )}
+                                                                <p>• Hạn sử dụng: {new Date(voucher.endDate).toLocaleDateString('vi-VN')}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className={`
+                                                                w-6 h-6 rounded-full border-2 flex items-center justify-center
+                                                                ${selectedVoucher?.id === voucher.id 
+                                                                    ? 'border-red-500 bg-red-500' 
+                                                                    : 'border-gray-300'
+                                                                }
+                                                            `}>
+                                                                {selectedVoucher?.id === voucher.id && (
+                                                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <button
-                                                    className="text-red-500 hover:text-red-700 p-1 transition-colors"
-                                                    onClick={() => handleRemoveVoucher(voucher.code)}
-                                                    aria-label="Xóa voucher"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                        </svg>
+                                        <p className="text-gray-500">Không có mã giảm giá phù hợp với đơn hàng này</p>
+                                        <p className="text-sm text-gray-400 mt-1">Tổng đơn hàng chưa đạt mức tối thiểu của các mã hiện có</p>
                                     </div>
                                 )}
-
-                                <div className="flex justify-between items-center mt-2">
-                                    <p className="text-gray-500 text-sm flex items-center">
-                                        Có thể áp dụng đồng thời nhiều mã
-                                        <span className="ml-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </span>
-                                    </p>
-                                </div>
-
                             </div>
                         </div>
 
@@ -1014,19 +902,19 @@ const Payment: React.FC = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
-                                            {orderItems.map((item: { id: number; product_name: string; price: number; quantity: number }) => (
+                                            {orderItems.map((item : any) => (
                                                 <tr key={item.id} className="hover:bg-gray-50">
                                                     <td className="p-4">
-                                                        {item.product_name}
+                                                        {item.product.name}
                                                     </td>
                                                     <td className="p-4 text-right">
-                                                        {item.price.toLocaleString('vi-VN')} đ
+                                                        {(item.itemTotal / item.quantity).toLocaleString('vi-VN')}
                                                     </td>
                                                     <td className="p-4 text-center">
                                                         {item.quantity}
                                                     </td>
                                                     <td className="p-4 font-medium text-right">
-                                                        {(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                                                        {(item.itemTotal).toLocaleString('vi-VN')}đ
                                                     </td>
                                                 </tr>
                                             ))}
@@ -1042,10 +930,10 @@ const Payment: React.FC = () => {
                                             <span className="font-medium">{formatPrice(totalPrice)}</span>
                                         </div>
 
-                                        {totalDiscount > 0 && (
+                                        {voucherDiscount > 0 && (
                                             <div className="flex justify-between text-green-600">
-                                                <span>Giảm giá:</span>
-                                                <span className="font-medium">- {formatPrice(totalDiscount)}</span>
+                                                <span>Giảm giá từ voucher:</span>
+                                                <span className="font-medium">- {formatPrice(voucherDiscount)}</span>
                                             </div>
                                         )}
 
@@ -1056,7 +944,7 @@ const Payment: React.FC = () => {
 
                                         <div className="flex justify-between pt-2 border-t border-gray-200 text-lg font-bold">
                                             <span>Tổng tiền:</span>
-                                            <span className="text-red-600">{formatPrice(totalPrice + shippingCost - totalDiscount)}</span>
+                                            <span className="text-red-600">{formatPrice(totalPrice + shippingCost - voucherDiscount)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1092,97 +980,6 @@ const Payment: React.FC = () => {
 
                     </div>
                 </div>
-
-                {/* Modal for choosing saved addresses */}
-                {isAddressModalOpen && (
-                    <div className="fixed inset-0 bg-black/5 bg-opacity-50 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-                            <div className="flex justify-between items-center border-b p-4">
-                                <h3 className="text-lg font-semibold text-gray-900">Chọn địa chỉ đã lưu</h3>
-                                <button
-                                    onClick={() => setIsAddressModalOpen(false)}
-                                    className="text-gray-400 hover:text-gray-600"
-                                    disabled={applyingAddressId !== null}
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div className="overflow-y-auto p-4 max-h-[60vh]">
-                                {loadingAddresses ? (
-                                    <div className="flex justify-center py-8">
-                                        <svg className="animate-spin h-8 w-8 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                    </div>
-                                ) : addresses.length === 0 ? (
-                                    <div className="text-center py-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <p className="mt-2 text-gray-600">Bạn chưa có địa chỉ nào được lưu</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {addresses.map((address) => (
-                                            <div
-                                                key={address.id}
-                                                className={`border rounded-lg p-4 transition-colors hover:bg-gray-50 border-gray-200 ${applyingAddressId === address.id ? 'bg-blue-50 border-blue-300' : ''
-                                                    } ${applyingAddressId !== null && applyingAddressId !== address.id ? 'opacity-50' : ''}`}
-                                            >
-                                                <div className="flex justify-between">
-                                                    <div className="font-medium">{address.phoneNumber}</div>
-                                                </div>
-                                                <div className="text-gray-500 text-sm mt-2">
-                                                    {address.detailAddress}, {address.ward}, {address.district}, {address.city}
-                                                </div>
-                                                <button
-                                                    className="mt-2 text-sm text-red-500 hover:text-red-700 font-medium flex items-center cursor-pointer"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        applyAddress(address);
-                                                    }}
-                                                    disabled={applyingAddressId !== null}
-                                                >
-                                                    {applyingAddressId === address.id ? (
-                                                        <>
-                                                            <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                            </svg>
-                                                            Đang áp dụng...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            Sử dụng địa chỉ này
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                                                                <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                            </svg>
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="border-t p-4 bg-gray-50 flex justify-end">
-                                <button
-                                    onClick={() => setIsAddressModalOpen(false)}
-                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100"
-                                    disabled={applyingAddressId !== null}
-                                >
-                                    Đóng
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
             </div >
         </>

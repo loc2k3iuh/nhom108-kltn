@@ -20,20 +20,24 @@ import "./custom.css";
 
 import { getFlashSaleProducts, getNewestProducts } from "@/services/productService";
 import { mapProductToViewModel, ProductViewModel } from "@/mappers/productMapper";
+import { getAllVouchersForUser, VoucherResponse } from "@/services/voucherService";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 console.log("Procuct: ",getFlashSaleProducts);
 console.log("Procuct: ",getNewestProducts);
 
 const Home: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const { authUser } = useAuthStore();
 
   const [flashSaleProducts, setFlashSaleProducts] = useState<ProductViewModel[]>([]);
   const [isLoadingFlashSale, setIsLoadingFlashSale] = useState<boolean>(true);
 
-
   const [productsLastData, setProductsLastData] = useState<ProductViewModel[]>([]);
   const [isLoadingNewestProducts, setIsLoadingNewestProducts] = useState<boolean>(true);
-  const isLoadingVouchers = false;
+  
+  const [vouchers, setVouchers] = useState<VoucherResponse[]>([]);
+  const [isLoadingVouchers, setIsLoadingVouchers] = useState<boolean>(true);
 
   const itemsSlider = [
     "https://file.hstatic.net/1000253775/file/banner_pc_3688a7ee993a48a3aa2ceda425abfa7b.jpg",
@@ -69,36 +73,49 @@ const Home: React.FC = () => {
       try {
         setIsLoadingFlashSale(true);
         setIsLoadingNewestProducts(true);
-        const [flash, newest] = await Promise.all([
+        setIsLoadingVouchers(true);
+        
+        const promises: any[] = [
           getFlashSaleProducts(10),
           getNewestProducts(10),
+        ];
+        
+        // Only fetch vouchers if user is logged in
+        if (authUser?.id) {
+          promises.push(getAllVouchersForUser(authUser.id, '', 0, 6));
+        }
+        
+        const results = await Promise.all(promises);
+        const [flash, newest, voucherData] = results;
 
-        ]);
-
-
-
-        const mappedFlash: ProductViewModel[] = flash.map((p) =>
+        const mappedFlash: ProductViewModel[] = flash.map((p: any) =>
           mapProductToViewModel(p, { showZeroDiscountLabel: false })
         );
 
-        const mappedNewest: ProductViewModel[] = newest.map((p) =>
+        const mappedNewest: ProductViewModel[] = newest.map((p: any) =>
           mapProductToViewModel(p, { showZeroDiscountLabel: true })
         );
 
         setFlashSaleProducts(mappedFlash);
         setProductsLastData(mappedNewest);
+        
+        // Set vouchers if user is logged in
+        if (voucherData) {
+          setVouchers(voucherData.content || []);
+        }
 
       } catch (error) {
-        console.error('Failed to fetch flash sale products:', error);
+        console.error('Failed to fetch data:', error);
         toast.error('Không thể tải danh sách sản phẩm');
       } finally {
         setIsLoadingFlashSale(false);
         setIsLoadingNewestProducts(false);
+        setIsLoadingVouchers(false);
       }
     };
 
     fetchBoth();
-  }, []);
+  }, [authUser?.id]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -526,10 +543,10 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : vouchers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
-                {randomVouchers.map((voucher) => {
-                  const isExpired = isVoucherExpired(voucher.end_date);
+                {vouchers.map((voucher) => {
+                  const isExpired = isVoucherExpired(voucher.endDate);
                   
                   return (
                     <div
@@ -541,8 +558,8 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                       <div className="bg-gradient-to-r from-red-500 to-orange-500 h-16 relative flex items-center justify-center">
                         <div className="text-white text-center">
                           <div className="font-bold text-xl">
-                            {voucher.discount_percentage && `${voucher.discount_percentage}%`}
-                            {voucher.discount_amount && `${formatPrice(voucher.discount_amount)}`}
+                            {voucher.discountType === 'PERCENT' && `${voucher.discountValue}%`}
+                            {voucher.discountType === 'FIXED' && `${formatPrice(voucher.discountValue)}`}
                           </div>
                           <div className="text-xs">GIẢM</div>
                         </div>
@@ -554,8 +571,8 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                       </div>
                       
                       <div className="p-3">
-                        <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-1" title={voucher.discount_name}>
-                          {voucher.discount_name}
+                        <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-1" title={voucher.description}>
+                          {voucher.description}
                         </h3>
                         
                         <div 
@@ -568,9 +585,9 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                         </div>
                         
                         <div className="flex items-center justify-between text-xs text-gray-500">
-                          <div>HSD: {formatDate(voucher.end_date)}</div>
-                          {voucher.min_order_value > 0 && (
-                            <div>Từ {formatPrice(voucher.min_order_value)}</div>
+                          <div>HSD: {formatDate(voucher.endDate)}</div>
+                          {voucher.minimumOrderAmount > 0 && (
+                            <div>Từ {formatPrice(voucher.minimumOrderAmount)}</div>
                           )}
                         </div>
                       </div>
@@ -578,16 +595,17 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                   );
                 })}
                 
-                <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-200 flex flex-col items-center justify-center p-4">
-                  <div className="text-5xl text-red-500 mb-2">_</div>
+                <Link 
+                  to="/voucher"
+                  className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-200 flex flex-col items-center justify-center p-4 cursor-pointer"
+                >
+                  <div className="text-5xl text-red-500 mb-2">+</div>
                   <p className="text-center text-gray-700 font-medium">Xem thêm nhiều mã giảm giá khác</p>
-                  <a 
-                    href="/voucher"
-                    className="mt-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md text-sm transition-colors duration-200"
-                  >
-                    Xem tất cả
-                  </a>
-                </div>
+                </Link>
+              </div>
+            ) : (
+              <div className="p-8 text-center text-gray-500">
+                <p>Chưa có mã giảm giá nào. Vui lòng đăng nhập để xem voucher!</p>
               </div>
             )}
           </div>
@@ -653,49 +671,5 @@ const itemsCategories = [
     },
 
 ];
-
-const randomVouchers = [
-    {
-        id: '1',
-        code: 'DAVINCI20',
-        discount_name: 'Giảm 20% cho đơn hàng đầu tiên',
-        discount_percentage: 20,
-        end_date: '2024-12-31',
-        min_order_value: 200000
-    },
-    {
-        id: '2',
-        code: 'FASHION50K',
-        discount_name: 'Giảm 50K cho thời trang',
-        discount_amount: 50000,
-        end_date: '2024-11-30',
-        min_order_value: 300000
-    },
-    {
-        id: '3',
-        code: 'SPORT15',
-        discount_name: 'Giảm 15% phụ kiện thể thao',
-        discount_percentage: 15,
-        end_date: '2024-10-25',
-        min_order_value: 150000
-    },
-    {
-        id: '4',
-        code: 'SHOES30K',
-        discount_name: 'Giảm 30K giày thể thao',
-        discount_amount: 30000,
-        end_date: '2024-12-15',
-        min_order_value: 500000
-    },
-    {
-        id: '5',
-        code: 'GYM25',
-        discount_name: 'Giảm 25% đồ tập gym',
-        discount_percentage: 25,
-        end_date: '2024-11-20',
-        min_order_value: 400000
-    }
-];
-
 
 export default Home;

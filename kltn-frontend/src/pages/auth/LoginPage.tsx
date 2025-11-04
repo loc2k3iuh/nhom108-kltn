@@ -6,7 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaBookOpen, FaFacebook, FaTshirt } from "react-icons/fa";
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaLock, FaUser } from "react-icons/fa6";
 import { login } from "@/services/useAuthService";
 import {
@@ -23,6 +23,7 @@ interface LoginForm {
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { checkAuth } = useAuthStore();
   const [showPassword, setShowPassord] = useState(false);
 
@@ -74,7 +75,21 @@ const LoginPage: React.FC = () => {
         : setAccessTokenToSessionStorage(response.access_token);
 
       await checkAuth();
-      navigate("/");
+      
+      // Check if there's a redirect with buy now item
+      const buyNowItem = location.state?.buyNowItem;
+      const redirectTo = location.state?.redirectTo;
+      
+      if (buyNowItem && redirectTo) {
+        // Navigate to payment with buy now item
+        navigate(redirectTo, { 
+          state: { 
+            buyNowItems: [buyNowItem]
+          } 
+        });
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message);
     } finally {

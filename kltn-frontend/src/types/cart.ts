@@ -36,7 +36,7 @@ export interface Cart {
 export interface AddToCartPayload {
   userId: number;
   productId: number;
-  productVariantId: number;
+  productVariantId: number | null;
   quantity: number;
 }
 

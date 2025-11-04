@@ -9,8 +9,6 @@ import { useEffect, useRef } from "react";
 import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletions/Reloading";
 import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
-import { ScrollToTop } from "./components/common/ScrollToTop";
-import AppLayout from "./layout/AppLayout";
 import { addToCart } from "./services/cartService";
 import { AddToCartPayload } from "./types/cart";
 
@@ -30,7 +28,6 @@ import SearchPage from './pages/SearchPage';
 
 // User Pages
 import UserPage from './pages/UserPage';
-import UserProfiles from "./pages/UserProfiles";
 import EditUser from './pages/EditUser';
 import ChangePassword from './pages/auth/ChangePassword';
 import AddressesPage from './pages/AddressesPage';
@@ -181,21 +178,21 @@ export default function App() {
    
       <Routes>
         {/* Main Fashion E-commerce Layout */}
-        <Route element={<AppLayout />}>
+    
           {/* Home Page */}
-          <Route index path="/" element={<Home />} />
+          <Route index path="/" element={<Layout><Home /></Layout>} />
           
           {/* Product & Category Pages */}
-          <Route path="/products" element={<ProductListPage />} />
-          <Route path="/category/:categoryId" element={<ProductListPage />} />
-          <Route path="/product/:id" element={<Product />} />
+          <Route path="/products" element={<Layout><ProductListPage /></Layout>} />
+          <Route path="/category/:categoryId" element={<Layout><ProductListPage /></Layout>} />
+          <Route path="/product/:id" element={<Layout><Product /></Layout>} />
           <Route path="/search" element={<SearchPage />} />
 
           {/* User Profile Pages - Require Authentication */}
-          <Route path="/user" element={authUser ? <UserPage /> : <Navigate to="/signin" />} />
-          <Route path="/user/profile" element={authUser ? <UserProfiles /> : <Navigate to="/signin" />} />
+          <Route path="/profile" element={authUser ? <Layout> <UserPage /> </Layout>: <Navigate to="/signin" />} />
+       
           <Route path="/user/edit" element={authUser ? <EditUser /> : <Navigate to="/signin" />} />
-          <Route path="/user/change-password" element={authUser ? <ChangePassword /> : <Navigate to="/signin" />} />
+          <Route path="/change-password" element={authUser ? <Layout>  <ChangePassword />  </Layout> : <Navigate to="/signin" />} />
           
           {/* Address Management */}
           <Route path="/user/addresses" element={authUser ? <AddressesPage /> : <Navigate to="/signin" />} />
@@ -203,15 +200,16 @@ export default function App() {
           <Route path="/user/addresses/edit/:id" element={authUser ? <EditAddress /> : <Navigate to="/signin" />} />
 
           {/* Shopping Pages */}
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/orders" element={authUser ? <OrderList /> : <Navigate to="/signin" />} />
-          <Route path="/favorites" element={authUser ? <FavoritesPage /> : <Navigate to="/signin" />} />
-          <Route path="/voucher" element={authUser ? <VoucherPage /> : <Navigate to="/signin" />} />
+          <Route path="/cart" element={ <Layout><Cart /></Layout>} />
+          <Route path="/orders" element={authUser ? <Layout><OrderList /></Layout> : <Navigate to="/signin" />} />
+           <Route path="/order-success" element={authUser ? <Layout><OrderSuccess /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/favorites" element={authUser ? <Layout><FavoritesPage /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/voucher" element={authUser ? <Layout><VoucherPage /></Layout> : <Navigate to="/signin" />} />
 
           {/* Payment Pages */}
-          <Route path="/payment" element={authUser ? <Payment /> : <Navigate to="/signin" />} />
-          <Route path="/payment/vnpay-return" element={<VnpayReturn />} />
-          <Route path="/payment/success" element={<OrderSuccess />} />
+          <Route path="/payment" element={authUser ? <Layout> <Payment /> </Layout> : <Navigate to="/signin" />} />
+          <Route path="/payment/vnpay-return" element={<Layout> <VnpayReturn /> </Layout>} />
+          <Route path="/payment/success" element={<Layout> <OrderSuccess /> </Layout>} />
 
 
           {/* Review Pages */}
@@ -226,7 +224,7 @@ export default function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/shipping-policy" element={<ShippingPolicy />} />
           
-        </Route>
+    
 
         {/* Authentication Pages - No Layout */}
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />

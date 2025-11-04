@@ -11,6 +11,7 @@ public interface IFavoriteService {
 
   /**
    * Adds a product to a user's favorites list.
+   *
    * @param request The request containing user and product IDs.
    * @return The created favorite entry.
    */
@@ -18,12 +19,14 @@ public interface IFavoriteService {
 
   /**
    * Removes a product from a user's favorites list.
+   *
    * @param request The request containing user and product IDs.
    */
   void removeFromFavorites(RemoveFavoriteRequest request);
 
   /**
    * Retrieves a paginated list of a user's favorite products.
+   *
    * @param userId The ID of the user.
    * @param pageable Pagination information.
    * @return A page of favorite responses.
@@ -32,6 +35,7 @@ public interface IFavoriteService {
 
   /**
    * Retrieves a full list of a user's favorite products.
+   *
    * @param userId The ID of the user.
    * @return A list of favorite responses.
    */
@@ -39,6 +43,7 @@ public interface IFavoriteService {
 
   /**
    * Checks if a product is in a user's favorites list.
+   *
    * @param productId The ID of the product.
    * @param userId The ID of the user.
    * @return True if the product is favorited, false otherwise.
@@ -47,6 +52,7 @@ public interface IFavoriteService {
 
   /**
    * Counts the number of favorite products for a user.
+   *
    * @param userId The ID of the user.
    * @return The total count of favorites.
    */

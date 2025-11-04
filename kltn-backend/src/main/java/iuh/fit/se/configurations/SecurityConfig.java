@@ -47,17 +47,16 @@ public class SecurityConfig {
     "/api/v1/auth/refresh-token/{userId}",
     "/api/v1/auth/send-forgot-password",
     "/api/v1/auth/verify-reset-token",
-          "/api/v1/products/filter"
+    "/api/v1/products/filter"
   };
-
 
   String[] PUBLIC_GET_ENDPOINTS = {
-          "/api/v1/categories/root",
-          "/api/v1/categories/{parentId}/subcategories",
-          "/api/v1/products/filter/{id}",
-          "/swagger-ui/**", "/v3/api-docs/**"
+    "/api/v1/categories/root",
+    "/api/v1/categories/{parentId}/subcategories",
+    "/api/v1/products/filter/{id}",
+    "/swagger-ui/**",
+    "/v3/api-docs/**"
   };
-
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {

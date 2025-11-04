@@ -11,30 +11,30 @@ import java.text.ParseException;
 
 public interface IAuthenticationService {
 
-    PreLoginResponse authenticateAdmin(LoginRequest loginRequest)
-            throws JOSEException, MessagingException;
+  PreLoginResponse authenticateAdmin(LoginRequest loginRequest)
+      throws JOSEException, MessagingException;
 
-    LoginResponse authenticateClient(
-            LoginRequest loginRequest, boolean isRemembered, HttpServletResponse httpServletResponse)
-            throws JOSEException;
+  LoginResponse authenticateClient(
+      LoginRequest loginRequest, boolean isRemembered, HttpServletResponse httpServletResponse)
+      throws JOSEException;
 
-    LoginResponse verifyOtp(
-            VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
-            throws JOSEException;
+  LoginResponse verifyOtp(
+      VerifyOtpRequest verifyOtpRequest, boolean isChecked, HttpServletResponse httpServletResponse)
+      throws JOSEException;
 
-    void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException;
+  void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException;
 
-    boolean introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException;
+  boolean introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException;
 
-    void logout(LogoutRequest logoutRequest, String refreshToken)
-            throws ParseException, JOSEException;
+  void logout(LogoutRequest logoutRequest, String refreshToken)
+      throws ParseException, JOSEException;
 
-    TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
-            throws JOSEException;
+  TokenResponse refreshAccessToken(RefreshRequest refreshRequest, String userId)
+      throws JOSEException;
 
-    void deleteRefreshTokenFromRedis(String userId);
+  void deleteRefreshTokenFromRedis(String userId);
 
-    void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException;
+  void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException;
 
-    void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest);
+  void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest);
 }

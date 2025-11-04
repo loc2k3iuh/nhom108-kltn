@@ -1,4 +1,5 @@
 
+
 import axiosInstance from '../lib/axios';
 import { Cart, CartItem, AddToCartPayload, UpdateCartItemPayload } from '@/types/cart';
 
@@ -68,3 +69,7 @@ export const getCartItemCount = async (userId: number): Promise<number> => {
   }
   return response.data.result;
 };
+
+export const removeCartFromLocalStorage = () : void => {
+  localStorage.removeItem("itemsToCheckout");
+}

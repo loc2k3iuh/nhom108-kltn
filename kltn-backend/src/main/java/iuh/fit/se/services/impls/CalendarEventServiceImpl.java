@@ -137,6 +137,4 @@ public class CalendarEventServiceImpl implements ICalendarEventService {
         .findByUsername(authentication.getName())
         .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
   }
-
-
 }

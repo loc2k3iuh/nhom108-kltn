@@ -24,6 +24,7 @@ const CartPage: React.FC = () => {
         try {
             const data = await getCartByUserId(authUser.id);
             setCart(data);
+            console.log("data cart", data);
             setSelectedItems(data.cartItems.map(item => item.id));
         } catch (error) {
             console.error("Error fetching cart data:", error);
@@ -266,6 +267,17 @@ const CartPage: React.FC = () => {
             .reduce((sum, item) => sum + item.itemTotal, 0);
     }, [cart, selectedItems]);
 
+    const selectedOriginalTotal = useMemo(() => {
+        if (!cart) return 0;
+        return cart.cartItems
+            .filter(item => selectedItems.includes(item.id))
+            .reduce((sum, item) => sum + (item.productVariant.price * item.quantity), 0);
+    }, [cart, selectedItems]);
+
+    const totalDiscount = useMemo(() => {
+        return selectedOriginalTotal - selectedTotal;
+    }, [selectedOriginalTotal, selectedTotal]);
+
     const handleCheckout = () => {
         if (selectedItems.length === 0) return;
         if (authUser) {
@@ -434,17 +446,30 @@ const CartPage: React.FC = () => {
                     <div className="w-full lg:w-1/4 lg:sticky top-6 h-fit">
                         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="font-medium mb-4 text-lg">Thông tin thanh toán</h3>
-                            <div className="flex justify-between mb-3 text-gray-600">
-                                <span>Tạm tính ({selectedItems.length} sản phẩm)</span>
-                                <span>{selectedTotal.toLocaleString()} ₫</span>
-                            </div>
-                            <div className="flex justify-between mb-3 pb-3 border-b border-gray-200 text-gray-600">
-                                <span>Phí vận chuyển</span>
-                                <span>{shippingFee.toLocaleString()} ₫</span>
-                            </div>
+                            
+                            {totalDiscount > 0 && (
+                                <>
+                                    <div className="flex justify-between mb-2 text-gray-600">
+                                        <span>Tạm tính ({selectedItems.length} sản phẩm)</span>
+                                        <span>{selectedOriginalTotal.toLocaleString()} ₫</span>
+                                    </div>
+                                    <div className="flex justify-between mb-3 text-red-500">
+                                        <span>Giảm giá</span>
+                                        <span>- {totalDiscount.toLocaleString()} ₫</span>
+                                    </div>
+                                </>
+                            )}
+                            
+                            {totalDiscount === 0 && (
+                                <div className="flex justify-between mb-3 text-gray-600">
+                                    <span>Tạm tính ({selectedItems.length} sản phẩm)</span>
+                                    <span>{selectedTotal.toLocaleString()} ₫</span>
+                                </div>
+                            )}
+                      
                             <div className="flex justify-between font-semibold mb-4 text-lg">
                                 <span>Tổng cộng</span>
-                                <span className="text-red-500">{(selectedTotal + shippingFee).toLocaleString()} ₫</span>
+                                <span className="text-red-500">{(selectedTotal).toLocaleString()} ₫</span>
                             </div>
                             <button
                                 className={`bg-red-500 text-white w-full py-3 rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}

@@ -29,115 +29,115 @@ import org.springframework.web.bind.annotation.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationController {
 
-    IAuthenticationService iAuthenticationService;
+  IAuthenticationService iAuthenticationService;
 
-    @PostMapping("/admin/login")
-    public APIResponse<PreLoginResponse> loginAdmin(@Valid @RequestBody LoginRequest loginRequest)
-            throws JOSEException, MessagingException {
-        return APIResponse.<PreLoginResponse>builder()
-                .result(iAuthenticationService.authenticateAdmin(loginRequest))
-                .message("We sent an OTP CODE to your email !")
-                .build();
-    }
+  @PostMapping("/admin/login")
+  public APIResponse<PreLoginResponse> loginAdmin(@Valid @RequestBody LoginRequest loginRequest)
+      throws JOSEException, MessagingException {
+    return APIResponse.<PreLoginResponse>builder()
+        .result(iAuthenticationService.authenticateAdmin(loginRequest))
+        .message("We sent an OTP CODE to your email !")
+        .build();
+  }
 
-    @PostMapping("/admin/verify-otp")
-    public APIResponse<LoginResponse> verifyToken(
-            @RequestParam("isChecked") boolean isChecked,
-            @Valid @RequestBody VerifyOtpRequest verifyOtpRequest,
-            HttpServletResponse httpServletResponse)
-            throws JOSEException {
-        return APIResponse.<LoginResponse>builder()
-                .result(iAuthenticationService.verifyOtp(verifyOtpRequest, isChecked, httpServletResponse))
-                .message("Login successfully !")
-                .build();
-    }
+  @PostMapping("/admin/verify-otp")
+  public APIResponse<LoginResponse> verifyToken(
+      @RequestParam("isChecked") boolean isChecked,
+      @Valid @RequestBody VerifyOtpRequest verifyOtpRequest,
+      HttpServletResponse httpServletResponse)
+      throws JOSEException {
+    return APIResponse.<LoginResponse>builder()
+        .result(iAuthenticationService.verifyOtp(verifyOtpRequest, isChecked, httpServletResponse))
+        .message("Login successfully !")
+        .build();
+  }
 
-    @PostMapping("/login")
-    public APIResponse<LoginResponse> loginClient(
-            @RequestParam boolean isRemembered,
-            @Valid @RequestBody LoginRequest loginRequest,
-            HttpServletResponse httpServletResponse)
-            throws JOSEException {
-        return APIResponse.<LoginResponse>builder()
-                .message("Login successfully !")
-                .result(
-                        iAuthenticationService.authenticateClient(
-                                loginRequest, isRemembered, httpServletResponse))
-                .build();
-    }
+  @PostMapping("/login")
+  public APIResponse<LoginResponse> loginClient(
+      @RequestParam boolean isRemembered,
+      @Valid @RequestBody LoginRequest loginRequest,
+      HttpServletResponse httpServletResponse)
+      throws JOSEException {
+    return APIResponse.<LoginResponse>builder()
+        .message("Login successfully !")
+        .result(
+            iAuthenticationService.authenticateClient(
+                loginRequest, isRemembered, httpServletResponse))
+        .build();
+  }
 
-    @PostMapping("/admin/resend-otp")
-    public APIResponse<Void> resendOtp(@Valid @RequestBody ResenOtpRequest resenOtpRequest)
-            throws MessagingException {
-        iAuthenticationService.resendOtp(resenOtpRequest);
-        return APIResponse.<Void>builder().message("We resent an OTP CODE to your email !").build();
-    }
+  @PostMapping("/admin/resend-otp")
+  public APIResponse<Void> resendOtp(@Valid @RequestBody ResenOtpRequest resenOtpRequest)
+      throws MessagingException {
+    iAuthenticationService.resendOtp(resenOtpRequest);
+    return APIResponse.<Void>builder().message("We resent an OTP CODE to your email !").build();
+  }
 
-    @GetMapping("/introspect")
-    public APIResponse<Boolean> introspectToken(
-            @Valid @RequestBody IntrospectRequest introspectRequest)
-            throws ParseException, JOSEException {
-        return APIResponse.<Boolean>builder()
-                .result(iAuthenticationService.introspect(introspectRequest))
-                .message("Token valid !")
-                .build();
-    }
+  @GetMapping("/introspect")
+  public APIResponse<Boolean> introspectToken(
+      @Valid @RequestBody IntrospectRequest introspectRequest)
+      throws ParseException, JOSEException {
+    return APIResponse.<Boolean>builder()
+        .result(iAuthenticationService.introspect(introspectRequest))
+        .message("Token valid !")
+        .build();
+  }
 
-    @PostMapping("/refresh-token/{userId}")
-    public APIResponse<TokenResponse> refreshToken(
-            @CookieValue(name = "refresh_token", required = false) String refreshToken,
-            @PathVariable String userId)
-            throws JOSEException {
-        if (refreshToken.isBlank()) {
-            throw new AppException(ErrorCode.REFRESH_TOKEN_REQUIRED);
-        }
-        return APIResponse.<TokenResponse>builder()
-                .result(
-                        iAuthenticationService.refreshAccessToken(
-                                RefreshRequest.builder().refreshToken(refreshToken).build(), userId))
-                .build();
+  @PostMapping("/refresh-token/{userId}")
+  public APIResponse<TokenResponse> refreshToken(
+      @CookieValue(name = "refresh_token", required = false) String refreshToken,
+      @PathVariable String userId)
+      throws JOSEException {
+    if (refreshToken.isBlank()) {
+      throw new AppException(ErrorCode.REFRESH_TOKEN_REQUIRED);
     }
+    return APIResponse.<TokenResponse>builder()
+        .result(
+            iAuthenticationService.refreshAccessToken(
+                RefreshRequest.builder().refreshToken(refreshToken).build(), userId))
+        .build();
+  }
 
-    @PostMapping("/logout")
-    public ResponseEntity<APIResponse<Void>> logout(
-            @Valid @RequestBody LogoutRequest logoutRequest,
-            @CookieValue(name = "refresh_token", required = false) String refreshToken)
-            throws ParseException, JOSEException {
-        ResponseCookie deleteCookie =
-                ResponseCookie.from("refresh_token", "")
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .maxAge(0)
-                        .build();
-        iAuthenticationService.logout(logoutRequest, refreshToken);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-                .body(APIResponse.<Void>builder().message("Logged out successfully !").build());
-    }
+  @PostMapping("/logout")
+  public ResponseEntity<APIResponse<Void>> logout(
+      @Valid @RequestBody LogoutRequest logoutRequest,
+      @CookieValue(name = "refresh_token", required = false) String refreshToken)
+      throws ParseException, JOSEException {
+    ResponseCookie deleteCookie =
+        ResponseCookie.from("refresh_token", "")
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .maxAge(0)
+            .build();
+    iAuthenticationService.logout(logoutRequest, refreshToken);
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+        .body(APIResponse.<Void>builder().message("Logged out successfully !").build());
+  }
 
-    @PostMapping("/delete-refresh-token-from-redis/{userId}")
-    public APIResponse<Void> deleteReFreshTokenFromRedis(@PathVariable String userId) {
-        iAuthenticationService.deleteRefreshTokenFromRedis(userId);
-        return APIResponse.<Void>builder()
-                .message("Deleted refresh token from redis successfully !")
-                .build();
-    }
+  @PostMapping("/delete-refresh-token-from-redis/{userId}")
+  public APIResponse<Void> deleteReFreshTokenFromRedis(@PathVariable String userId) {
+    iAuthenticationService.deleteRefreshTokenFromRedis(userId);
+    return APIResponse.<Void>builder()
+        .message("Deleted refresh token from redis successfully !")
+        .build();
+  }
 
-    @PostMapping("/send-forgot-password")
-    public APIResponse<Void> sendForgotPassword(
-            @RequestParam("email") String email, @RequestParam("is_admin") boolean isAdminPage)
-            throws MessagingException {
-        iAuthenticationService.sendForgotPassword(email, isAdminPage);
-        return APIResponse.<Void>builder()
-                .message("We sent a forgot password token to your email !")
-                .build();
-    }
+  @PostMapping("/send-forgot-password")
+  public APIResponse<Void> sendForgotPassword(
+      @RequestParam("email") String email, @RequestParam("is_admin") boolean isAdminPage)
+      throws MessagingException {
+    iAuthenticationService.sendForgotPassword(email, isAdminPage);
+    return APIResponse.<Void>builder()
+        .message("We sent a forgot password token to your email !")
+        .build();
+  }
 
-    @PostMapping("/verify-reset-token")
-    public APIResponse<Void> verifyResetToken(
-            @Valid @RequestBody VerifyResetTokenRequest verifyResetTokenRequest) {
-        iAuthenticationService.verifyResetToken(verifyResetTokenRequest);
-        return APIResponse.<Void>builder().message("Your password changed successfully !").build();
-    }
+  @PostMapping("/verify-reset-token")
+  public APIResponse<Void> verifyResetToken(
+      @Valid @RequestBody VerifyResetTokenRequest verifyResetTokenRequest) {
+    iAuthenticationService.verifyResetToken(verifyResetTokenRequest);
+    return APIResponse.<Void>builder().message("Your password changed successfully !").build();
+  }
 }

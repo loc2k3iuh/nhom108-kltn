@@ -7,14 +7,11 @@ const Layout: React.FC<{ children: React.ReactNode ; pageName?: string }> = ({ c
 
   return (
     <>
-      
-        <>          <Header />
-          <main className="flex-grow bg-[#f0f0f0]">
-            {children}
-          </main>
-          <Footer />
-        </>
-      
+      <Header />
+      <main className="flex-grow bg-[#f0f0f0]">
+        {children}
+      </main>
+      <Footer />
     </>
   );
 };

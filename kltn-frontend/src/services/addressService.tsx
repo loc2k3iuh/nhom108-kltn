@@ -66,6 +66,17 @@ export const getLocationNames = async (cityCode: string, districtCode: string, w
     }
 };
 
+export const fetchProvinces = async (): Promise<Province[]> => {
+    try {
+        const response = await fetch('https://provinces.open-api.vn/api/p/');
+        const data = await response.json();
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching provinces:', error);
+        return [];
+    }
+};
+
 export const fetchDistrictsByProvince = async (provinceCode: string) => {
     try {
         const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);

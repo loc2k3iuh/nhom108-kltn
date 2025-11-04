@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Truck, RefreshCcw, Gift, Plus, Minus, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import Swal from 'sweetalert2';
@@ -170,6 +170,7 @@ const staticRelatedProducts: RelatedProduct[] = [
 const ProductPage = () => {
     const { id } = useParams<{ id: string }>();
     const { authUser } = useAuthStore();
+    const navigate = useNavigate();
 
     // Local cart item shape used for guest cart stored in localStorage
     type LocalCartItem = {
@@ -803,17 +804,27 @@ const ProductPage = () => {
 
         // If user is NOT logged in
         if (!authUser) {
-            // Handle "Buy Now" for guest
+            // Handle "Buy Now" for guest - chuyển sang trang đăng nhập với thông tin sản phẩm
             if (isBuyNow) {
+                // Tạo item để thanh toán trực tiếp
                 const buyNowItem = {
+                    id: selectedVariant.id,
                     productId: product.id,
                     productVariantId: selectedVariant.id,
                     quantity: quantity,
+                    product: product,
+                    productVariant: selectedVariant,
+                    itemTotal: (selectedVariant.price || product.basePrice) * quantity,
                 };
-                // Store item and redirect to login
-                localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
-                toast.info("Vui lòng đăng nhập để mua ngay.");
-                window.location.href = '/signin';
+                
+                // Chuyển sang trang đăng nhập với state
+                navigate('/login', { 
+                    state: { 
+                        buyNowItem: buyNowItem,
+                        redirectTo: '/payment'
+                    } 
+                });
+                toast.info("Vui lòng đăng nhập để tiếp tục mua hàng.");
                 return;
             }
 
@@ -876,6 +887,42 @@ const ProductPage = () => {
         }
 
         // --- Logic for LOGGED IN user ---
+        
+        // Handle "Buy Now" for logged in user - chuyển thẳng sang thanh toán
+        if (isBuyNow) {
+            setIsAddingToCart(true);
+            try {
+                // Tạo item để thanh toán trực tiếp
+                const buyNowItem = {
+                    id: selectedVariant.id,
+                    productId: product.id,
+                    productVariantId: selectedVariant.id,
+                    quantity: quantity,
+                    product: product,
+                    productVariant: selectedVariant,
+                    // Guard against null/undefined discount percent
+                    itemTotal: (selectedVariant.price * (1 - ((product.currentDiscountPercent ?? 0) / 100))) * quantity,
+                };
+                
+                // Chuyển sang trang thanh toán với state, KHÔNG lưu localStorage
+                navigate('/payment', { 
+                    state: { 
+                        buyNowItems: [buyNowItem]
+                    } 
+                });
+                
+                toast.success("Chuyển đến trang thanh toán...");
+                
+            } catch (error) {
+                console.error("Error processing buy now:", error);
+                toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+            } finally {
+                setIsAddingToCart(false);
+            }
+            return;
+        }
+        
+        // Handle "Add to Cart" for logged in user
         setIsAddingToCart(true);
         const toastId = toast.loading("Đang thêm vào giỏ hàng...");
 
@@ -891,23 +938,19 @@ const ProductPage = () => {
 
             toast.success("Đã thêm sản phẩm vào giỏ hàng!", { id: toastId });
 
-            if (isBuyNow) {
-                window.location.href = '/cart';
-            } else {
-                Swal.fire({
-                    title: 'Thành công!',
-                    text: 'Đã thêm sản phẩm vào giỏ hàng',
-                    icon: 'success',
-                    confirmButtonColor: '#C92127',
-                    confirmButtonText: 'Xem giỏ hàng',
-                    showCancelButton: true,
-                    cancelButtonText: 'Tiếp tục mua sắm'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '/cart';
-                    }
-                });
-            }
+            Swal.fire({
+                title: 'Thành công!',
+                text: 'Đã thêm sản phẩm vào giỏ hàng',
+                icon: 'success',
+                confirmButtonColor: '#C92127',
+                confirmButtonText: 'Xem giỏ hàng',
+                showCancelButton: true,
+                cancelButtonText: 'Tiếp tục mua sắm'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/cart';
+                }
+            });
         } catch (err: unknown) {
             console.error("Error adding to cart:", err);
             const extractMessage = (e: unknown): string => {

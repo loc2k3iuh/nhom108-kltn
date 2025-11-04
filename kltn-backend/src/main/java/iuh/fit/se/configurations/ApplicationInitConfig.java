@@ -25,36 +25,36 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ApplicationInitConfig {
 
-    PasswordEncoder passwordEncoder;
+  PasswordEncoder passwordEncoder;
 
-    @Bean
-    ApplicationRunner applicationRunner(
-            UserRepository userRepository, RoleRepository roleRepository) {
-        HashSet<Role> roles = new HashSet<>();
-        Role defaultRole =
-                roleRepository
-                        .findByName(RoleType.valueOf("ADMIN"))
-                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        roles.add(defaultRole);
+  @Bean
+  ApplicationRunner applicationRunner(
+      UserRepository userRepository, RoleRepository roleRepository) {
+    HashSet<Role> roles = new HashSet<>();
+    Role defaultRole =
+        roleRepository
+            .findByName(RoleType.valueOf("ADMIN"))
+            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+    roles.add(defaultRole);
 
-        return args -> {
-            Optional<User> existUser = userRepository.findByUsername("admin");
-            if (existUser.isEmpty()) {
-                userRepository.save(
-                        User.builder()
-                                .username("admin")
-                                .password(passwordEncoder.encode("admin"))
-                                .createdDate(new Date())
-                                .email("nguyentanloc13c9@gmail.com")
-                                .isActive(true)
-                                .enabled(true)
-                                .roles(roles)
-                                .build());
-            } else {
-                if (passwordEncoder.matches("admin", existUser.get().getPassword())) {
-                    log.warn("User admin created with default password: admin, please change it !!!");
-                }
-            }
-        };
-    }
+    return args -> {
+      Optional<User> existUser = userRepository.findByUsername("admin");
+      if (existUser.isEmpty()) {
+        userRepository.save(
+            User.builder()
+                .username("admin")
+                .password(passwordEncoder.encode("admin"))
+                .createdDate(new Date())
+                .email("nguyentanloc13c9@gmail.com")
+                .isActive(true)
+                .enabled(true)
+                .roles(roles)
+                .build());
+      } else {
+        if (passwordEncoder.matches("admin", existUser.get().getPassword())) {
+          log.warn("User admin created with default password: admin, please change it !!!");
+        }
+      }
+    };
+  }
 }
