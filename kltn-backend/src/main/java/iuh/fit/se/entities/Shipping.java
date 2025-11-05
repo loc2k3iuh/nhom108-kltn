@@ -3,7 +3,6 @@ package iuh.fit.se.entities;
 import iuh.fit.se.enums.ShippingMethod;
 import iuh.fit.se.enums.ShippingStatus;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;

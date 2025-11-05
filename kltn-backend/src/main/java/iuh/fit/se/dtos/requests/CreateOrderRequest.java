@@ -3,7 +3,6 @@ package iuh.fit.se.dtos.requests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import iuh.fit.se.enums.PaymentMethod;
 import iuh.fit.se.enums.ShippingMethod;
-
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.AccessLevel;

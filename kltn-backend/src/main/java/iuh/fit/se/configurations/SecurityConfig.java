@@ -39,6 +39,7 @@ public class SecurityConfig {
 
   String[] PUBLIC_POST_ENDPOINTS = {
     "/api/v1/auth/login",
+    "/api/v1/auth/admin/login",
     "/api/v1/auth/login-temporarily",
     "/api/v1/register",
     "/api/v1/auth/logout",
@@ -47,7 +48,9 @@ public class SecurityConfig {
     "/api/v1/auth/refresh-token/{userId}",
     "/api/v1/auth/send-forgot-password",
     "/api/v1/auth/verify-reset-token",
-    "/api/v1/products/filter"
+    "/api/v1/products/filter",
+    "/api/v1/auth/admin/verify-otp",
+    "/api/v1/auth/admin/resend-otp",
   };
 
   String[] PUBLIC_GET_ENDPOINTS = {

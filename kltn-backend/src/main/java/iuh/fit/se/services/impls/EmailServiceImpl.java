@@ -1,6 +1,5 @@
 package iuh.fit.se.services.impls;
 
-import iuh.fit.se.dtos.requests.OrderDetailRequest;
 import iuh.fit.se.dtos.requests.ResenOtpRequest;
 import iuh.fit.se.dtos.requests.VerifyOtpRequest;
 import iuh.fit.se.dtos.requests.VerifyRegistrationRequest;
@@ -108,13 +107,23 @@ public class EmailServiceImpl implements IEmailService {
   }
 
   @Override
-  public void sentOtp(User user) throws MessagingException {
-    String otp = String.format("%06d", random.nextInt(1_000_000));
-    stringRedisTemplate
-        .opsForValue()
-        .set("otp:email=" + user.getEmail(), otp, Duration.ofMinutes(5));
-    Map<String, Object> variables = Map.of("username", user.getUsername(), "otp", otp);
-    sendWithHtmlMailFormat(user.getEmail(), "Your Otp Code", "otp-mail", variables);
+  @Async("emailTaskExecutor")
+  public void sentOtp(User user)  {
+    try {
+      String otp = String.format("%06d", random.nextInt(1_000_000));
+      stringRedisTemplate
+          .opsForValue()
+          .set("otp:email=" + user.getEmail(), otp, Duration.ofMinutes(5));
+      Map<String, Object> variables = Map.of("username", user.getUsername(), "otp", otp);
+      sendWithHtmlMailFormat(user.getEmail(), "Your Otp Code", "otp-mail", variables);
+      log.info("OTP sent asynchronously to {}", user.getEmail());
+    } catch (MessagingException me) {
+      // MessagingException is checked; log and rethrow inside async thread if desired
+      log.error("Failed to send OTP email to {}", user.getEmail(), me);
+      // don't rethrow to avoid uncaught exceptions in async executor
+    } catch (Exception e) {
+      log.error("Unexpected error while sending OTP to {}", user.getEmail(), e);
+    }
   }
 
   @Override
@@ -220,73 +229,83 @@ public class EmailServiceImpl implements IEmailService {
               .findById(orderResponse.getUserId())
               .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    // Format order items for email
-    List<Map<String, Object>> orderItems = new ArrayList<>();
-    if (orderResponse.getOrderDetails() != null) {
-      orderItems =
-          orderResponse.getOrderDetails().stream()
-              .map(
-                  item -> {
-                    Map<String, Object> itemMap = new HashMap<>();
-                    itemMap.put("productName", item.getProductName());
-                    itemMap.put("quantity", item.getQuantity());
-                    itemMap.put("price", item.getPrice());
-                    itemMap.put(
-                        "imageUrl",
-                        item.getImageUrl() != null
-                            ? item.getImageUrl()
-                            : "https://via.placeholder.com/80");
-                    return itemMap;
-                  })
-              .collect(Collectors.toList());
-    }
+      // Format order items for email
+      List<Map<String, Object>> orderItems = new ArrayList<>();
+      if (orderResponse.getOrderDetails() != null) {
+        orderItems =
+            orderResponse.getOrderDetails().stream()
+                .map(
+                    item -> {
+                      Map<String, Object> itemMap = new HashMap<>();
+                      itemMap.put("productName", item.getProductName());
+                      itemMap.put("quantity", item.getQuantity());
+                      itemMap.put("price", item.getPrice());
+                      itemMap.put(
+                          "imageUrl",
+                          item.getImageUrl() != null
+                              ? item.getImageUrl()
+                              : "https://via.placeholder.com/80");
+                      return itemMap;
+                    })
+                .collect(Collectors.toList());
+      }
 
-    // Format full address
-    String fullAddress =
-        String.format(
-            "%s, %s, %s, %s",
-            orderResponse.getAddress() != null ? orderResponse.getAddress() : "",
-            orderResponse.getWard() != null ? orderResponse.getWard() : "",
-            orderResponse.getDistrict() != null ? orderResponse.getDistrict() : "",
-            orderResponse.getCity() != null ? orderResponse.getCity() : "");
+      // Format full address
+      String fullAddress =
+          String.format(
+              "%s, %s, %s, %s",
+              orderResponse.getAddress() != null ? orderResponse.getAddress() : "",
+              orderResponse.getWard() != null ? orderResponse.getWard() : "",
+              orderResponse.getDistrict() != null ? orderResponse.getDistrict() : "",
+              orderResponse.getCity() != null ? orderResponse.getCity() : "");
 
-    // Prepare email variables
-    Map<String, Object> variables = new HashMap<>();
-    variables.put("customerName", orderResponse.getFullName() != null ? orderResponse.getFullName() : user.getUsername());
-    variables.put("orderId", orderResponse.getId());
-    variables.put("orderDate", orderResponse.getOrderDate());
-    variables.put("orderStatus", formatOrderStatus(orderResponse.getStatus()));
-    variables.put("voucherCode", orderResponse.getDiscountCode());
-    variables.put("orderItems", orderItems);
-    variables.put("receiverName", orderResponse.getFullName());
-    variables.put("receiverPhone", orderResponse.getPhoneNumber());
-    variables.put("fullAddress", fullAddress);
-    variables.put("shippingMethod", formatShippingMethod(orderResponse.getShippingMethod()));
-    variables.put("note", orderResponse.getNote());
-    variables.put(
-        "totalAmount",
-        orderResponse.getTotalAmount() != null ? orderResponse.getTotalAmount() : BigDecimal.ZERO);
-    variables.put(
-        "shippingCost",
-        orderResponse.getShippingCost() != null ? orderResponse.getShippingCost() : 0L);
-    variables.put(
-        "discountAmount",
-        orderResponse.getDiscountAmount() != null
-            ? orderResponse.getDiscountAmount()
-            : BigDecimal.ZERO);
-    variables.put(
-        "finalAmount",
-        orderResponse.getFinalAmount() != null ? orderResponse.getFinalAmount() : BigDecimal.ZERO);
-    variables.put("paymentMethod", formatPaymentMethod(orderResponse.getPaymentMethod()));
-    variables.put(
-        "trackingUrl",
-        FRONTEND_CLIENT_URL + "/orders");
+      // Prepare email variables
+      Map<String, Object> variables = new HashMap<>();
+      variables.put(
+          "customerName",
+          orderResponse.getFullName() != null ? orderResponse.getFullName() : user.getUsername());
+      variables.put("orderId", orderResponse.getId());
+      variables.put("orderDate", orderResponse.getOrderDate());
+      variables.put("orderStatus", formatOrderStatus(orderResponse.getStatus()));
+      variables.put("voucherCode", orderResponse.getDiscountCode());
+      variables.put("orderItems", orderItems);
+      variables.put("receiverName", orderResponse.getFullName());
+      variables.put("receiverPhone", orderResponse.getPhoneNumber());
+      variables.put("fullAddress", fullAddress);
+      variables.put("shippingMethod", formatShippingMethod(orderResponse.getShippingMethod()));
+      variables.put("note", orderResponse.getNote());
+      variables.put(
+          "totalAmount",
+          orderResponse.getTotalAmount() != null
+              ? orderResponse.getTotalAmount()
+              : BigDecimal.ZERO);
+      variables.put(
+          "shippingCost",
+          orderResponse.getShippingCost() != null ? orderResponse.getShippingCost() : 0L);
+      variables.put(
+          "discountAmount",
+          orderResponse.getDiscountAmount() != null
+              ? orderResponse.getDiscountAmount()
+              : BigDecimal.ZERO);
+      variables.put(
+          "finalAmount",
+          orderResponse.getFinalAmount() != null
+              ? orderResponse.getFinalAmount()
+              : BigDecimal.ZERO);
+      variables.put("paymentMethod", formatPaymentMethod(orderResponse.getPaymentMethod()));
+      variables.put("trackingUrl", FRONTEND_CLIENT_URL + "/orders");
 
-    // Send email
-    sendWithHtmlMailFormat(
-        user.getEmail(), "Xác nhận đơn hàng #" + orderResponse.getId(), "order-confirmation-mail", variables);
+      // Send email
+      sendWithHtmlMailFormat(
+          user.getEmail(),
+          "Xác nhận đơn hàng #" + orderResponse.getId(),
+          "order-confirmation-mail",
+          variables);
 
-    log.info("Order confirmation email sent to: {} for order: {}", user.getEmail(), orderResponse.getId());
+      log.info(
+          "Order confirmation email sent to: {} for order: {}",
+          user.getEmail(),
+          orderResponse.getId());
     } catch (Exception e) {
       log.error("Failed to send order confirmation email for order: {}", orderResponse.getId(), e);
       // Don't rethrow - this is async, we don't want to break the thread

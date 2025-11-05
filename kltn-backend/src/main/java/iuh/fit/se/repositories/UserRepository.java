@@ -2,6 +2,7 @@ package iuh.fit.se.repositories;
 
 import iuh.fit.se.entities.User;
 import iuh.fit.se.enums.UserStatus;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -42,4 +43,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
               + "AND (:isActive IS NULL OR u.isActive = :isActive)")
   Page<User> searchCustomer(
       @Param("fullName") String fullName, @Param("isActive") Boolean isActive, Pageable pageable);
+
+  // Count users with CUSTOMER role
+  @Query("SELECT COUNT(u) FROM User u JOIN u.roles r WHERE r.name = 'CUSTOMER'")
+  Long countCustomers();
+
+  // Count new customers (users with CUSTOMER role) created in date range
+  @Query(
+      "SELECT COUNT(u) FROM User u JOIN u.roles r "
+          + "WHERE r.name = 'CUSTOMER' "
+          + "AND u.createdDate BETWEEN :startDate AND :endDate")
+  Long countNewCustomers(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

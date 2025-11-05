@@ -28,6 +28,7 @@ import ProductList from "./pages/Tables/ProductList.tsx";
 import EditVariant from "./pages/Tables/EditVariant.tsx";
 import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
+import VoucherManagement from "./pages/voucher/VoucherManagement";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
@@ -89,6 +90,10 @@ export default function App() {
             <Route
               path="/calendar"
               element={authUser ? <Calendar /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/vouchers"
+              element={authUser ? <VoucherManagement /> : <Navigate to="/signin" />}
             />
             <Route
               path="/blank"

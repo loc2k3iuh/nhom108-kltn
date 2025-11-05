@@ -20,6 +20,17 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
 
   @Query(
       "SELECT v FROM Voucher v "
+          + "WHERE (:keyword IS NULL OR :keyword = '' "
+          + "OR LOWER(v.code) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+          + "OR LOWER(v.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+          + "AND (:discountType IS NULL OR v.discountType = :discountType)")
+  Page<Voucher> findAllWithKeyword(
+      @Param("keyword") String keyword,
+      @Param("discountType") iuh.fit.se.enums.DiscountType discountType,
+      Pageable pageable);
+
+  @Query(
+      "SELECT v FROM Voucher v "
           + "WHERE v.active = true "
           + "AND (v.startDate IS NULL OR v.startDate <= CURRENT_TIMESTAMP) "
           + "AND (v.endDate IS NULL OR v.endDate >= CURRENT_TIMESTAMP) "

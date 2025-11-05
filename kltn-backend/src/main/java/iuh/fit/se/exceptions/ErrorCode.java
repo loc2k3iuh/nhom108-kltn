@@ -123,7 +123,18 @@ public enum ErrorCode {
       "Invalid discount range! Min discount must be less than max discount!",
       HttpStatus.BAD_REQUEST),
   FILTER_CRITERIA_INVALID(1085, "Invalid filter criteria!", HttpStatus.BAD_REQUEST),
-  PRODUCT_INACTIVE(1086, "Product is inactive!", HttpStatus.BAD_REQUEST);
+  PRODUCT_INACTIVE(1086, "Product is inactive!", HttpStatus.BAD_REQUEST),
+
+  // Voucher related errors
+  VOUCHER_NOT_FOUND(1087, "Voucher not found!", HttpStatus.NOT_FOUND),
+  VOUCHER_ALREADY_EXISTS(1088, "Voucher code already exists!", HttpStatus.BAD_REQUEST),
+  VOUCHER_INVALID_DATE_RANGE(1089, "Invalid voucher date range!", HttpStatus.BAD_REQUEST),
+  VOUCHER_IN_USE(
+      1090, "Voucher is currently in use and cannot be deleted!", HttpStatus.BAD_REQUEST),
+  VOUCHER_INVALID_DISCOUNT_VALUE(
+      1091,
+      "Invalid discount value! Percentage must be 0.01-100, fixed amount must be greater than 0",
+      HttpStatus.BAD_REQUEST);
 
   int code;
   String message;

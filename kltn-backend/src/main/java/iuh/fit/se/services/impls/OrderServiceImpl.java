@@ -17,14 +17,13 @@ import iuh.fit.se.repositories.ProductVariantRepository;
 import iuh.fit.se.repositories.UserRepository;
 import iuh.fit.se.services.interfaces.IEmailService;
 import iuh.fit.se.services.interfaces.IOrderService;
+import iuh.fit.se.services.interfaces.IPriceService;
+import iuh.fit.se.services.interfaces.IVoucherService;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import iuh.fit.se.services.interfaces.IPriceService;
-import iuh.fit.se.services.interfaces.IVoucherService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -47,8 +46,8 @@ public class OrderServiceImpl implements IOrderService {
   UserRepository userRepository;
   ProductVariantRepository productVariantRepository;
   IVoucherService voucherService;
- IPriceService priceService;
- IEmailService emailService;
+  IPriceService priceService;
+  IEmailService emailService;
 
   private OrderResponse toOrderResponse(Order order) {
     if (order == null) return null;
@@ -73,7 +72,8 @@ public class OrderServiceImpl implements IOrderService {
           .district(shipping.getDistrict())
           .ward(shipping.getWard())
           .shippingMethod(shipping.getMethod() != null ? shipping.getMethod().name() : null)
-          .shippingCost(shipping.getShippingCost() != null ? shipping.getShippingCost().longValue() : 0L);
+          .shippingCost(
+              shipping.getShippingCost() != null ? shipping.getShippingCost().longValue() : 0L);
     }
 
     // Map Payment info
@@ -277,8 +277,6 @@ public class OrderServiceImpl implements IOrderService {
     order.setTotalAmount(totalAmount);
     order.setDiscountAmount(BigDecimal.ZERO);
     order.setNote(request.getNote());
-
-
 
     // Calculate final amount with shipping cost
     BigDecimal finalAmount = totalAmount.add(request.getShippingFee());

@@ -23,4 +23,3 @@ public class AsyncConfig {
     return executor;
   }
 }
-

@@ -2,7 +2,6 @@ package iuh.fit.se.dtos.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import iuh.fit.se.dtos.requests.OrderDetailRequest;
-
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.*;
@@ -69,7 +68,6 @@ public class OrderResponse {
 
   @JsonProperty("order_date")
   String orderDate;
-
 
   @JsonProperty("order_details")
   private List<OrderDetailRequest> orderDetails;

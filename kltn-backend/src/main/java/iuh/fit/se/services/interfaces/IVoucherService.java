@@ -1,5 +1,7 @@
 package iuh.fit.se.services.interfaces;
 
+import iuh.fit.se.dtos.requests.CreateVoucherRequest;
+import iuh.fit.se.dtos.requests.UpdateVoucherRequest;
 import iuh.fit.se.dtos.responses.VoucherResponse;
 import iuh.fit.se.entities.Voucher;
 import java.math.BigDecimal;
@@ -25,4 +27,16 @@ public interface IVoucherService {
   Page<VoucherResponse> getAllVouchersForUser(Long userId, String keyword, int page, int size);
 
   List<VoucherResponse> getSuitableVouchersListForOrderAmount(Long userId, BigDecimal orderAmount);
+
+  // CRUD operations
+  VoucherResponse createVoucher(CreateVoucherRequest request);
+
+  VoucherResponse updateVoucher(Long id, UpdateVoucherRequest request);
+
+  void deleteVoucher(Long id);
+
+  VoucherResponse getVoucherById(Long id);
+
+  Page<VoucherResponse> getAllVouchers(
+      String keyword, String discountType, int page, int size, String sortBy, String sortDir);
 }

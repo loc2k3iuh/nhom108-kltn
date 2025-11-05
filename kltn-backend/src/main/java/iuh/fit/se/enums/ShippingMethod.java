@@ -1,8 +1,8 @@
 package iuh.fit.se.enums;
 
 public enum ShippingMethod {
-    STANDARD,
-    GHN,
+  STANDARD,
+  GHN,
   GHTK,
   VIETTEL,
   GRABEXPRESS,
