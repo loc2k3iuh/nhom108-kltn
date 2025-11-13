@@ -323,8 +323,7 @@ public class VoucherServiceImpl implements IVoucherService {
       // Add new user vouchers
       for (Long userId : request.getEligibleUserIds()) {
         boolean exists =
-            existingUserVouchers.stream()
-                .anyMatch(uv -> uv.getUser().getId().equals(userId));
+            existingUserVouchers.stream().anyMatch(uv -> uv.getUser().getId().equals(userId));
 
         if (!exists) {
           User user =

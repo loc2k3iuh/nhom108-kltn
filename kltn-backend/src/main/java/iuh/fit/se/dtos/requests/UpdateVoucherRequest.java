@@ -30,8 +30,7 @@ public class UpdateVoucherRequest {
 
   @DecimalMin(value = "0.01", message = "Discount value must be greater than 0")
   @Schema(
-      description =
-          "Discount value (percentage: 0.01-100, fixed amount: any positive value)",
+      description = "Discount value (percentage: 0.01-100, fixed amount: any positive value)",
       example = "20.0")
   BigDecimal discountValue;
 
@@ -67,4 +66,3 @@ public class UpdateVoucherRequest {
   @Schema(description = "List of category IDs this voucher applies to")
   List<Long> applicableCategoryIds;
 }
-

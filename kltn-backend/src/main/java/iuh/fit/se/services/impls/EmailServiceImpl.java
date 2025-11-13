@@ -108,7 +108,7 @@ public class EmailServiceImpl implements IEmailService {
 
   @Override
   @Async("emailTaskExecutor")
-  public void sentOtp(User user)  {
+  public void sentOtp(User user) {
     try {
       String otp = String.format("%06d", random.nextInt(1_000_000));
       stringRedisTemplate

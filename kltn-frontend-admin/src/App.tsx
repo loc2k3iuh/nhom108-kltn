@@ -19,7 +19,7 @@ import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
-import BasicTables from "./pages/Tables/BasicTables";
+import BasicTables from "./pages/Tables/Customers.tsx";
 import FormElements from "./pages/Forms/FormElements";
 import Products from "./pages/Forms/Products.tsx";
 import ProductVariants from "./pages/Forms/ProductVariants.tsx";
@@ -29,6 +29,8 @@ import EditVariant from "./pages/Tables/EditVariant.tsx";
 import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import VoucherManagement from "./pages/voucher/VoucherManagement";
+import OrderList from "./pages/Orders/OrderList";
+import OrderDetail from "./pages/Orders/OrderDetail";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
@@ -37,6 +39,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletions/Reloading";
 import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
+import Customers from "./pages/Tables/Customers.tsx";
 
 export default function App() {
   const { checkAuth, authUser, isLoading, isInitialized } =
@@ -96,6 +99,14 @@ export default function App() {
               element={authUser ? <VoucherManagement /> : <Navigate to="/signin" />}
             />
             <Route
+              path="/orders/:id"
+              element={authUser ? <OrderDetail /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/orders"
+              element={authUser ? <OrderList /> : <Navigate to="/signin" />}
+            />
+            <Route
               path="/blank"
               element={authUser ? <Blank /> : <Navigate to="/signin" />}
             />
@@ -139,8 +150,8 @@ export default function App() {
                 element={authUser ? <ProductList /> : <Navigate to="/signin" />}
             />
             <Route
-                path="/tables/basic-tables"
-                element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
+                path="/tables/customers"
+                element={authUser ? <Customers /> : <Navigate to="/signin" />}
             />
             <Route
                 path="/tables/edit-variant/:variantId"

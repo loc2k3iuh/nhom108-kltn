@@ -16,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderRequest {
+public class UpdateOrderRequest {
 
   // Order status
   @JsonProperty("order_status")

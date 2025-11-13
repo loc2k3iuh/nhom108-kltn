@@ -343,10 +343,113 @@ public class OrderServiceImpl implements IOrderService {
   }
 
   @Override
+  @Transactional
   public OrderResponse updateOrder(Long id, OrderRequest orderDTO) throws Exception {
-    // Without clear mapping rules, updating orders is not supported
-    throw new AppException(
-        ErrorCode.INVALID_INPUT,
-        "updateOrder is not implemented due to unclear mapping between DTO and entities");
+    if (orderDTO == null) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "Request cannot be null");
+    }
+
+    Order order =
+        orderRepository
+            .findById(id)
+            .orElseThrow(() -> new AppException(ErrorCode.INVALID_INPUT, "Order not found: " + id));
+
+    // Check if order is completed - cannot update completed orders
+    if (order.getOrderStatus() == OrderStatus.COMPLETED || order.getOrderStatus() == OrderStatus.CANCELLED) {
+      throw new AppException(
+          ErrorCode.INVALID_INPUT, "Cannot update order with COMPLETED or CANCELLED status");
+    }
+
+    // Update order status
+    if (orderDTO.getOrderStatus() != null) {
+      order.setOrderStatus(orderDTO.getOrderStatus());
+    }
+
+    // Update note
+    if (orderDTO.getNote() != null) {
+      order.setNote(orderDTO.getNote());
+    }
+
+    // Update shipping information if exists
+    Shipping shipping = order.getShipping();
+    if (shipping != null) {
+      if (orderDTO.getReceiverName() != null) {
+        shipping.setReceiverName(orderDTO.getReceiverName());
+      }
+      if (orderDTO.getReceiverPhone() != null) {
+        shipping.setReceiverPhone(orderDTO.getReceiverPhone());
+      }
+      if (orderDTO.getAddress() != null) {
+        shipping.setAddress(orderDTO.getAddress());
+      }
+      if (orderDTO.getCity() != null) {
+        shipping.setCity(orderDTO.getCity());
+      }
+      if (orderDTO.getDistrict() != null) {
+        shipping.setDistrict(orderDTO.getDistrict());
+      }
+      if (orderDTO.getWard() != null) {
+        shipping.setWard(orderDTO.getWard());
+      }
+      if (orderDTO.getShippingMethod() != null) {
+        shipping.setMethod(orderDTO.getShippingMethod());
+      }
+      if (orderDTO.getShippingStatus() != null) {
+        shipping.setStatus(orderDTO.getShippingStatus());
+        // Update shipping timestamps based on status
+        if (orderDTO.getShippingStatus() == ShippingStatus.SHIPPING
+            && shipping.getShippedAt() == null) {
+          shipping.setShippedAt(java.time.LocalDateTime.now());
+        }
+        if (orderDTO.getShippingStatus() == ShippingStatus.DELIVERED
+            && shipping.getDeliveredAt() == null) {
+          shipping.setDeliveredAt(java.time.LocalDateTime.now());
+        }
+      }
+      if (orderDTO.getTrackingCode() != null) {
+        shipping.setTrackingCode(orderDTO.getTrackingCode());
+      }
+      if (orderDTO.getShippingCost() != null) {
+        BigDecimal oldShippingCost = shipping.getShippingCost();
+        shipping.setShippingCost(orderDTO.getShippingCost());
+        // Recalculate final amount if shipping cost changed
+        if (!oldShippingCost.equals(orderDTO.getShippingCost())) {
+          BigDecimal newFinalAmount =
+              order
+                  .getTotalAmount()
+                  .subtract(
+                      order.getDiscountAmount() != null
+                          ? order.getDiscountAmount()
+                          : BigDecimal.ZERO)
+                  .add(orderDTO.getShippingCost());
+          order.setFinalAmount(newFinalAmount);
+          // Update payment amount
+          if (order.getPayment() != null) {
+            order.getPayment().setAmount(newFinalAmount);
+          }
+        }
+      }
+    }
+
+    // Update payment information if exists
+    Payment payment = order.getPayment();
+    if (payment != null) {
+      if (orderDTO.getPaymentMethod() != null) {
+        payment.setMethod(orderDTO.getPaymentMethod());
+      }
+      if (orderDTO.getTransactionId() != null) {
+        payment.setTransactionId(orderDTO.getTransactionId());
+        // If transaction ID is set, mark as paid
+        if (payment.getPaidAt() == null) {
+          payment.setPaidAt(java.time.LocalDateTime.now());
+        }
+      }
+    }
+
+    // Save the updated order
+    Order savedOrder = orderRepository.save(order);
+
+    log.info("Order {} has been updated successfully", id);
+    return toOrderResponse(savedOrder);
   }
 }

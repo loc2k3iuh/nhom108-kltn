@@ -1,7 +1,6 @@
 package iuh.fit.se.dtos.requests;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -36,8 +35,7 @@ public class CreateVoucherRequest {
   @NotNull(message = "Discount value cannot be null")
   @DecimalMin(value = "0.01", message = "Discount value must be greater than 0")
   @Schema(
-      description =
-          "Discount value (percentage: 0.01-100, fixed amount: any positive value)",
+      description = "Discount value (percentage: 0.01-100, fixed amount: any positive value)",
       example = "20.0")
   BigDecimal discountValue;
 
@@ -66,5 +64,4 @@ public class CreateVoucherRequest {
 
   @Schema(description = "List of user IDs who can use this voucher (empty for all users)")
   List<Long> eligibleUserIds;
-
 }

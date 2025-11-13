@@ -127,7 +127,7 @@ public class OrderController {
   @Operation(
       summary = "Bulk update order status",
       security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('CUSTOMER') or hasRole('STAFF')")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('STAFF')  or hasRole('ADMIN')")
   public APIResponse<List<OrderResponse>> updateOrdersStatus(
       @RequestParam("status") String status, @RequestBody List<Long> orderIds) throws Exception {
     OrderStatus parsed = OrderStatus.valueOf(status.toUpperCase());

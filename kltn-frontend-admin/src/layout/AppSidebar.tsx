@@ -17,7 +17,6 @@ import {
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   name: string;
@@ -29,12 +28,12 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
-    name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    name: "Trang chủ",
+    subItems: [{ name: "Thống kê", path: "/", pro: false }],
   },
   {
     icon: <CalenderIcon />,
-    name: "Calendar",
+    name: "Lịch",
     path: "/calendar",
   },
   {
@@ -43,25 +42,29 @@ const navItems: NavItem[] = [
     path: "/vouchers",
   },
   {
+    icon: <ListIcon />,
+    name: "Đơn hàng",
+    path: "/orders",
+  },
+  {
     icon: <UserCircleIcon />,
-    name: "User Profile",
+    name: "Hồ sơ của tôi",
     path: "/profile",
   },
   {
     name: "Forms",
     icon: <ListIcon />,
     subItems: [
-        { name: "Form Elements", path: "/forms/form-elements", pro: false }, 
-        { name: "Products", path: "/forms/products", pro: false }, 
-        { name: "ProductVariants", path: "/forms/products-variants", pro: false }
+        { name: "Sản phẩm", path: "/forms/products", pro: false }, 
+        { name: "Biến thể sản phẩm", path: "/forms/products-variants", pro: false }
     ],
   },
   {
     name: "Tables",
     icon: <TableIcon />,
     subItems: [
-        { name: "Basic Tables", path: "/tables/basic-tables", pro: false }, 
-        { name: "Category Product List", path: "/tables/category-product-list", pro: false }
+        { name: "Danh sách khách hàng", path: "/tables/customers", pro: false }, 
+        { name: "Danh sách sản phẩm", path: "/tables/category-product-list", pro: false }
     ],
   },
   {
@@ -75,34 +78,9 @@ const navItems: NavItem[] = [
 ];
 
 const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/charts/line-chart", pro: false },
-      { name: "Bar Chart", path: "/charts/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/ui/alerts", pro: false },
-      { name: "Avatar", path: "/ui/avatars", pro: false },
-      { name: "Badge", path: "/ui/badge", pro: false },
-      { name: "Buttons", path: "/ui/buttons", pro: false },
-      { name: "Images", path: "/ui/images", pro: false },
-      { name: "Videos", path: "/ui/videos", pro: false },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
-  },
+ 
+  
+ 
 ];
 
 const AppSidebar: React.FC = () => {
@@ -386,7 +364,7 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+      
       </div>
     </aside>
   );
