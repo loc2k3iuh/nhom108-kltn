@@ -78,9 +78,14 @@ export const getOrdersByUser = async (userId: number, page: number = 0, size: nu
 };
 
 // Filter orders
-export const filterOrders = async (filter: any, page: number = 0, size: number = 10): Promise<any> => {
+export const filterOrders = async (filter: any, page: number = 0, size: number = 10, userId?: number): Promise<any> => {
+  const params: any = { page, size };
+  if (userId) {
+    params.userId = userId;
+  }
+  
   const response = await axiosInstance.post<ApiResponse<any>>('/orders/filter', filter, {
-    params: { page, size }
+    params
   });
   if (response.data.code !== 200) {
     throw new Error(response.data.message || 'Failed to filter orders');

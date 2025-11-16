@@ -3,7 +3,9 @@ package iuh.fit.se.repositories;
 import iuh.fit.se.entities.ProductVariant;
 import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -28,4 +30,8 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
   @Query("SELECT SUM(pv.stockQuantity) FROM ProductVariant pv WHERE pv.product.id = :productId")
   Integer getTotalStockByProductId(@Param("productId") Long productId);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT pv FROM ProductVariant pv WHERE pv.id = :id")
+  Optional<ProductVariant> findByIdWithLock(@Param("id") Long id);
 }

@@ -48,7 +48,7 @@ public class OrderController {
 
   @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Update order", security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
   public APIResponse<OrderResponse> updateOrder(
       @PathVariable Long id, @Valid @RequestBody OrderRequest request) throws Exception {
     log.info("Updating order with ID: {}", id);
@@ -77,7 +77,7 @@ public class OrderController {
   @Operation(
       summary = "Get all orders (paged)",
       security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
   public APIResponse<Page<OrderResponse>> getAllOrders(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
     Page<OrderResponse> response = orderService.getOrders(page, size);
@@ -110,11 +110,26 @@ public class OrderController {
   @Operation(
       summary = "Filter orders (paged)",
       security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
   public APIResponse<Page<OrderResponse>> filterOrders(
       @RequestBody OrderFilterRequest filter,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) Long userId) {
+
+    // If user is CUSTOMER, restrict to their own orders
+    // Admin and Staff can filter all orders
+    if (userId != null) {
+      // Customer filtering their own orders
+      Page<OrderResponse> response = orderService.filterOrdersByUserId(userId, filter, page, size);
+      return APIResponse.<Page<OrderResponse>>builder()
+          .result(response)
+          .message("Filtered orders retrieved successfully")
+          .code(HttpStatus.OK.value())
+          .build();
+    }
+
+    // Admin/Staff filtering all orders
     Page<OrderResponse> response = orderService.filterOrders(filter, page, size);
     return APIResponse.<Page<OrderResponse>>builder()
         .result(response)
@@ -141,7 +156,7 @@ public class OrderController {
 
   @DeleteMapping
   @Operation(summary = "Bulk delete orders", security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
   public APIResponse<Void> deleteOrders(@RequestBody List<Long> orderIds) throws Exception {
     orderService.deleteOrders(orderIds);
     return APIResponse.<Void>builder()
@@ -154,7 +169,7 @@ public class OrderController {
   @Operation(
       summary = "Generate sample orders",
       security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
   public APIResponse<Integer> generateSampleOrders(@RequestParam(defaultValue = "10") int count)
       throws Exception {
     int created = orderService.generateSampleOrders(count);
@@ -169,7 +184,7 @@ public class OrderController {
   @Operation(
       summary = "Generate order PDFs (list of Base64)",
       security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
   public APIResponse<List<byte[]>> generateOrderPdfs(@RequestBody List<Long> orderIds)
       throws Exception {
     List<byte[]> pdfs = orderService.generateOrderPdfs(orderIds);

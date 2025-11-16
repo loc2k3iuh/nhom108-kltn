@@ -1,25 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader, Home, ShoppingBag, Phone } from 'lucide-react';
-import { Toaster } from 'sonner';
-
-const mockCartService = {
-    createOrder: async (orderData: any) => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return { id: Math.floor(100000 + Math.random() * 900000) };
-    },
-    clearCart: async (userId: number) => {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return true;
-    }
-};
+import { Toaster, toast } from 'sonner';
+import { createOrder } from '@/services/orderService';
+import { clearCart } from '@/services/cartService';
 
 const VnpayReturn = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [status, setStatus] = useState('processing');
     const [orderId, setOrderId] = useState<number | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -40,42 +30,53 @@ const VnpayReturn = () => {
         const user = getUserData();
 
         const createOrderAfterPayment = async () => {
-            setIsLoading(true);
             try {
                 const orderDataStr = localStorage.getItem('pendingOrder');
                 if (!orderDataStr) {
+                    toast.error('Không tìm thấy thông tin đơn hàng');
                     setStatus('fail');
                     return;
                 }
 
                 const orderData = JSON.parse(orderDataStr);
-                // Comment: Thay thế API call bằng mock service
-                const orderResponse = await mockCartService.createOrder(orderData);
+                
+                // Check if order is from "Buy Now" (has flag in order data)
+                const isBuyNow = orderData.isBuyNow || false;
+                
+                // Create order through API
+                const orderResponse = await createOrder(orderData);
                 if (!orderResponse) {
+                    toast.error('Không thể tạo đơn hàng');
                     setStatus('fail');
                     return;
                 }
 
-                // Lưu ID đơn hàng để hiển thị
+                // Save order ID for display
                 if (orderResponse && orderResponse.id) {
                     setOrderId(orderResponse.id);
                 }
 
-                // Xóa giỏ hàng
-                await mockCartService.clearCart(user.id);
-                // Xóa order tạm khỏi localStorage
+                // Clear cart only if order is from cart checkout (not buy now)
+                if (!isBuyNow) {
+                    await clearCart(user.id);
+                }
+                
+                // Remove pending order from localStorage
                 localStorage.removeItem('pendingOrder');
+                
+                toast.success('Thanh toán thành công!');
                 setStatus('success');
-            } catch (err) {
+            } catch (err: any) {
+                console.error('Error creating order after payment:', err);
+                toast.error(err.response?.data?.message || 'Có lỗi xảy ra khi tạo đơn hàng');
                 setStatus('fail');
-            } finally {
-                setIsLoading(false);
             }
         };
 
         if (responseCode === '00' && transactionStatus === '00') {
             createOrderAfterPayment();
         } else {
+            toast.error('Thanh toán không thành công');
             setStatus('fail');
         }
     }, [location.search]);
@@ -176,6 +177,7 @@ const VnpayReturn = () => {
 
     return (
         <>
+            <Toaster position="top-right" richColors />
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
                 <div className="w-full max-w-md mb-8">
                     <h1 className="text-center text-3xl font-bold text-gray-800 mb-2">Kết quả thanh toán</h1>

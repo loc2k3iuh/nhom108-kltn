@@ -9,8 +9,10 @@ import {
     TruckIcon,
     CheckCircleIcon,
     XCircleIcon,
+    MagnifyingGlassIcon,
+    FunnelIcon,
 } from '@heroicons/react/24/outline';
-import { getOrdersByUser, cancelOrder } from '@/services/orderService';
+import { cancelOrder, filterOrders } from '@/services/orderService';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 const OrderList: React.FC = () => {
@@ -19,6 +21,11 @@ const OrderList: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
     const { authUser } = useAuthStore();
+    
+    // Search and filter states
+    const [searchId, setSearchId] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc'); // desc = newest first
 
     console.log("Order page", orderPage);
 
@@ -27,15 +34,44 @@ const OrderList: React.FC = () => {
         if (authUser?.id) {
             fetchOrders(currentPage);
         }
-    }, [currentPage, authUser?.id]);
+    }, [currentPage, authUser?.id, selectedStatus, sortOrder]);
 
     const fetchOrders = async (page: number) => {
         if (!authUser?.id) return;
         
         try {
             setIsLoading(true);
-            const data = await getOrdersByUser(authUser.id, page, 10);
+            
+            // Build filter object
+            const filter: any = {};
+            
+            // Add search by ID if provided
+            if (searchId && searchId.trim()) {
+                const id = parseInt(searchId.trim());
+                if (!isNaN(id)) {
+                    filter.id = id;
+                }
+            }
+            
+            // Add status filter if selected (only when a specific status is chosen)
+            if (selectedStatus && selectedStatus !== '') {
+                filter.status = [selectedStatus];
+            }
+            
+            // Always use filter API to ensure consistent behavior
+            const data = await filterOrders(filter, page, 10, authUser.id);
+            
             console.log("Fetched orders data:", data);
+            
+            // Sort orders by date
+            if (data.content && data.content.length > 0) {
+                data.content.sort((a: any, b: any) => {
+                    const dateA = new Date(a.order_date).getTime();
+                    const dateB = new Date(b.order_date).getTime();
+                    return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+                });
+            }
+            
             setOrderPage(data);
         } catch (error: any) {
             console.error('Error fetching orders:', error);
@@ -43,6 +79,18 @@ const OrderList: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSearch = () => {
+        setCurrentPage(0); // Reset to first page
+        fetchOrders(0);
+    };
+
+    const handleClearFilters = () => {
+        setSearchId('');
+        setSelectedStatus('');
+        setSortOrder('desc');
+        setCurrentPage(0);
     };
 
     const handlePageChange = async (newPage: number) => {
@@ -215,13 +263,9 @@ const OrderList: React.FC = () => {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'PENDING':
-                return 'bg-yellow-100 text-yellow-800';     // Nhẹ nhàng, dễ nhìn
-            case 'CONFIRMED':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'PROCESSING':
                 return 'bg-blue-100 text-blue-800';
-            case 'PACKING':
-                return 'bg-purple-100 text-purple-800';
-            case 'DELIVERING':
-                return 'bg-orange-100 text-orange-800';
             case 'COMPLETED':
                 return 'bg-green-100 text-green-800';
             case 'CANCELLED':
@@ -238,11 +282,7 @@ const OrderList: React.FC = () => {
         switch (status) {
             case 'PENDING':
                 return <ClockIcon className={iconClass} />;
-            case 'CONFIRMED':
-                return <CheckBadgeIcon className={iconClass} />;
-            case 'PACKING':
-                return <CubeIcon className={iconClass} />;
-            case 'DELIVERING':
+            case 'PROCESSING':
                 return <TruckIcon className={iconClass} />;
             case 'COMPLETED':
                 return <CheckCircleIcon className={iconClass} />;
@@ -256,13 +296,9 @@ const OrderList: React.FC = () => {
     const getStatusText = (status: string) => {
         switch (status) {
             case 'PENDING':
-                return 'Chờ xác nhận';
-            case 'CONFIRMED':
-                return 'Đã xác nhận';
-            case 'PACKING':
-                return 'Đang đóng gói';
-            case 'DELIVERING':
-                return 'Đang giao hàng';
+                return 'Chờ xử lý';
+            case 'PROCESSING':
+                return 'Đang xử lý';
             case 'COMPLETED':
                 return 'Hoàn thành';
             case 'CANCELLED':
@@ -313,6 +349,98 @@ const OrderList: React.FC = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                 </div>
+            </div>
+
+            {/* Search and Filter Section */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+                <div className="flex flex-col lg:flex-row gap-4">
+                    {/* Search by Order ID */}
+                    <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <MagnifyingGlassIcon className="h-4 w-4 inline mr-1" />
+                            Tìm kiếm theo mã đơn hàng
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Nhập mã đơn hàng..."
+                                value={searchId}
+                                onChange={(e) => setSearchId(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                            />
+                            <button
+                                onClick={handleSearch}
+                                className="px-6 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium flex items-center gap-2"
+                            >
+                                <MagnifyingGlassIcon className="h-5 w-5" />
+                                Tìm
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Filter by Status */}
+                    <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <FunnelIcon className="h-4 w-4 inline mr-1" />
+                            Lọc theo trạng thái
+                        </label>
+                        <select
+                            value={selectedStatus}
+                            onChange={(e) => {
+                                setSelectedStatus(e.target.value);
+                                setCurrentPage(0);
+                            }}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition bg-white"
+                        >
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="PENDING">Chờ xử lý</option>
+                            <option value="PROCESSING">Đang xử lý</option>
+                            <option value="COMPLETED">Hoàn thành</option>
+                            <option value="CANCELLED">Đã hủy</option>
+                        </select>
+                    </div>
+
+                    {/* Sort by Date */}
+                    <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Sắp xếp theo ngày
+                        </label>
+                        <select
+                            value={sortOrder}
+                            onChange={(e) => {
+                                setSortOrder(e.target.value as 'desc' | 'asc');
+                                setCurrentPage(0);
+                            }}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition bg-white"
+                        >
+                            <option value="desc">Mới nhất</option>
+                            <option value="asc">Cũ nhất</option>
+                        </select>
+                    </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                {(searchId || selectedStatus || sortOrder !== 'desc') && (
+                    <div className="mt-4 flex justify-end">
+                        <button
+                            onClick={handleClearFilters}
+                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium flex items-center gap-2 transition"
+                        >
+                            <XCircleIcon className="h-5 w-5" />
+                            Xóa bộ lọc
+                        </button>
+                    </div>
+                )}
+
+                {/* Results Count */}
+                {orderPage.totalElements > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                        <p className="text-sm text-gray-600">
+                            Tìm thấy <span className="font-semibold text-gray-800">{orderPage.totalElements}</span> đơn hàng
+                        </p>
+                    </div>
+                )}
             </div>
 
             {orderPage.content.length === 0 ? (
@@ -486,8 +614,8 @@ const OrderList: React.FC = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-gray-500">Trạng thái thanh toán</p>
-                                        <p className={`font-medium ${order.payment_status === 'PAID' ? 'text-green-600' : 'text-orange-600'}`}>
-                                            {order.payment_status === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                                        <p className={`font-medium ${order.payment_method === 'VNPAY' ? 'text-green-600' : 'text-orange-600'}`}>
+                                            {order.payment_method === 'VNPAY' ? 'Đã thanh toán' : 'Chưa thanh toán'}
                                         </p>
                                     </div>
                                 </div>

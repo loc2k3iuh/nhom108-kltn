@@ -32,8 +32,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -180,6 +182,36 @@ public class OrderServiceImpl implements IOrderService {
   }
 
   @Override
+  public Page<OrderResponse> filterOrdersByUserId(Long userId, OrderFilterRequest filter, int page, int size) {
+    // Sort by createdAt descending (newest first) by default
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+    Specification<Order> spec =
+        (root, query, cb) -> {
+          List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+          // Always filter by userId first
+          predicates.add(cb.equal(root.get("user").get("id"), userId));
+
+          if (filter != null) {
+            if (filter.getId() != null) {
+              predicates.add(cb.equal(root.get("id"), filter.getId()));
+            }
+            if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
+              predicates.add(root.get("orderStatus").in(filter.getStatus()));
+            }
+          }
+
+          return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+    Page<Order> orders = orderRepository.findAll(spec, pageable);
+    List<OrderResponse> content =
+        orders.getContent().stream().map(this::toOrderResponse).collect(Collectors.toList());
+    return new PageImpl<>(content, pageable, orders.getTotalElements());
+  }
+
+  @Override
   public int generateSampleOrders(int count) throws Exception {
     // Not supported without clear business rules
     return 0;
@@ -212,7 +244,7 @@ public class OrderServiceImpl implements IOrderService {
   }
 
   @Override
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public OrderResponse createOrder(CreateOrderRequest request) throws Exception {
     if (request == null) {
       throw new AppException(ErrorCode.INVALID_INPUT, "Request cannot be null");
@@ -243,9 +275,11 @@ public class OrderServiceImpl implements IOrderService {
       if (item.getQuantity() == null || item.getQuantity() <= 0) {
         throw new AppException(ErrorCode.INVALID_QUANTITY);
       }
+
+      // Use pessimistic lock to prevent concurrent updates and deadlocks
       ProductVariant variant =
           productVariantRepository
-              .findById(item.getProductVariantId())
+              .findByIdWithLock(item.getProductVariantId())
               .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
 
       if (variant.getStockQuantity() == null || variant.getStockQuantity() < item.getQuantity()) {

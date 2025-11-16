@@ -11,6 +11,7 @@ import {
 } from '@/services/addressService';
 import { createOrder, CreateOrderItem } from '@/services/orderService';
 import { clearCart } from '@/services/cartService';
+import { createVnPayPayment } from '@/services/vnpayService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getSuitableVouchersForOrder, VoucherResponse } from '@/services/voucherService';
 
@@ -53,6 +54,9 @@ const Payment: React.FC = () => {
 
     // Phương thức thanh toán
     const [paymentMethod, setPaymentMethod] = useState('COD'); // Mặc định là thanh toán khi nhận hàng
+    
+    // Track if order is from "Buy Now" or "Cart Checkout"
+    const [isBuyNow, setIsBuyNow] = useState(false);
 
     // Danh sách sản phẩm (ví dụ)
     const [orderItems, setOrderItems] = useState<any>([]);
@@ -173,11 +177,13 @@ const Payment: React.FC = () => {
         if (buyNowItems && buyNowItems.length > 0) {
             // Buy now flow: use data from navigation state
             items = buyNowItems;
+            setIsBuyNow(true);
         } else {
             // Cart checkout flow: use data from localStorage
             const itemsData = localStorage.getItem('itemsToCheckout');
             if (itemsData) {
                 items = JSON.parse(itemsData);
+                setIsBuyNow(false);
             }
         }
         
@@ -312,7 +318,7 @@ const Payment: React.FC = () => {
         setIsLoading(true);
         try {
             // Prepare order items from cart
-            debugger
+        
             const items: CreateOrderItem[] = orderItems.map((item: any) => ({
                 product_variant_id: item.productVariant.id,
                 quantity: item.quantity
@@ -333,24 +339,42 @@ const Payment: React.FC = () => {
                 discount_code: selectedVoucher?.code || undefined,
                 items: items,
                 shipping_cost: shippingCost,
+                isBuyNow: isBuyNow, // Add flag to track if order is from Buy Now
             };
 
             console.log('Order Data:', orderData);
 
-            // For VNPay payment - handle later when VNPay integration is ready
-            if (paymentMethod === 'VN_PAY') {
-                // Store order data for later processing
-                localStorage.setItem('pendingOrder', JSON.stringify(orderData));
-                toast.info('Tính năng thanh toán VNPay đang được phát triển');
-                return;
+            // For VNPay payment
+            if (paymentMethod === 'VNPAY') {
+                try {
+                    // Store order data for processing after payment
+                    localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+                    
+                    // Calculate final amount (total + shipping - discount)
+                    const finalAmount = totalPrice + shippingCost - voucherDiscount;
+                    
+                    // Create VNPay payment URL
+                    const paymentUrl = await createVnPayPayment(finalAmount);
+                    
+                    // Redirect to VNPay payment gateway
+                    window.location.href = paymentUrl;
+                    return;
+                } catch (error: any) {
+                    console.error('VNPay payment error:', error);
+                    toast.error(error.message || 'Không thể tạo link thanh toán VNPay');
+                    setIsLoading(false);
+                    return;
+                }
             }
 
             // For Cash on Delivery - create order directly
             if (paymentMethod === 'COD') {
                 const orderResponse = await createOrder(orderData);
 
-                // Clear cart after successful order
-                await clearCart(authUser.id);
+                // Clear cart after successful order (only for cart checkout, not buy now)
+                if (!isBuyNow) {
+                    await clearCart(authUser.id);
+                }
 
                 // Navigate to success page
                 navigate('/order-success', {
@@ -765,8 +789,8 @@ const Payment: React.FC = () => {
                                                 type="radio"
                                                 name="paymentMethod"
                                                 className="form-radio h-4 w-4 text-red-500 focus:ring-red-500 cursor-pointer"
-                                                value="VN_PAY"
-                                                checked={paymentMethod === 'VN_PAY'}
+                                                value="VNPAY"
+                                                checked={paymentMethod === 'VNPAY'}
                                                 onChange={(e) => setPaymentMethod(e.target.value)}
                                             />
                                             <div className="ml-3">

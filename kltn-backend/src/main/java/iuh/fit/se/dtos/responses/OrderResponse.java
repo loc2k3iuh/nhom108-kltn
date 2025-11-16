@@ -48,6 +48,9 @@ public class OrderResponse {
   @JsonProperty("payment_method")
   String paymentMethod;
 
+  @JsonProperty("payment_status")
+  String paymentStatus;
+
   @JsonProperty("discount_code")
   String discountCode;
 
