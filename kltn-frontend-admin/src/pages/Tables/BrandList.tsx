@@ -4,7 +4,6 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { toast } from 'sonner';
 import { Brand } from '@/types/brand';
 import { getBrandsPaginated, createBrand, updateBrand, deleteBrand } from '@/services/brandService';
-import {getSizesPaginated} from "@/services/sizeService.ts";
 
 const getErrorMessage = (error: unknown) => {
     if (!error) return 'Unknown error';

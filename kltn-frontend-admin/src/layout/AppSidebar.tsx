@@ -17,6 +17,8 @@ import {
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
+import {Navigate, Route} from "react-router-dom";
+import CategoryList from "@/pages/Tables/CategoryList.tsx";
 
 type NavItem = {
   name: string;
@@ -54,8 +56,10 @@ const navItems: NavItem[] = [
     name: "Tables",
     icon: <TableIcon />,
     subItems: [
+
         { name: "Basic Tables", path: "/tables/basic-tables", pro: false }, 
         { name: "Category Product List", path: "/tables/category-product-list", pro: false },
+        { name: "Category List", path: "/tables/category-list", pro: false },
         { name: "Brands", path: "/tables/brand-list", pro: false },
         { name: "Sizes", path: "/tables/size-list", pro: false },
         { name: "Colors", path: "/tables/color-list", pro: false },

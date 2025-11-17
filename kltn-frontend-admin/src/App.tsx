@@ -30,6 +30,7 @@ import EditVariant from "./pages/Tables/EditVariant";
 import BrandList from "./pages/Tables/BrandList"; // added brand list route
 import SizeList from "./pages/Tables/SizeList"; // added size list route
 import ColorList from "./pages/Tables/ColorList"; // added color list route
+import CategoryList from "./pages/Tables/CategoryList"; // added category list route
 
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
@@ -120,6 +121,10 @@ export default function App() {
             <Route
                 path="/tables/brand-list"
                 element={authUser ? <BrandList /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/tables/category-list"
+                element={authUser ? <CategoryList /> : <Navigate to="/signin" />}
             />
             <Route
                 path="/tables/size-list"
