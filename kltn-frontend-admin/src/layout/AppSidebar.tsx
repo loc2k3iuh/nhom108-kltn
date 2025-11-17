@@ -55,7 +55,10 @@ const navItems: NavItem[] = [
     icon: <TableIcon />,
     subItems: [
         { name: "Basic Tables", path: "/tables/basic-tables", pro: false }, 
-        { name: "Category Product List", path: "/tables/category-product-list", pro: false }
+        { name: "Category Product List", path: "/tables/category-product-list", pro: false },
+        { name: "Brands", path: "/tables/brand-list", pro: false },
+        { name: "Sizes", path: "/tables/size-list", pro: false },
+        { name: "Colors", path: "/tables/color-list", pro: false },
     ],
   },
   {

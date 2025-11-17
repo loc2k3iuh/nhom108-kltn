@@ -3,7 +3,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { toast, Toaster } from "sonner";
+import { Toaster } from "sonner";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import OtpVerification from "./pages/AuthPages/OtpVerification";
@@ -22,11 +22,14 @@ import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
-import Products from "./pages/Forms/Products.tsx";
-import ProductVariants from "./pages/Forms/ProductVariants.tsx";
-import CategoryProductList from "./pages/Tables/CategoryProductList.tsx";
-import ProductList from "./pages/Tables/ProductList.tsx";
-import EditVariant from "./pages/Tables/EditVariant.tsx";
+import Products from "./pages/Forms/Products";
+import ProductVariants from "./pages/Forms/ProductVariants";
+import CategoryProductList from "./pages/Tables/CategoryProductList";
+import ProductList from "./pages/Tables/ProductList";
+import EditVariant from "./pages/Tables/EditVariant";
+import BrandList from "./pages/Tables/BrandList"; // added brand list route
+import SizeList from "./pages/Tables/SizeList"; // added size list route
+import ColorList from "./pages/Tables/ColorList"; // added color list route
 
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
@@ -113,6 +116,18 @@ export default function App() {
             <Route
                 path="/tables/product-list/:id"
                 element={authUser ? <ProductList /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/tables/brand-list"
+                element={authUser ? <BrandList /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/tables/size-list"
+                element={authUser ? <SizeList /> : <Navigate to="/signin" />}
+            />
+            <Route
+                path="/tables/color-list"
+                element={authUser ? <ColorList /> : <Navigate to="/signin" />}
             />
             <Route
                 path="/tables/basic-tables"
