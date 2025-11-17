@@ -139,7 +139,7 @@ const Footer: React.FC = () => {
               <li><Link to="/user/profile" className="text-gray-600 hover:text-red-600 transition duration-200">Tài khoản của tôi</Link></li>
               <li><Link to="/user/orders" className="text-gray-600 hover:text-red-600 transition duration-200">Đơn hàng</Link></li>
               <li><Link to="/favorites" className="text-gray-600 hover:text-red-600 transition duration-200">Danh sách yêu thích</Link></li>
-              <li><Link to="/track-order" className="text-gray-600 hover:text-red-600 transition duration-200">Theo dõi đơn hàng</Link></li>
+              <li><Link to="/reviews" className="text-gray-600 hover:text-red-600 transition duration-200">Danh sách đánh giá</Link></li>
               <li><Link to="/help" className="text-gray-600 hover:text-red-600 transition duration-200">Trợ giúp</Link></li>
             </ul>
           </div>

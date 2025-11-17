@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Heart, Loader2, Trash2, ShoppingCart, AlertTriangle } from 'lucide-react';
+import { Heart, Loader2, Trash2, ShoppingCart, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -84,7 +84,9 @@ const FavoritePage: React.FC = () => {
     };
 
     const handlePageChange = (newPage: number) => {
-        setPage(newPage);
+        if (newPage >= 0 && newPage < totalPages) {
+            setPage(newPage);
+        }
     };
 
     if (!authUser) {
@@ -106,6 +108,83 @@ const FavoritePage: React.FC = () => {
             </div>
         );
     }
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        const maxPagesToShow = 5;
+
+        if (totalPages <= maxPagesToShow) {
+            for (let i = 0; i < totalPages; i++) {
+                pageNumbers.push(i);
+            }
+        } else {
+            let startPage = Math.max(0, page - 2);
+            let endPage = Math.min(totalPages - 1, page + 2);
+
+            if (page < 2) {
+                endPage = maxPagesToShow - 1;
+            }
+            if (page > totalPages - 3) {
+                startPage = totalPages - maxPagesToShow;
+            }
+
+            if (startPage > 0) {
+                pageNumbers.push(0);
+                if (startPage > 1) {
+                    pageNumbers.push(-1); // Ellipsis
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+            }
+
+            if (endPage < totalPages - 1) {
+                if (endPage < totalPages - 2) {
+                    pageNumbers.push(-1); // Ellipsis
+                }
+                pageNumbers.push(totalPages - 1);
+            }
+        }
+
+        return (
+            <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 0}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                    <ChevronLeft size={18} />
+                </button>
+                {pageNumbers.map((p, index) =>
+                    p === -1 ? (
+                        <span key={`ellipsis-${index}`} className="px-2">...</span>
+                    ) : (
+                        <button
+                            key={p}
+                            onClick={() => handlePageChange(p)}
+                            className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
+                                page === p
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
+                        >
+                            {p + 1}
+                        </button>
+                    )
+                )}
+                <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages - 1}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                    <ChevronRight size={18} />
+                </button>
+            </div>
+        );
+    };
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -189,19 +268,7 @@ const FavoritePage: React.FC = () => {
                             </div>
                         ))}
                     </div>
-                    {totalPages > 1 && (
-                        <div className="flex justify-center mt-8">
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => handlePageChange(i)}
-                                    className={`mx-1 px-3 py-1 rounded ${page === i ? 'bg-red-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    {renderPagination()}
                 </>
             )}
         </div>

@@ -213,7 +213,7 @@ export default function App() {
           <Route path="/payment/success" element={<OrderSuccess />} />
 
           {/* Review Pages */}
-          <Route path="/user/reviews" element={authUser ? <UserReviews /> : <Navigate to="/signin" />} />
+          <Route path="/reviews" element={authUser ? <UserReviews /> : <Navigate to="/signin" />} />
 
           {/* Information Pages */}
           <Route path="/about" element={<AboutPage />} />

@@ -18,6 +18,7 @@ import {
     getAverageRating,
     getTotalReviews,
     safeUpdateReview,
+    ReviewResponse,
 } from "@/services/reviewService";
 import {
     getUserFavorites,
@@ -49,8 +50,8 @@ interface Review {
     id: number;
     comment: string;
     rating: number;
-    createdAt: string | number[];
-    updatedAt: string;
+    createdDate: string;
+    updatedDate: string;
     user: {
         id: number;
         username: string;
@@ -236,21 +237,20 @@ const ProductPage = () => {
         setIsLoadingReviews(true);
         try {
             const res = await getReviewsByProduct(productId, page, size);
-            // result is paginated object with content
-            const content = res?.content ?? res;
-            setReviews(Array.isArray(content) ? content.map((r: ReviewResponse) => ({
+            const content = res?.content ?? [];
+            setReviews(content.map((r: ReviewResponse) => ({
                 id: r.id,
                 rating: r.rating,
                 comment: r.comment,
-                createdAt: r.createdAt ?? new Date().toISOString(),
-                updatedAt: r.updatedAt ?? new Date().toISOString(),
+                createdDate: r.createdDate,
+                updatedDate: r.updatedDate?.toString() ?? new Date().toISOString(),
                 user: {
                     id: r.user?.id,
                     username: r.user?.username,
                     full_name: r.user?.full_name ?? r.user?.username,
                     avatar_url: r.user?.avatar_url,
                 }
-            })) : []);
+            })));
         } catch (error) {
             console.error('Error fetching reviews:', error);
             toast.error('Không thể tải đánh giá');
@@ -398,8 +398,8 @@ const ProductPage = () => {
                 id: created.id,
                 comment: created.comment,
                 rating: created.rating,
-                createdAt: created?.createdAt ?? new Date().toISOString(),
-                updatedAt: created?.updatedAt ?? new Date().toISOString(),
+                createdDate: created.createdDate,
+                updatedDate: created.updatedDate?.toString() ?? new Date().toISOString(),
                 user: {
                     id: created.user?.id,
                     username: created.user?.username,
@@ -452,13 +452,13 @@ const ProductPage = () => {
                   userId: authUser?.id,
                   rating: existing.rating,
                   comment: newContent,
-                  updatedAt: new Date().toISOString(),
+                    updatedDate: new Date().toISOString(),
                 };
                 // Gọi safeUpdateReview để kiểm tra nghiệp vụ trước khi cập nhật
                 const updated = await safeUpdateReview(reviewId, payload as any);
                 setReviews(prev => prev.map(review =>
                     review.id === reviewId
-                        ? { ...review, comment: updated.comment, rating: updated.rating, updatedAt: updated.updatedAt ?? review.updatedAt }
+                        ? { ...review, comment: updated.comment, rating: updated.rating, updatedDate: updated.updatedDate ?? review.updatedDate }
                         : review
                 ));
                 toast.success('Đánh giá đã được cập nhật!');
@@ -501,21 +501,9 @@ const ProductPage = () => {
          }
      };
 
-    const formatDate = (dateInput: string | number[]): string => {
-        let date: Date;
-
-        if (Array.isArray(dateInput)) {
-            // Handle array format [year, month, day, hour, minute, second]
-            const [year, month, day, hour = 0, minute = 0, second = 0] = dateInput;
-            // Note: JavaScript months are 0-indexed (0 = January, 11 = December)
-            // But it looks like the input array has 1-indexed months, so we subtract 1
-            date = new Date(year, month - 1, day, hour, minute, second);
-        } else {
-            // Handle string format
-            date = new Date(dateInput);
-        }
-
-        // Return formatted date
+    const formatDate = (dateInput: string | undefined): string => {
+        if (!dateInput) return 'Không rõ';
+        const date = new Date(dateInput.replace(' ', 'T')); // Handle space separator
         return date.toLocaleDateString('vi-VN', {
             day: '2-digit',
             month: '2-digit',
@@ -1757,9 +1745,15 @@ const ProductPage = () => {
                                                     className="object-cover w-10 h-10 rounded-full"
                                                 />
                                                 <div className="ml-3">
-                                                    <p className="text-sm font-semibold">{review.user.full_name}</p>
-                                                    <p className="text-xs text-gray-500">{formatDate(review.createdAt)}</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        Đã đánh giá vào: {formatDate(review.createdDate)}
+                                                        {review.createdDate !== review.updatedDate && (
+                                                            <span className="italic"> (đã chỉnh sửa vào: {formatDate(review.updatedDate)})</span>
+                                                        )}
+                                                    </p>
                                                 </div>
+
+
                                             </div>
 
                                             {authUser && authUser.username === review.user.username && (

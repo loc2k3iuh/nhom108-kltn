@@ -22,7 +22,8 @@ export interface ReviewResponse {
   product: Product;
   user: UserResponse;
   createdAt?: string | number[];
-  updatedAt?: string | number[];
+  createdDate: string;
+  updatedDate: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -63,8 +64,8 @@ export const getReviewsByProduct = async (productId: number, page = 0, size = 10
   return res.data.result;
 };
 
-export const getReviewsByUser = async (userId: number, page = 0, size = 10): Promise<PaginatedResponse<ReviewResponse>> => {
-  const res = await axiosInstance.get<ApiResponse<PaginatedResponse<ReviewResponse>>>(`/reviews/user/${userId}?page=${page}&size=${size}`);
+export const getReviewsByUser = async (userId: number, page = 0, size = 10, sortBy = "updatedDate", sortDir = "desc"): Promise<PaginatedResponse<ReviewResponse>> => {
+  const res = await axiosInstance.get<ApiResponse<PaginatedResponse<ReviewResponse>>>(`/reviews/user/${userId}?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`);
   if (res.data.code !== 200) throw new Error(res.data.message || "Failed to fetch user reviews");
   return res.data.result;
 };
