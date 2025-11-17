@@ -20,9 +20,7 @@ import "./custom.css";
 
 import { getFlashSaleProducts, getNewestProducts } from "@/services/productService";
 import { mapProductToViewModel, ProductViewModel } from "@/mappers/productMapper";
-
-console.log("Procuct: ",getFlashSaleProducts);
-console.log("Procuct: ",getNewestProducts);
+import { staticVouchers } from "@/data/vouchers";
 
 const Home: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -501,9 +499,9 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                   <path fill="none" d="M0,0H16V16H0Z" />
                   <path
                     stroke="#9E9E9E"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
                     d="M6,9l3.945,3.945L13.891,9"
                     transform="translate(-1.945 -2.973)"
                   />
@@ -528,7 +526,7 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
-                {randomVouchers.map((voucher) => {
+                {staticVouchers.slice(0, 4).map((voucher) => {
                   const isExpired = isVoucherExpired(voucher.end_date);
                   
                   return (
@@ -581,12 +579,12 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                 <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-200 flex flex-col items-center justify-center p-4">
                   <div className="text-5xl text-red-500 mb-2">_</div>
                   <p className="text-center text-gray-700 font-medium">Xem thêm nhiều mã giảm giá khác</p>
-                  <a 
-                    href="/voucher"
+                  <Link 
+                    to="/voucher"
                     className="mt-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md text-sm transition-colors duration-200"
                   >
                     Xem tất cả
-                  </a>
+                  </Link>
                 </div>
               </div>
             )}
@@ -632,12 +630,12 @@ const itemsCategories = [
         name: "Phụ kiện",
     },
     {
-        href: "/new-product",
+        href: "/products?sort=createdAt,DESC",
         imgSrc: newProduct,
         name: "Sản Phẩm Mới",
     },
     {
-        href: "/category/2",
+        href: "/products?sort=orderCount,DESC",
         imgSrc: trending,
         name: "Xu hướng",
     },
@@ -647,55 +645,11 @@ const itemsCategories = [
         name: "Mã Giảm Giá",
     },
     {
-        href: "/category/24",
+        href: "/products?hasDiscount=true&sort=currentDiscountPercent,DESC",
         imgSrc: flashSale,
         name: "Flash Sale",
     },
 
 ];
-
-const randomVouchers = [
-    {
-        id: '1',
-        code: 'DAVINCI20',
-        discount_name: 'Giảm 20% cho đơn hàng đầu tiên',
-        discount_percentage: 20,
-        end_date: '2024-12-31',
-        min_order_value: 200000
-    },
-    {
-        id: '2',
-        code: 'FASHION50K',
-        discount_name: 'Giảm 50K cho thời trang',
-        discount_amount: 50000,
-        end_date: '2024-11-30',
-        min_order_value: 300000
-    },
-    {
-        id: '3',
-        code: 'SPORT15',
-        discount_name: 'Giảm 15% phụ kiện thể thao',
-        discount_percentage: 15,
-        end_date: '2024-10-25',
-        min_order_value: 150000
-    },
-    {
-        id: '4',
-        code: 'SHOES30K',
-        discount_name: 'Giảm 30K giày thể thao',
-        discount_amount: 30000,
-        end_date: '2024-12-15',
-        min_order_value: 500000
-    },
-    {
-        id: '5',
-        code: 'GYM25',
-        discount_name: 'Giảm 25% đồ tập gym',
-        discount_percentage: 25,
-        end_date: '2024-11-20',
-        min_order_value: 400000
-    }
-];
-
 
 export default Home;

@@ -76,6 +76,14 @@ const ProductListPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const sortFromUrl = params.get('sort');
+        if (sortFromUrl && sortOptions.some(option => option.value === sortFromUrl)) {
+            setSortOption(sortFromUrl);
+        }
+    }, [location.search]);
+
+    useEffect(() => {
         const fetchProducts = async () => {
             setIsLoading(true);
             try {

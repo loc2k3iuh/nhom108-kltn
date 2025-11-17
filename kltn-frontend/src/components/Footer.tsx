@@ -116,7 +116,7 @@ const Footer: React.FC = () => {
               <li><Link to="/category/2" className="text-gray-600 hover:text-red-600 transition duration-200">Thời trang nữ</Link></li>
               <li><Link to="/category/7" className="text-gray-600 hover:text-red-600 transition duration-200">Đồ thể thao</Link></li>
               <li><Link to="/category/4" className="text-gray-600 hover:text-red-600 transition duration-200">Giày dép</Link></li>
-              <li><Link to="/flash-sale" className="text-gray-600 hover:text-red-600 transition duration-200">Flash sale</Link></li>
+              <li><Link to="/products?hasDiscount=true&sort=currentDiscountPercent,DESC" className="text-gray-600 hover:text-red-600 transition duration-200">Flash sale</Link></li>
             </ul>
           </div>
 
@@ -138,7 +138,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><Link to="/user/profile" className="text-gray-600 hover:text-red-600 transition duration-200">Tài khoản của tôi</Link></li>
               <li><Link to="/user/orders" className="text-gray-600 hover:text-red-600 transition duration-200">Đơn hàng</Link></li>
-              <li><Link to="/user/wishlist" className="text-gray-600 hover:text-red-600 transition duration-200">Danh sách yêu thích</Link></li>
+              <li><Link to="/favorites" className="text-gray-600 hover:text-red-600 transition duration-200">Danh sách yêu thích</Link></li>
               <li><Link to="/track-order" className="text-gray-600 hover:text-red-600 transition duration-200">Theo dõi đơn hàng</Link></li>
               <li><Link to="/help" className="text-gray-600 hover:text-red-600 transition duration-200">Trợ giúp</Link></li>
             </ul>

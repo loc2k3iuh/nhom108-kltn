@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Clipboard, AlertCircle, ChevronLeft, ChevronRight, Search, Clock, Tag, CheckCircle, ShoppingBag, Copy } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Clipboard, AlertCircle, ChevronLeft, ChevronRight, Search, Clock, Tag, ShoppingBag, Copy } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Interface for Voucher
-interface Voucher {
-  id: number;
-  code: string;
-  discount_name: string;
-  discount_percentage?: number;
-  discount_amount?: number;
-  min_order_value: number;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  usage_limit?: number;
-  used_count?: number;
-}
+import { staticVouchers, Voucher } from '@/data/vouchers';
 
 // Static user data
 const staticUserData = {
@@ -26,130 +12,6 @@ const staticUserData = {
   fullName: "Người dùng mẫu",
   phone: "0123456789"
 };
-
-// Static voucher data
-const staticVouchers: Voucher[] = [
-  {
-    id: 1,
-    code: "VUVISA10",
-    discount_name: "Giảm giá 10% cho đơn hàng đầu tiên",
-    discount_percentage: 10,
-    min_order_value: 100000,
-    start_date: "2024-01-01T00:00:00",
-    end_date: "2024-12-31T23:59:59",
-    is_active: true,
-    usage_limit: 100,
-    used_count: 25
-  },
-  {
-    id: 2,
-    code: "FREESHIP50K",
-    discount_name: "Miễn phí vận chuyển",
-    discount_amount: 50000,
-    min_order_value: 200000,
-    start_date: "2024-02-01T00:00:00",
-    end_date: "2024-11-30T23:59:59",
-    is_active: true,
-    usage_limit: 200,
-    used_count: 89
-  },
-  {
-    id: 3,
-    code: "SACH20",
-    discount_name: "Giảm 20% cho sách học thuật",
-    discount_percentage: 20,
-    min_order_value: 150000,
-    start_date: "2024-03-01T00:00:00",
-    end_date: "2024-10-31T23:59:59",
-    is_active: true,
-    usage_limit: 50,
-    used_count: 30
-  },
-  {
-    id: 4,
-    code: "VANPHONG15",
-    discount_name: "Giảm 15% văn phòng phẩm",
-    discount_percentage: 15,
-    min_order_value: 80000,
-    start_date: "2024-01-15T00:00:00",
-    end_date: "2024-12-15T23:59:59",
-    is_active: true,
-    usage_limit: 150,
-    used_count: 67
-  },
-  {
-    id: 5,
-    code: "MEGA100K",
-    discount_name: "Giảm 100K cho đơn từ 500K",
-    discount_amount: 100000,
-    min_order_value: 500000,
-    start_date: "2024-04-01T00:00:00",
-    end_date: "2024-12-25T23:59:59",
-    is_active: true,
-    usage_limit: 30,
-    used_count: 15
-  },
-  {
-    id: 6,
-    code: "STUDENT25",
-    discount_name: "Ưu đãi sinh viên 25%",
-    discount_percentage: 25,
-    min_order_value: 120000,
-    start_date: "2024-02-15T00:00:00",
-    end_date: "2024-08-31T23:59:59",
-    is_active: false,
-    usage_limit: 100,
-    used_count: 85
-  },
-  {
-    id: 7,
-    code: "SUMMER30",
-    discount_name: "Khuyến mãi hè 30%",
-    discount_percentage: 30,
-    min_order_value: 300000,
-    start_date: "2024-06-01T00:00:00",
-    end_date: "2024-08-31T23:59:59",
-    is_active: false,
-    usage_limit: 75,
-    used_count: 45
-  },
-  {
-    id: 8,
-    code: "WELCOME5K",
-    discount_name: "Chào mừng thành viên mới",
-    discount_amount: 5000,
-    min_order_value: 50000,
-    start_date: "2024-01-01T00:00:00",
-    end_date: "2024-12-31T23:59:59",
-    is_active: true,
-    usage_limit: 500,
-    used_count: 234
-  },
-  {
-    id: 9,
-    code: "BLACKFRIDAY",
-    discount_name: "Black Friday Sale 40%",
-    discount_percentage: 40,
-    min_order_value: 200000,
-    start_date: "2024-11-29T00:00:00",
-    end_date: "2024-12-02T23:59:59",
-    is_active: true,
-    usage_limit: 200,
-    used_count: 0
-  },
-  {
-    id: 10,
-    code: "NEWYEAR2024",
-    discount_name: "Chúc mừng năm mới 2024",
-    discount_percentage: 15,
-    min_order_value: 100000,
-    start_date: "2024-01-01T00:00:00",
-    end_date: "2024-01-15T23:59:59",
-    is_active: false,
-    usage_limit: 300,
-    used_count: 298
-  }
-];
 
 const VoucherPage = () => {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
@@ -339,9 +201,9 @@ const VoucherPage = () => {
       <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-6 mb-8 text-white relative overflow-hidden shadow-lg">
         <div className="absolute inset-0 bg-black opacity-10 z-0"></div>
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-3">Mã Giảm Giá VUVISA</h1>
+          <h1 className="text-3xl font-bold mb-3">Mã Giảm Giá DAVINCI</h1>
           <p className="text-lg opacity-90 max-w-2xl">
-            Khám phá các mã giảm giá độc quyền cho sách và văn phòng phẩm. Tiết kiệm hơn với VUVISA!
+            Khám phá các mã giảm giá độc quyền cho khách hàng. Tiết kiệm hơn với DAVINCI!
           </p>
         </div>
         <div className="absolute right-6 bottom-6 opacity-20 z-0">

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Truck, RefreshCcw, Gift, Plus, Minus, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import Swal from 'sweetalert2';
 import { Trash2, Edit, Loader, Heart } from 'lucide-react';
 
-import { getProductById } from "@/services/productService";
+import { getProductById, getProductsByCategory } from "@/services/productService";
 import { addToCart } from "@/services/cartService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { AddToCartPayload } from "@/types/cart";
@@ -27,6 +27,7 @@ import {
     checkFavorite,
     getFavoriteCount,
 } from "@/services/favoriteService";
+import { mapProductToViewModel, ProductViewModel } from "@/mappers/productMapper";
 
 import { formatCurrency } from "@/utils/formatters";
 
@@ -42,16 +43,6 @@ interface Category {
     name: string;
     description: string;
     category?: Category; // parent category
-}
-
-interface RelatedProduct {
-    id: number;
-    name: string;
-    imageUrl: string;
-    basePrice: number;
-    stockQuantity: number;
-    category: Category;
-    brand: Brand;
 }
 
 interface Review {
@@ -72,100 +63,6 @@ interface DetailRowProps {
     label: string;
     value: React.ReactNode;
 }
-
-// Dữ liệu tĩnh cho related products
-const staticRelatedProducts: RelatedProduct[] = [
-    {
-        id: 5,
-        name: 'Quần Short Thể Thao Nam',
-        imageUrl: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400',
-        basePrice: 299000,
-        stockQuantity: 35,
-        category: { id: 5, name: 'Quần nam', description: 'Quần áo nam thể thao' },
-        brand: { id: 1, name: 'DAVINCI Fashion', description: 'Thương hiệu thời trang Việt Nam' }
-    },
-    {
-        id: 6,
-        name: 'Áo Khoác Bomber Nữ',
-        imageUrl: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400',
-        basePrice: 659000,
-        stockQuantity: 18,
-        category: { id: 6, name: 'Áo khoác nữ', description: 'Áo khoác nữ thời trang' },
-        brand: { id: 1, name: 'DAVINCI Fashion', description: 'Thương hiệu thời trang Việt Nam' }
-    },
-    {
-        id: 7,
-        name: 'Găng Tay Tập Gym',
-        imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
-        basePrice: 249000,
-        stockQuantity: 42,
-        category: { id: 7, name: 'Đồ tập gym', description: 'Phụ kiện tập gym' },
-        brand: { id: 4, name: 'FitGear', description: 'Chuyên phụ kiện thể thao' }
-    },
-    {
-        id: 8,
-        name: 'Quần Jeans Skinny Nam',
-        imageUrl: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400',
-        basePrice: 799000,
-        stockQuantity: 23,
-        category: { id: 5, name: 'Quần nam', description: 'Quần jeans cao cấp' },
-        brand: { id: 5, name: 'Denim Pro', description: 'Chuyên quần jeans' }
-    },
-    {
-        id: 9,
-        name: 'Váy Maxi Hoa Nhí',
-        imageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400',
-        basePrice: 545000,
-        stockQuantity: 15,
-        category: { id: 8, name: 'Váy nữ', description: 'Váy thời trang' },
-        brand: { id: 1, name: 'DAVINCI Fashion', description: 'Thương hiệu thời trang Việt Nam' }
-    },
-    {
-        id: 10,
-        name: 'Giày Sneaker Trắng',
-        imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400',
-        basePrice: 1299000,
-        stockQuantity: 30,
-        category: { id: 4, name: 'Giày thể thao', description: 'Giày sneaker thời trang' },
-        brand: { id: 2, name: 'Nike', description: 'Thương hiệu thể thao toàn cầu' }
-    },
-    {
-        id: 11,
-        name: 'Áo Hoodie Unisex',
-        imageUrl: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400',
-        basePrice: 699000,
-        stockQuantity: 28,
-        category: { id: 9, name: 'Áo hoodie', description: 'Áo hoodie unisex' },
-        brand: { id: 6, name: 'UrbanWear', description: 'Thời trang đường phố' }
-    },
-    {
-        id: 12,
-        name: 'Balo Laptop Cao Cấp',
-        imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400',
-        basePrice: 1199000,
-        stockQuantity: 20,
-        category: { id: 3, name: 'Phụ kiện thể thao', description: 'Balo và túi xách' },
-        brand: { id: 7, name: 'TechBag', description: 'Chuyên balo công nghệ' }
-    },
-    {
-        id: 13,
-        name: 'Đồng Hồ Thể Thao',
-        imageUrl: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400',
-        basePrice: 2299000,
-        stockQuantity: 12,
-        category: { id: 10, name: 'Phụ kiện', description: 'Đồng hồ và trang sức' },
-        brand: { id: 8, name: 'SportTime', description: 'Đồng hồ thể thao' }
-    },
-    {
-        id: 14,
-        name: 'Kính Mát Thời Trang',
-        imageUrl: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400',
-        basePrice: 899000,
-        stockQuantity: 25,
-        category: { id: 10, name: 'Phụ kiện', description: 'Kính mát và phụ kiện' },
-        brand: { id: 9, name: 'SunStyle', description: 'Kính mát thời trang' }
-    }
-];
 
 const ProductPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -192,7 +89,7 @@ const ProductPage = () => {
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
     const [selectedSize, setSelectedSize] = useState<Size | null>(null);
     const [selectedColor, setSelectedColor] = useState<Color | null>(null);
-    const [relatedProducts] = useState<RelatedProduct[]>(staticRelatedProducts);
+    const [relatedProducts, setRelatedProducts] = useState<ProductViewModel[]>([]);
     const [detailedDescription, setDetailedDescription] = useState('');
 
     //User / Review
@@ -298,6 +195,25 @@ const ProductPage = () => {
             }
         }
     }, [id]);
+
+    useEffect(() => {
+        const fetchRelatedProducts = async () => {
+            if (product && product.category.id) {
+                try {
+                    const related = await getProductsByCategory(product.category.id, 10);
+                    const filteredAndMapped = related
+                        .filter(p => p.id !== product.id) // Loại bỏ sản phẩm hiện tại
+                        .map(p => mapProductToViewModel(p));
+                    setRelatedProducts(filteredAndMapped);
+                } catch (error) {
+                    console.error("Failed to fetch related products:", error);
+                    // Không cần toast ở đây để tránh làm phiền người dùng
+                }
+            }
+        };
+
+        fetchRelatedProducts();
+    }, [product]);
 
     useEffect(() => {
         const checkIsFavorite = async () => {
@@ -1902,112 +1818,61 @@ const ProductPage = () => {
                                 </svg>
                                 Sản phẩm tương tự
                             </h2>
-                            <div className="hidden md:flex items-center gap-2">
-                                <button
-                                    onClick={scrollLeft}
-                                    className="flex items-center justify-center w-8 h-8 transition-colors duration-200 bg-gray-100 rounded-full cursor-pointer hover:bg-gray-200 focus:outline-none"
-                                    disabled={scrollX >= 0}
-                                    aria-label="Xem sản phẩm trước"
-                                >
-                                    <ChevronLeft size={18} className={scrollX >= 0 ? "text-gray-300" : "text-gray-700"} />
-                                </button>
-                                <button
-                                    onClick={scrollRight}
-                                    className="flex items-center justify-center w-8 h-8 transition-colors duration-200 bg-gray-100 rounded-full cursor-pointer hover:bg-gray-200 focus:outline-none"
-                                    disabled={relatedProducts.length <= 4 || scrollX <= -(relatedProducts.length - 4 - 1) * 220}
-                                    aria-label="Xem sản phẩm tiếp theo"
-                                >
-                                    <ChevronRight size={18} className={relatedProducts.length <= 4 || scrollX <= -(relatedProducts.length - 4 - 1) * 220 ? "text-gray-300" : "text-gray-700"} />
-                                </button>
-                            </div>
                         </div>
 
-                        <div className="relative overflow-hidden">
-                            <div
-                                className="flex transition-transform duration-300 ease-out"
-                                style={{ transform: `translateX(${scrollX}px)` }}
-                            >
-                                {relatedProducts.length > 0 ? (
-                                    relatedProducts.map((relProduct) => (
-                                        <a
-                                            href={`/product/${relProduct.id}`}
-                                            key={relProduct.id}
-                                            className="min-w-[220px] mx-2 group"
-                                        >
-                                            <div className="overflow-hidden bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                                                <div className="relative h-44 overflow-hidden">
-                                                    <img
-                                                        src={relProduct.imageUrl}
-                                                        alt={relProduct.name}
-                                                        className="object-contain w-full h-full transition-transform duration-300 group-hover:scale-105"
-                                                        loading="lazy"
-                                                    />
-                                                    <div className="absolute inset-0 transition-opacity duration-200 opacity-0 bg-gradient-to-t from-black/10 via-transparent to-transparent group-hover:opacity-100"></div>
-                                                </div>
-
-                                                <div className="p-3">
-                                                    <h3 className="text-sm font-medium text-gray-800 line-clamp-2 min-h-[40px] transition-colors duration-200 group-hover:text-red-500">
-                                                        {relProduct.name}
-                                                    </h3>
-
-                                                    <div className="flex items-center justify-between mt-2">
-                            <span className="font-semibold text-red-600">
-                              {relProduct.basePrice.toLocaleString('vi-VN')}đ
-                            </span>
-                                                        <span className="text-xs text-gray-500">
-                              Còn {relProduct.stockQuantity}
-                            </span>
+                        {relatedProducts.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
+                                {relatedProducts.map((relProduct) => (
+                                    <div key={relProduct.id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
+                                        <Link to={relProduct.link} className="block relative group">
+                                            <div className="h-48 overflow-hidden relative">
+                                                <img
+                                                    src={relProduct.image}
+                                                    alt={relProduct.title}
+                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                />
+                                                {relProduct.discountLabel && (
+                                                    <div className="absolute top-2 right-2 bg-[#C92127] text-white px-2 py-1 rounded-md text-xs font-semibold">
+                                                        {relProduct.discountLabel}
                                                     </div>
+                                                )}
+                                            </div>
+                                            <div className="p-3">
+                                                <h3 className="text-sm text-gray-800 font-medium mb-2 line-clamp-2 h-10">
+                                                    {relProduct.title}
+                                                </h3>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-lg font-semibold text-[#C92127]">
+                                                        {relProduct.specialPrice}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 line-through">
+                                                        {relProduct.oldPrice} đ
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between mt-2">
+                                                    <div className="flex items-center text-xs text-gray-600">
+                                                        <span className="text-yellow-500 mr-1">★</span>
+                                                        <span>{(relProduct.averageRating ?? 0).toFixed(1)} ({relProduct.reviewCount ?? 0})</span>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500">
+                                                        {relProduct.soldCount}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        </a>
-                                    ))
-                                ) : (
-                                    <div className="w-full py-8 my-4 text-center">
-                                        <div className="mb-2 text-gray-400">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                            </svg>
-                                        </div>
-                                        <p className="text-gray-500">Không có sản phẩm tương tự</p>
+                                        </Link>
                                     </div>
-                                )}
+                                ))}
                             </div>
-
-                            {relatedProducts.length > 4 && (
-                                <div className="flex justify-center gap-1.5 mt-4">
-                                    {Array.from({ length: Math.ceil(relatedProducts.length / 4) }).map((_, index) => {
-                                        const isActive = Math.abs(scrollX / 220) >= index * 4 && Math.abs(scrollX / 220) < (index + 1) * 4;
-                                        return (
-                                            <button
-                                                key={index}
-                                                onClick={() => setScrollX(-(index * 4 * 220))}
-                                                className={`w-2 h-2 rounded-full transition-all duration-300 ${isActive ? 'bg-red-500 w-4' : 'bg-gray-300'}`}
-                                                aria-label={`Trang ${index + 1}`}
-                                            />
-                                        );
-                                    })}
+                        ) : (
+                            <div className="w-full py-8 my-4 text-center">
+                                <div className="mb-2 text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                    </svg>
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Mobile navigation */}
-                        <div className="flex justify-center gap-4 mt-4 md:hidden">
-                            <button
-                                onClick={() => setScrollX(Math.min(0, scrollX + 220))}
-                                className="flex items-center justify-center w-10 h-10 text-white bg-red-500 rounded-full shadow-md focus:outline-none"
-                                disabled={scrollX >= 0}
-                            >
-                                <ChevronLeft size={20} />
-                            </button>
-                            <button
-                                onClick={() => setScrollX(Math.max(-(relatedProducts.length - 1) * 220, scrollX - 220))}
-                                className="flex items-center justify-center w-10 h-10 text-white bg-red-500 rounded-full shadow-md focus:outline-none"
-                                disabled={relatedProducts.length <= 1 || scrollX <= -(relatedProducts.length - 1) * 220}
-                            >
-                                <ChevronRight size={20} />
-                            </button>
-                        </div>
+                                <p className="text-gray-500">Không có sản phẩm tương tự</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

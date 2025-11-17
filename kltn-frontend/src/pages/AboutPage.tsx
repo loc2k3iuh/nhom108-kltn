@@ -286,7 +286,7 @@ const AboutPage: React.FC = () => {
               Đăng ký ngay
             </a>
             <a 
-              href="/category/1" 
+              href="/products"
               className="bg-transparent hover:bg-red-700 border-2 border-white font-semibold px-8 py-3 rounded-lg transition duration-200"
             >
               Khám phá thời trang
