@@ -21,7 +21,7 @@ public class FavoriteResponse {
   Long userId;
 
   @Schema(description = "Favorited product information")
-  ProductResponse product;
+  ProductDetailResponse product;
 
   @Schema(description = "Date when the product was added to favorites")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-11-10T11:44:53+0700",
+    date = "2025-11-17T12:31:24+0700",
     comments = "version: 1.6.3, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
 )
 @Component
@@ -27,10 +27,11 @@ public class ReviewMapperImpl implements ReviewMapper {
 
         ReviewResponse.ReviewResponseBuilder reviewResponse = ReviewResponse.builder();
 
+        reviewResponse.createdDate( review.getCreatedDate() );
         reviewResponse.id( review.getId() );
         reviewResponse.rating( review.getRating() );
         reviewResponse.comment( review.getComment() );
-        reviewResponse.product( productMapper.toProductResponse( review.getProduct() ) );
+        reviewResponse.product( productMapper.toProductDetailResponse( review.getProduct() ) );
         reviewResponse.user( userMapper.toUserResponse( review.getUser() ) );
 
         return reviewResponse.build();

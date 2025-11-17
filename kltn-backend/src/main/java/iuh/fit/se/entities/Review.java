@@ -3,6 +3,9 @@ package iuh.fit.se.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -31,4 +34,8 @@ public class Review {
   @ManyToOne
   @JoinColumn(name = "user_id")
   User user;
+
+    @Column(name = "created_date")
+    @CreationTimestamp
+    LocalDateTime createdDate;
 }
