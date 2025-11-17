@@ -607,27 +607,27 @@ const itemsCategories = [
         name: "Thời trang nam",
     },
     {
-        href: "/category/21",
+        href: "/category/2",
         imgSrc: female,
         name: "Thời trang nữ",
     },
     {
-        href: "/category/14",
+        href: "/category/3",
         imgSrc: kid,
         name: "Trẻ em",
     },
     {
-        href: "/category/17",
+        href: "/category/7",
         imgSrc: sport,
         name: "Thể thao",
     },
     {
-        href: "/category/3",
+        href: "/category/4",
         imgSrc: sneaker,
         name: "Giày dép",
     },
     {
-        href: "/category/22",
+        href: "/category/6",
         imgSrc: accessory,
         name: "Phụ kiện",
     },

@@ -114,7 +114,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><Link to="/category/1" className="text-gray-600 hover:text-red-600 transition duration-200">Thời trang nam</Link></li>
               <li><Link to="/category/2" className="text-gray-600 hover:text-red-600 transition duration-200">Thời trang nữ</Link></li>
-              <li><Link to="/category/3" className="text-gray-600 hover:text-red-600 transition duration-200">Phụ kiện thể thao</Link></li>
+              <li><Link to="/category/7" className="text-gray-600 hover:text-red-600 transition duration-200">Đồ thể thao</Link></li>
               <li><Link to="/category/4" className="text-gray-600 hover:text-red-600 transition duration-200">Giày dép</Link></li>
               <li><Link to="/flash-sale" className="text-gray-600 hover:text-red-600 transition duration-200">Flash sale</Link></li>
             </ul>
