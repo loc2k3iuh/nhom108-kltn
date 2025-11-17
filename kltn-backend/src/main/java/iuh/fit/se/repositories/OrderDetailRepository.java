@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 
-    @Query("SELECT COUNT(od) FROM OrderDetail od WHERE od.productVariant.product.id = :productId")
-    Long countByProductId(@Param("productId") Long productId);
+  @Query("SELECT COUNT(od) FROM OrderDetail od WHERE od.productVariant.product.id = :productId")
+  Long countByProductId(@Param("productId") Long productId);
 }

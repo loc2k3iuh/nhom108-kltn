@@ -28,14 +28,17 @@ public interface ProductDiscountRepository
   List<ProductDiscount> findActiveDiscountsByProductId(
       @Param("productId") Long productId, @Param("now") LocalDateTime now);
 
-  @Query("SELECT pd FROM ProductDiscount pd WHERE pd.product.id = :productId " +
-         "AND pd.discount.startDate <= CURRENT_TIMESTAMP AND pd.discount.endDate >= CURRENT_TIMESTAMP " +
-         "ORDER BY pd.discount.value DESC")
-  List<ProductDiscount> findTopActiveDiscountsByProductId(@Param("productId") Long productId, Pageable pageable);
+  @Query(
+      "SELECT pd FROM ProductDiscount pd WHERE pd.product.id = :productId "
+          + "AND pd.discount.startDate <= CURRENT_TIMESTAMP AND pd.discount.endDate >= CURRENT_TIMESTAMP "
+          + "ORDER BY pd.discount.value DESC")
+  List<ProductDiscount> findTopActiveDiscountsByProductId(
+      @Param("productId") Long productId, Pageable pageable);
 
   default Optional<ProductDiscount> findActiveDiscountByProductId(Long productId) {
-    List<ProductDiscount> discounts = findTopActiveDiscountsByProductId(productId,
-        org.springframework.data.domain.PageRequest.of(0, 1));
+    List<ProductDiscount> discounts =
+        findTopActiveDiscountsByProductId(
+            productId, org.springframework.data.domain.PageRequest.of(0, 1));
     return discounts.isEmpty() ? Optional.empty() : Optional.of(discounts.get(0));
   }
 

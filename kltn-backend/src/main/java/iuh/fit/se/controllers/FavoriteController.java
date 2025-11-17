@@ -20,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -36,11 +35,15 @@ public class FavoriteController {
   @PostMapping
   @Operation(
       summary = "Add product to favorites",
-      description = "Adds a product to a specified user's favorites list. Requires ADMIN role or the user must be adding to their own list.",
+      description =
+          "Adds a product to a specified user's favorites list. Requires ADMIN role or the user must be adding to their own list.",
       security = @SecurityRequirement(name = "Bearer Authentication"))
   public APIResponse<FavoriteResponse> addToFavorites(
       @Valid @RequestBody AddFavoriteRequest request) {
-    log.info("Request to add product {} to favorites for user {}", request.getProductId(), request.getUserId());
+    log.info(
+        "Request to add product {} to favorites for user {}",
+        request.getProductId(),
+        request.getUserId());
     FavoriteResponse response = favoriteService.addToFavorites(request);
     return APIResponse.<FavoriteResponse>builder()
         .code(HttpStatus.CREATED.value())
@@ -52,11 +55,14 @@ public class FavoriteController {
   @DeleteMapping
   @Operation(
       summary = "Remove product from favorites",
-      description = "Removes a product from a specified user's favorites list. Requires ADMIN role or the user must be removing from their own list.",
+      description =
+          "Removes a product from a specified user's favorites list. Requires ADMIN role or the user must be removing from their own list.",
       security = @SecurityRequirement(name = "Bearer Authentication"))
-  public APIResponse<Void> removeFromFavorites(
-      @Valid @RequestBody RemoveFavoriteRequest request) {
-    log.info("Request to remove product {} from favorites for user {}", request.getProductId(), request.getUserId());
+  public APIResponse<Void> removeFromFavorites(@Valid @RequestBody RemoveFavoriteRequest request) {
+    log.info(
+        "Request to remove product {} from favorites for user {}",
+        request.getProductId(),
+        request.getUserId());
     favoriteService.removeFromFavorites(request);
     return APIResponse.<Void>builder()
         .code(HttpStatus.NO_CONTENT.value())
@@ -67,16 +73,20 @@ public class FavoriteController {
   @GetMapping("/users/{userId}")
   @Operation(
       summary = "Get user favorites with pagination",
-      description = "Retrieves favorite products for a specific user. Requires ADMIN role or the user must be accessing their own list.",
+      description =
+          "Retrieves favorite products for a specific user. Requires ADMIN role or the user must be accessing their own list.",
       security = @SecurityRequirement(name = "Bearer Authentication"))
   public APIResponse<Page<FavoriteResponse>> getUserFavorites(
       @Parameter(description = "ID of the user") @PathVariable Long userId,
       @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
       @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
-      @Parameter(description = "Sort field") @RequestParam(defaultValue = "createdDate") String sortBy,
-      @Parameter(description = "Sort direction (asc/desc)") @RequestParam(defaultValue = "desc") String sortDir) {
+      @Parameter(description = "Sort field") @RequestParam(defaultValue = "createdDate")
+          String sortBy,
+      @Parameter(description = "Sort direction (asc/desc)") @RequestParam(defaultValue = "desc")
+          String sortDir) {
     log.info("Request to get favorites for user {} - page: {}, size: {}", userId, page, size);
-    Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+    Sort.Direction direction =
+        sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
     Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
     Page<FavoriteResponse> favorites = favoriteService.getUserFavorites(userId, pageable);
     return APIResponse.<Page<FavoriteResponse>>builder()
@@ -89,7 +99,8 @@ public class FavoriteController {
   @GetMapping("/users/{userId}/list")
   @Operation(
       summary = "Get all user favorites as a list",
-      description = "Retrieves all favorite products for a specific user as a simple list. Requires ADMIN role or the user must be accessing their own list.",
+      description =
+          "Retrieves all favorite products for a specific user as a simple list. Requires ADMIN role or the user must be accessing their own list.",
       security = @SecurityRequirement(name = "Bearer Authentication"))
   public APIResponse<List<FavoriteResponse>> getUserFavoritesList(
       @Parameter(description = "ID of the user") @PathVariable Long userId) {
@@ -105,7 +116,8 @@ public class FavoriteController {
   @GetMapping("/users/{userId}/products/{productId}/check")
   @Operation(
       summary = "Check if a product is favorited by a user",
-      description = "Checks if a specific product is in a user's favorites list. Requires ADMIN role or the user must be checking their own list.",
+      description =
+          "Checks if a specific product is in a user's favorites list. Requires ADMIN role or the user must be checking their own list.",
       security = @SecurityRequirement(name = "Bearer Authentication"))
   public APIResponse<Boolean> isProductFavorited(
       @Parameter(description = "ID of the user") @PathVariable Long userId,
@@ -122,7 +134,8 @@ public class FavoriteController {
   @GetMapping("/users/{userId}/count")
   @Operation(
       summary = "Get user's favorites count",
-      description = "Gets the total count of favorite products for a specific user. Requires ADMIN role or the user must be accessing their own list.",
+      description =
+          "Gets the total count of favorite products for a specific user. Requires ADMIN role or the user must be accessing their own list.",
       security = @SecurityRequirement(name = "Bearer Authentication"))
   public APIResponse<Long> getUserFavoritesCount(
       @Parameter(description = "ID of the user") @PathVariable Long userId) {

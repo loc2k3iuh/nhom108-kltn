@@ -14,7 +14,6 @@ import iuh.fit.se.repositories.ProductRepository;
 import iuh.fit.se.repositories.UserRepository;
 import iuh.fit.se.services.interfaces.IFavoriteService;
 import java.util.List;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -38,35 +37,52 @@ public class FavoriteServiceImpl implements IFavoriteService {
   @Override
   @Transactional
   public FavoriteResponse addToFavorites(AddFavoriteRequest request) {
-    log.info("Adding product {} to favorites for user {}", request.getProductId(), request.getUserId());
+    log.info(
+        "Adding product {} to favorites for user {}", request.getProductId(), request.getUserId());
 
-    User user = userRepository.findById(request.getUserId())
-        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    User user =
+        userRepository
+            .findById(request.getUserId())
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-    Product product = productRepository.findById(request.getProductId())
-        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+    Product product =
+        productRepository
+            .findById(request.getProductId())
+            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-    if (favoriteRepository.existsByUserIdAndProductId(request.getUserId(), request.getProductId())) {
+    if (favoriteRepository.existsByUserIdAndProductId(
+        request.getUserId(), request.getProductId())) {
       throw new AppException(ErrorCode.PRODUCT_ALREADY_IN_FAVORITES);
     }
 
     Favorite favorite = Favorite.builder().user(user).product(product).build();
     Favorite savedFavorite = favoriteRepository.save(favorite);
 
-    log.info("Successfully added product {} to favorites for user {}", request.getProductId(), request.getUserId());
+    log.info(
+        "Successfully added product {} to favorites for user {}",
+        request.getProductId(),
+        request.getUserId());
     return favoriteMapper.toFavoriteResponse(savedFavorite);
   }
 
   @Override
   @Transactional
   public void removeFromFavorites(RemoveFavoriteRequest request) {
-    log.info("Removing product {} from favorites for user {}", request.getProductId(), request.getUserId());
+    log.info(
+        "Removing product {} from favorites for user {}",
+        request.getProductId(),
+        request.getUserId());
 
-    Favorite favorite = favoriteRepository.findByUserIdAndProductId(request.getUserId(), request.getProductId())
-        .orElseThrow(() -> new AppException(ErrorCode.FAVORITE_NOT_FOUND));
+    Favorite favorite =
+        favoriteRepository
+            .findByUserIdAndProductId(request.getUserId(), request.getProductId())
+            .orElseThrow(() -> new AppException(ErrorCode.FAVORITE_NOT_FOUND));
 
     favoriteRepository.delete(favorite);
-    log.info("Successfully removed product {} from favorites for user {}", request.getProductId(), request.getUserId());
+    log.info(
+        "Successfully removed product {} from favorites for user {}",
+        request.getProductId(),
+        request.getUserId());
   }
 
   @Override
@@ -76,7 +92,8 @@ public class FavoriteServiceImpl implements IFavoriteService {
     if (!userRepository.existsById(userId)) {
       throw new AppException(ErrorCode.USER_NOT_EXISTED);
     }
-    Page<Favorite> favorites = favoriteRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
+    Page<Favorite> favorites =
+        favoriteRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
     return favorites.map(favoriteMapper::toFavoriteResponse);
   }
 

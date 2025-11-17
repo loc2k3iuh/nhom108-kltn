@@ -4,5 +4,5 @@ import iuh.fit.se.entities.Product;
 import iuh.fit.se.entities.ProductVariant;
 
 public interface IPriceService {
-    double getFinalPrice(Product product, ProductVariant variant);
+  double getFinalPrice(Product product, ProductVariant variant);
 }

@@ -26,7 +26,8 @@ public interface CartItemMapper {
       return 0.0;
     }
 
-    double finalPrice = priceService.getFinalPrice(cartItem.getProduct(), cartItem.getProductVariant());
+    double finalPrice =
+        priceService.getFinalPrice(cartItem.getProduct(), cartItem.getProductVariant());
 
     return finalPrice * cartItem.getQuantity();
   }
