@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -38,4 +39,8 @@ public class Review {
     @Column(name = "created_date")
     @CreationTimestamp
     LocalDateTime createdDate;
+
+    @Column(name = "updated_date")
+    @UpdateTimestamp
+    LocalDateTime updatedDate;
 }

@@ -13,5 +13,6 @@ import org.mapstruct.ReportingPolicy;
 public interface ReviewMapper {
 
   @Mapping(source = "createdDate", target = "createdDate")
+  @Mapping(source = "updatedDate", target = "updatedDate")
   ReviewResponse toReviewResponse(Review review);
 }

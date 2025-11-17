@@ -23,4 +23,8 @@ public class ReviewResponse {
     @Schema(description = "Date when the product was added to reviews")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime createdDate;
+
+    @Schema(description = "Date when the review was last updated")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    LocalDateTime updatedDate;
 }
