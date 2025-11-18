@@ -14,7 +14,7 @@ const NotFound: React.FC = () => {
                         <br/>
                         <p className="error-code">Error code: 404</p>
                         <br/>
-                        <a className="btn-back-home" href="/"><span>Quay lại trang chủ</span></a>
+                        <a className="btn-back-home" href="/public"><span>Quay lại trang chủ</span></a>
                     </div>
                 </div>
             </div>

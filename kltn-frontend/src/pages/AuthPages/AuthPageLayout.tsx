@@ -39,7 +39,7 @@ export default function AuthLayout({
 
                     <div className="hidden md:block mt-8">
                         <p className="text-white/80 text-sm">
-                            © 2024 VUVISA. Mọi quyền được bảo lưu.
+                            © 2025 DAVINCI. Mọi quyền được bảo lưu.
                         </p>
                     </div>
                 </div>

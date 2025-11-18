@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getRootCategories, getSubCategories } from '../services/categoryService';
-import { CategoryResponse } from '../types/responses/categoryResponse';
+import { getRootCategories, getSubCategories } from '../../services/categoryService.ts';
+import { Category } from '../../types/category.ts';
 
 const CategoryTest: React.FC = () => {
-  const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
+  const [rootCategories, setRootCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [subCategories, setSubCategories] = useState<CategoryResponse[]>([]);
+  const [subCategories, setSubCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

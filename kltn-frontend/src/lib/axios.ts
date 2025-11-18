@@ -80,7 +80,7 @@ axiosInstance.interceptors.response.use(
 
           const newAccessToken = res?.data?.result?.token;
           if (!newAccessToken) {
-            window.location.href = "/login";
+            window.location.href = "/signin";
           }
 
           getTokenFromLocalStorage()
@@ -96,7 +96,7 @@ axiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         removeToken();
-        window.location.href = "/login";
+        window.location.href = "/signin";
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

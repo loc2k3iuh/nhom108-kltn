@@ -1,18 +1,18 @@
 import axiosInstance from "../lib/axios";
-import { 
-  CategoryResponse, 
-  RootCategoriesResponse, 
-  SubCategoriesResponse,
-  ApiErrorResponse
-} from "@/types/responses/categoryResponse";
+import {
+    Category,
+    RootCategories,
+    SubCategories,
+    ApiErrorResponse
+} from "@/types/category.ts";
 
 /**
  * Get all root categories (parent categories without parent)
- * @returns Promise<CategoryResponse[]>
+ * @returns Promise<Category[]>
  */
-export const getRootCategories = async (): Promise<CategoryResponse[]> => {
+export const getRootCategories = async (): Promise<Category[]> => {
   try {
-    const response = await axiosInstance.get<RootCategoriesResponse>("/categories/root");
+    const response = await axiosInstance.get<RootCategories>("/categories/root");
     
     if (response.data.code === 200) {
       return response.data.result;
@@ -35,11 +35,11 @@ export const getRootCategories = async (): Promise<CategoryResponse[]> => {
 /**
  * Get subcategories for a specific parent category
  * @param categoryId - ID of the parent category
- * @returns Promise<CategoryResponse[]>
+ * @returns Promise<Category[]>
  */
-export const getSubCategories = async (categoryId: number): Promise<CategoryResponse[]> => {
+export const getSubCategories = async (categoryId: number): Promise<Category[]> => {
   try {
-    const response = await axiosInstance.get<SubCategoriesResponse>(`/categories/${categoryId}/subcategories`);
+    const response = await axiosInstance.get<SubCategories>(`/categories/${categoryId}/subcategories`);
     
     if (response.data.code === 200) {
       return response.data.result;
@@ -66,13 +66,13 @@ export const getSubCategories = async (categoryId: number): Promise<CategoryResp
  */
 export const getAllCategoriesWithSub = async (): Promise<{
   [key: string]: {
-    category: CategoryResponse;
-    subCategories: CategoryResponse[];
+    category: Category;
+    subCategories: Category[];
   }
 }> => {
   try {
     const rootCategories = await getRootCategories();
-    const categoriesWithSub: { [key: string]: { category: CategoryResponse; subCategories: CategoryResponse[] } } = {};
+    const categoriesWithSub: { [key: string]: { category: Category; subCategories: Category[] } } = {};
     
     // Fetch subcategories for each root category
     const subCategoryPromises = rootCategories.map(async (category) => {
@@ -109,7 +109,7 @@ const CATEGORIES_CACHE_KEY = "davinci_product_categories";
 const CACHE_EXPIRY_KEY = "davinci_categories_cache_expiry";
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
-export const getCachedRootCategories = async (): Promise<CategoryResponse[]> => {
+export const getCachedRootCategories = async (): Promise<Category[]> => {
   try {
     // Check cache first
     const cachedData = localStorage.getItem(CATEGORIES_CACHE_KEY);

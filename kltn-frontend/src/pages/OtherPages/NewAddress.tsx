@@ -15,7 +15,7 @@ import {
 
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import UserSidebar from "../components/UserSidebar";
+import UserSidebar from "../../components/UserSidebar.tsx";
 
 // Dữ liệu người dùng tĩnh
 const staticUserData = {

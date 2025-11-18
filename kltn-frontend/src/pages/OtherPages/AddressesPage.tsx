@@ -18,7 +18,7 @@ import {
 
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import UserSidebar from "../components/UserSidebar";
+import UserSidebar from "../../components/UserSidebar.tsx";
 
 // Static user and address data
 interface AddressResponse {

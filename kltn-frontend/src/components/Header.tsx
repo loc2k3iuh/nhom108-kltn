@@ -29,11 +29,11 @@ interface ProductCategoriesProps {
 }
 
 import { getCachedRootCategories, getSubCategories } from "../services/categoryService";
-import { CategoryResponse } from "@/types/responses/categoryResponse";
+import { Category } from "@/types/category.ts";
 
 const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOpen }) => {
-  const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
-  const [subCategoriesMap, setSubCategoriesMap] = useState<Record<number, CategoryResponse[]>>({});
+  const [rootCategories, setRootCategories] = useState<Category[]>([]);
+  const [subCategoriesMap, setSubCategoriesMap] = useState<Record<number, Category[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fetchedRef = useRef(false);
@@ -50,7 +50,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({ handleClick, isOp
       const rootCats = await getCachedRootCategories();
       setRootCategories(rootCats);
       
-      const subCatsMap: Record<number, CategoryResponse[]> = {};
+      const subCatsMap: Record<number, Category[]> = {};
       const subCategoryPromises = rootCats.map(async (category) => {
         try {
           const subCats = await getSubCategories(category.id);
@@ -190,7 +190,7 @@ const Header: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationResponseDTO[]>([]); 
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0); 
-  const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
+  const [rootCategories, setRootCategories] = useState<Category[]>([]);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
 
   useEffect(() => {

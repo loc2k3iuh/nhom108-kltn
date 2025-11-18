@@ -8,7 +8,7 @@ import { getSubCategories, getRootCategories } from "@/services/categoryService"
 import { getBrands, getColors, getSizes } from "@/services/filterService";
 import { mapProductToViewModel, ProductViewModel } from "@/mappers/productMapper";
 import { PaginatedProductResponse } from "@/types/product";
-import { CategoryResponse } from "@/types/responses/categoryResponse";
+import { Category } from "@/types/category.ts";
 import { Brand } from "@/types/brand";
 import { Color } from "@/types/color";
 import { Size } from "@/types/size";
@@ -38,8 +38,8 @@ const ProductListPage: React.FC = () => {
 
     const [products, setProducts] = useState<ProductViewModel[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [category, setCategory] = useState<CategoryResponse | null>(null);
-    const [rootCategory, setRootCategory] = useState<CategoryResponse | null>(null);
+    const [category, setCategory] = useState<Category | null>(null);
+    const [rootCategory, setRootCategory] = useState<Category | null>(null);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
@@ -99,8 +99,8 @@ const ProductListPage: React.FC = () => {
                 if (categoryId) {
                     const catId = parseInt(categoryId, 10);
                     const allRootCategories = await getRootCategories();
-                    let targetCategory: CategoryResponse | undefined;
-                    let parentCategory: CategoryResponse | undefined;
+                    let targetCategory: Category | undefined;
+                    let parentCategory: Category | undefined;
                     let subCategoryIds: number[] = [];
 
                     targetCategory = allRootCategories.find(c => c.id === catId);
@@ -320,7 +320,7 @@ const ProductListPage: React.FC = () => {
                                                         {product.discountLabel}
                                                     </div>
                                                 )}
-                                                {product.isNew && (
+                                                {product.product.isNew && (
                                                     <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
                                                         Mới
                                                     </div>

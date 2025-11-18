@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast, Toaster } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { District, fetchDistrictsByProvince, fetchWardsByDistrict, Province, Ward } from '../../services/addressService';
+import { District, fetchDistrictsByProvince, fetchWardsByDistrict, Province, Ward } from '../../services/addressService.ts';
 
 const staticCartData = {
     items: [

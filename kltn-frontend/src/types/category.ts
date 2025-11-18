@@ -1,21 +1,21 @@
 // Category Response Types for API Integration
 
-export interface CategoryResponse {
+export interface Category {
   id: number;
   name: string;
   description: string;
-  parentCategory?: CategoryResponse;
+  parentCategory?: Category;
 }
 
 export interface CategoryApiResponse {
   code: number;
   message: string;
-  result: CategoryResponse[];
+  result: Category[];
 }
 
-export interface RootCategoriesResponse extends CategoryApiResponse {}
+export type RootCategories = CategoryApiResponse
 
-export interface SubCategoriesResponse extends CategoryApiResponse {}
+export type SubCategories = CategoryApiResponse
 
 // For UI display purposes
 export interface CategoryGroup {
