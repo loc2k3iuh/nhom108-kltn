@@ -14,12 +14,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 // Service imports removed - using static data
-import { fetchDistrictsByProvince, fetchWardsByDistrict } from "../../services/addressService.ts";
+import { fetchDistrictsByProvince, fetchWardsByDistrict } from "../services/addressService.ts";
 
 import { Link, useNavigate, useParams } from "react-router-dom";
 // Type imports removed - using static data
 import { toast } from "sonner";
-import UserSidebar from "../../components/UserSidebar.tsx";
+import UserSidebar from "../components/UserSidebar.tsx";
 
 const EditAddress = () => {
     const navigate = useNavigate();

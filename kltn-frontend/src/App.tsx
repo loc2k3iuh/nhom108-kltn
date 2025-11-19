@@ -20,28 +20,28 @@ import SignUp from "./pages/AuthPages/SignUp";
 import OtpVerification from "./pages/AuthPages/OtpVerification";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
 import ResetPassword from "./pages/AuthPages/ResetPassword";
-import LoginPage from './pages/OtherPages/LoginPage.tsx';
-import RegisterPage from './pages/OtherPages/RegisterPage.tsx';
-import RegisterMailPage from './pages/OtherPages/RegisterMailPage.tsx';
-import RegisterSuccessPage from './pages/OtherPages/RegisterSuccessPage.tsx';
-import ForgotPasswordPage from './pages/OtherPages/ForgotPasswordPage.tsx';
-import ForgotPasswordSuccessPage from './pages/OtherPages/ForgotPasswordSuccessPage.tsx';
-import ChangeForgotPasswordPage from './pages/OtherPages/ChangeForgotPasswordPage.tsx';
+import LoginPage from './pages/LoginPage.tsx';
+import RegisterPage from './pages/RegisterPage.tsx';
+import RegisterMailPage from './pages/RegisterMailPage.tsx';
+import RegisterSuccessPage from './pages/RegisterSuccessPage.tsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.tsx';
+import ForgotPasswordSuccessPage from './pages/ForgotPasswordSuccessPage.tsx';
+import ChangeForgotPasswordPage from './pages/ChangeForgotPasswordPage.tsx';
 
 // Main Pages
-import Home from './pages/OtherPages/Home.tsx';
-import NotFound from './pages/OtherPages/NotFound.tsx';
-import SearchPage from './pages/OtherPages/SearchPage.tsx';
+import Home from './pages/Home.tsx';
+import NotFound from './pages/NotFound.tsx';
+import SearchPage from './pages/SearchPage.tsx';
 
 // User Pages
-import UserPage from './pages/OtherPages/UserPage.tsx';
-import UserProfiles from "./pages/OtherPages/UserProfiles.tsx";
-import EditUser from './pages/OtherPages/EditUser.tsx';
-import ChangePassword from './pages/OtherPages/ChangePassword.tsx';
-import AddressesPage from './pages/OtherPages/AddressesPage.tsx';
-import NewAddress from './pages/OtherPages/NewAddress.tsx';
-import EditAddress from './pages/OtherPages/EditAddress.tsx';
-import NotAuthenticatedPage from './pages/OtherPages/NotAuthenticatedPage.tsx';
+import UserPage from './pages/UserPage.tsx';
+import UserProfiles from "./pages/UserProfiles.tsx";
+import EditUser from './pages/EditUser.tsx';
+import ChangePassword from './pages/ChangePassword.tsx';
+import AddressesPage from './pages/AddressesPage.tsx';
+import NewAddress from './pages/NewAddress.tsx';
+import EditAddress from './pages/EditAddress.tsx';
+import NotAuthenticatedPage from './pages/NotAuthenticatedPage.tsx';
 
 // Product & Category Pages
 import ProductListPage from '@/pages/Categories/CategoryProductList';
@@ -62,12 +62,12 @@ import OrderSuccess from '@/pages/Payment/OrderSuccess';
 import UserReviews from '@/pages/Review/Review';
 
 // Info Pages
-import AboutPage from './pages/OtherPages/AboutPage.tsx';
-import FAQ from './pages/OtherPages/FAQ.tsx';
-import Help from './pages/OtherPages/Help.tsx';
-import PrivacyPolicy from './pages/OtherPages/PrivacyPolicy.tsx';
-import TermsOfService from './pages/OtherPages/TermsOfService.tsx';
-import ShippingPolicy from './pages/OtherPages/ShippingPolicy.tsx';
+import AboutPage from './pages/AboutPage.tsx';
+import FAQ from './pages/FAQ.tsx';
+import Help from './pages/Help.tsx';
+import PrivacyPolicy from './pages/PrivacyPolicy.tsx';
+import TermsOfService from './pages/TermsOfService.tsx';
+import ShippingPolicy from './pages/ShippingPolicy.tsx';
 
 export default function App() {
   const { checkAuth, authUser, isLoading } = useAuthStore();

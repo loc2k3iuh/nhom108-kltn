@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faKey } from '@fortawesome/free-solid-svg-icons';
-import UserSidebar from '../../components/UserSidebar.tsx';
+import UserSidebar from '../components/UserSidebar.tsx';
 
 // Static user data
 const staticUserData = {

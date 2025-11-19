@@ -1,5 +1,5 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb.tsx";
-import PageMeta from "../../components/common/PageMeta.tsx";
+import PageBreadcrumb from "../components/common/PageBreadCrumb.tsx";
+import PageMeta from "../components/common/PageMeta.tsx";
 
 export default function Blank() {
   return (

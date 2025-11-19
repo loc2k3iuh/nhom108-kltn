@@ -20,7 +20,7 @@ import {
 import { Link } from 'react-router-dom';
 // Service imports removed - using static data
 import { toast } from "sonner";
-import UserSidebar from "../../components/UserSidebar.tsx";
+import UserSidebar from "../components/UserSidebar.tsx";
 
 interface ValidationErrors {
     fullName?: string;

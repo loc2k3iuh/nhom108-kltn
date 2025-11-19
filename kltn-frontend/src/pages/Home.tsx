@@ -5,17 +5,17 @@ import { Copy } from 'lucide-react';
 
 import { toast } from 'sonner';
 
-import male from "../../assets/img/male.gif";
-import female from "../../assets/img/female.gif";
-import kid from "../../assets/img/kid.gif";
-import sport from "../../assets/img/sport.gif";
-import voucher from "../../assets/img/voucher.gif";
-import newProduct from "../../assets/img/new.gif";
-import flashSale from "../../assets/img/flash-sale.gif";
-import accessory from "../../assets/img/accessory.gif"
-import sneaker from "../../assets/img/sneaker.gif"
-import trending from "../../assets/img/trending.gif"
-import "../../index.css";
+import male from "../assets/img/male.gif";
+import female from "../assets/img/female.gif";
+import kid from "../assets/img/kid.gif";
+import sport from "../assets/img/sport.gif";
+import voucher from "../assets/img/voucher.gif";
+import newProduct from "../assets/img/new.gif";
+import flashSale from "../assets/img/flash-sale.gif";
+import accessory from "../assets/img/accessory.gif"
+import sneaker from "../assets/img/sneaker.gif"
+import trending from "../assets/img/trending.gif"
+import "../index.css";
 import "./custom.css";
 
 import { getFlashSaleProducts, getNewestProducts } from "@/services/productService.ts";

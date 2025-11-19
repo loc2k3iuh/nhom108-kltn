@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getRootCategories, getSubCategories } from '../../services/categoryService.ts';
-import { Category } from '../../types/category.ts';
+import { getRootCategories, getSubCategories } from '../services/categoryService.ts';
+import { Category } from '../types/category.ts';
 
 const CategoryTest: React.FC = () => {
   const [rootCategories, setRootCategories] = useState<Category[]>([]);

@@ -1,7 +1,7 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb.tsx";
-import UserMetaCard from "../../components/UserProfile/UserMetaCard.tsx";
-import UserInfoCard from "../../components/UserProfile/UserInfoCard.tsx";
-import PageMeta from "../../components/common/PageMeta.tsx";
+import PageBreadcrumb from "../components/common/PageBreadCrumb.tsx";
+import UserMetaCard from "../components/UserProfile/UserMetaCard.tsx";
+import UserInfoCard from "../components/UserProfile/UserInfoCard.tsx";
+import PageMeta from "../components/common/PageMeta.tsx";
 
 export default function UserProfiles() {
   return (
