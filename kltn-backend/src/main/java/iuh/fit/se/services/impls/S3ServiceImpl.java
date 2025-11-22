@@ -56,6 +56,31 @@ public class S3ServiceImpl implements IS3Service {
   }
 
   @Override
+  public String uploadPdfFile(byte[] pdfBytes, String fileName) throws IOException {
+    String folderName = "orders/invoices";
+    String key = folderName + "/" + fileName;
+
+    PutObjectRequest putObjectRequest =
+        PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .acl(ObjectCannedACL.PUBLIC_READ)
+            .contentType("application/pdf")
+            .build();
+
+    s3Client.putObject(putObjectRequest, RequestBody.fromBytes(pdfBytes));
+
+    String url =
+        s3Client
+            .utilities()
+            .getUrl(GetUrlRequest.builder().bucket(bucketName).key(key).build())
+            .toExternalForm();
+
+    log.info("Uploaded PDF to S3 with key = {}", key);
+    return url;
+  }
+
+  @Override
   public void deleteFile(String file) {
     URI uri = URI.create(file);
     String encodedKey = uri.getPath().substring(1);

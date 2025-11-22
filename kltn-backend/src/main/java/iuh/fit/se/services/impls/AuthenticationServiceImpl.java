@@ -22,7 +22,6 @@ import iuh.fit.se.services.interfaces.IJwtService;
 import iuh.fit.se.services.interfaces.IRefreshTokenService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.*;
@@ -234,50 +233,63 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     stringRedisTemplate.delete("reset:token:userId=" + existUser.getId());
   }
 
-    @Override
-    public LoginResponse authenticateClientByOauth2(Oauth2LoginRequest oauth2LoginRequest, HttpServletResponse httpServletResponse) throws JOSEException {
-      Optional<User> existingOptionalUser = userRepository.findByEmail(oauth2LoginRequest.getEmail());
-      User existingUser;
-      if(existingOptionalUser.isPresent()){
-        existingUser = existingOptionalUser.get();
-        boolean isAdmin = existingUser.getRoles().stream().anyMatch(role -> role.getName() == RoleType.ADMIN);
-        if(isAdmin) throw new AppException(ErrorCode.ACCESS_DENIED);
-        if(!existingUser.getEnabled()) throw new AppException(ErrorCode.USER_DISABLED);
-      }else{
-          HashSet<Role> roles = new HashSet<>();
-          Role defaultRole = roleRepository.findByName(RoleType.valueOf("CUSTOMER")).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-          roles.add(defaultRole);
-          existingUser = User.builder()
-                  .email(oauth2LoginRequest.getEmail())
-                  .fullName(oauth2LoginRequest.getFullName())
-                  .avatarUrl(oauth2LoginRequest.getAvatar())
-                  .username(generateUser(oauth2LoginRequest.getFullName()))
-                  .isOauth2(true)
-                  .roles(roles)
-                  .enabled(true)
-                  .isActive(true)
-                  .build();
+  @Override
+  public LoginResponse authenticateClientByOauth2(
+      Oauth2LoginRequest oauth2LoginRequest, HttpServletResponse httpServletResponse)
+      throws JOSEException {
+    Optional<User> existingOptionalUser = userRepository.findByEmail(oauth2LoginRequest.getEmail());
+    User existingUser;
+    if (existingOptionalUser.isPresent()) {
+      existingUser = existingOptionalUser.get();
+      boolean isAdmin =
+          existingUser.getRoles().stream().anyMatch(role -> role.getName() == RoleType.ADMIN);
+      if (isAdmin) throw new AppException(ErrorCode.ACCESS_DENIED);
+      if (!existingUser.getEnabled()) throw new AppException(ErrorCode.USER_DISABLED);
+    } else {
+      HashSet<Role> roles = new HashSet<>();
+      Role defaultRole =
+          roleRepository
+              .findByName(RoleType.valueOf("CUSTOMER"))
+              .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+      roles.add(defaultRole);
+      existingUser =
+          User.builder()
+              .email(oauth2LoginRequest.getEmail())
+              .fullName(oauth2LoginRequest.getFullName())
+              .avatarUrl(oauth2LoginRequest.getAvatar())
+              .username(generateUser(oauth2LoginRequest.getFullName()))
+              .isOauth2(true)
+              .roles(roles)
+              .enabled(true)
+              .isActive(true)
+              .build();
 
-          if (oauth2LoginRequest.getGoogleId() != null) {
-              existingUser.setGoogleId(oauth2LoginRequest.getGoogleId());
-          } else {
-              existingUser.setFacebookId(oauth2LoginRequest.getFacebookId());
-          }
-          userRepository.save(existingUser);
+      if (oauth2LoginRequest.getGoogleId() != null) {
+        existingUser.setGoogleId(oauth2LoginRequest.getGoogleId());
+      } else {
+        existingUser.setFacebookId(oauth2LoginRequest.getFacebookId());
       }
-
-      String accessToken = iJwtService.generateToken(existingUser);
-      RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(existingUser.getId(),oauth2LoginRequest.getIsRemembered());
-      iRefreshTokenService.createRefreshTokenCookie(httpServletResponse, oauth2LoginRequest.getIsRemembered(), refreshToken.getToken());
-
-      return LoginResponse.builder().authenticated(true).accessToken(accessToken).build();
+      userRepository.save(existingUser);
     }
 
-    private String generateUser(String fullName) {
-      String normalized = Normalizer.normalize(fullName, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase();
+    String accessToken = iJwtService.generateToken(existingUser);
+    RefreshToken refreshToken =
+        iRefreshTokenService.createRefreshToken(
+            existingUser.getId(), oauth2LoginRequest.getIsRemembered());
+    iRefreshTokenService.createRefreshTokenCookie(
+        httpServletResponse, oauth2LoginRequest.getIsRemembered(), refreshToken.getToken());
 
-      String baseUsername = normalized.replaceAll("\\s+", "");
-      String shortUUID = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
-      return baseUsername + shortUUID;
-    }
+    return LoginResponse.builder().authenticated(true).accessToken(accessToken).build();
+  }
+
+  private String generateUser(String fullName) {
+    String normalized =
+        Normalizer.normalize(fullName, Normalizer.Form.NFD)
+            .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+            .toLowerCase();
+
+    String baseUsername = normalized.replaceAll("\\s+", "");
+    String shortUUID = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    return baseUsername + shortUUID;
+  }
 }

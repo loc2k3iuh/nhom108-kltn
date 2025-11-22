@@ -38,5 +38,7 @@ public interface IAuthenticationService {
 
   void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest);
 
-  LoginResponse authenticateClientByOauth2(Oauth2LoginRequest oauth2LoginRequest, HttpServletResponse httpServletResponse) throws JOSEException ;
+  LoginResponse authenticateClientByOauth2(
+      Oauth2LoginRequest oauth2LoginRequest, HttpServletResponse httpServletResponse)
+      throws JOSEException;
 }

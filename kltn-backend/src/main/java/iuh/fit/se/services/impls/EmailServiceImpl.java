@@ -7,13 +7,20 @@ import iuh.fit.se.dtos.responses.OrderResponse;
 import iuh.fit.se.entities.User;
 import iuh.fit.se.exceptions.AppException;
 import iuh.fit.se.exceptions.ErrorCode;
+import iuh.fit.se.repositories.OrderRepository;
 import iuh.fit.se.repositories.UserRepository;
 import iuh.fit.se.services.interfaces.IEmailService;
+import iuh.fit.se.services.interfaces.IS3Service;
+import iuh.fit.se.utils.PdfGeneratorUtils;
+import jakarta.activation.DataSource;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -41,6 +48,8 @@ public class EmailServiceImpl implements IEmailService {
   StringRedisTemplate stringRedisTemplate;
   TemplateEngine templateEngine;
   UserRepository userRepository;
+  OrderRepository orderRepository;
+  IS3Service s3Service;
   Random random = new Random();
 
   @NonFinal
@@ -71,6 +80,47 @@ public class EmailServiceImpl implements IEmailService {
     helper.setSubject(subject);
     helper.setText(htmlContent, true);
     mailSender.send(message);
+  }
+
+  private void sendWithHtmlMailFormatAndPdfAttachment(
+      String to,
+      String subject,
+      String templateName,
+      Map<String, Object> variables,
+      byte[] pdfBytes,
+      String pdfFileName)
+      throws MessagingException {
+    Context context = new Context();
+    context.setVariables(variables);
+    String htmlContent = templateEngine.process(templateName, context);
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    helper.setTo(to);
+    helper.setSubject(subject);
+    helper.setText(htmlContent, true);
+
+    // Attach PDF if provided
+    if (pdfBytes != null && pdfBytes.length > 0) {
+      DataSource dataSource = new ByteArrayDataSource(pdfBytes, "application/pdf");
+      helper.addAttachment(pdfFileName, dataSource);
+    }
+
+    mailSender.send(message);
+  }
+
+  private byte[] generateOrderPdf(OrderResponse orderResponse, Map<String, Object> variables) {
+    try {
+      // Use dedicated PDF template with optimized font sizes and no special Vietnamese chars
+      Context context = new Context();
+      context.setVariables(variables);
+      String htmlContent = templateEngine.process("order-confirmation-pdf", context);
+
+      // Generate PDF using utility (Jsoup will handle XHTML conversion)
+      return PdfGeneratorUtils.generatePdfFromHtml(htmlContent);
+    } catch (Exception e) {
+      log.error("Failed to generate PDF for order: {}", orderResponse.getId(), e);
+      return null;
+    }
   }
 
   @Override
@@ -265,7 +315,7 @@ public class EmailServiceImpl implements IEmailService {
           "customerName",
           orderResponse.getFullName() != null ? orderResponse.getFullName() : user.getUsername());
       variables.put("orderId", orderResponse.getId());
-      variables.put("orderDate", orderResponse.getOrderDate());
+      variables.put("orderDate", formatOrderDate(orderResponse.getOrderDate()));
       variables.put("orderStatus", formatOrderStatus(orderResponse.getStatus()));
       variables.put("voucherCode", orderResponse.getDiscountCode());
       variables.put("orderItems", orderItems);
@@ -295,17 +345,56 @@ public class EmailServiceImpl implements IEmailService {
       variables.put("paymentMethod", formatPaymentMethod(orderResponse.getPaymentMethod()));
       variables.put("trackingUrl", FRONTEND_CLIENT_URL + "/orders");
 
-      // Send email
-      sendWithHtmlMailFormat(
-          user.getEmail(),
-          "Xác nhận đơn hàng #" + orderResponse.getId(),
-          "order-confirmation-mail",
-          variables);
+      // Generate PDF invoice
+      byte[] pdfBytes = generateOrderPdf(orderResponse, variables);
 
-      log.info(
-          "Order confirmation email sent to: {} for order: {}",
-          user.getEmail(),
-          orderResponse.getId());
+      // Upload PDF to S3 and save URL to Order
+      if (pdfBytes != null && pdfBytes.length > 0) {
+        try {
+          String pdfFileName =
+              "invoice_" + orderResponse.getId() + "_" + System.currentTimeMillis() + ".pdf";
+          String pdfUrl = s3Service.uploadPdfFile(pdfBytes, pdfFileName);
+
+          // Update Order with PDF URL
+          orderRepository
+              .findById(orderResponse.getId())
+              .ifPresent(
+                  order -> {
+                    order.setPdfUrl(pdfUrl);
+                    orderRepository.save(order);
+                    log.info("Updated order {} with PDF URL: {}", orderResponse.getId(), pdfUrl);
+                  });
+
+        } catch (Exception e) {
+          log.error("Failed to upload PDF to S3 for order: {}", orderResponse.getId(), e);
+        }
+      }
+
+      // Send email with PDF attachment
+      if (pdfBytes != null && pdfBytes.length > 0) {
+        sendWithHtmlMailFormatAndPdfAttachment(
+            user.getEmail(),
+            "Xác nhận đơn hàng #" + orderResponse.getId(),
+            "order-confirmation-mail",
+            variables,
+            pdfBytes,
+            "don-hang-" + orderResponse.getId() + ".pdf");
+        log.info(
+            "Order confirmation email with PDF sent to: {} for order: {}",
+            user.getEmail(),
+            orderResponse.getId());
+      } else {
+        // Fallback to sending without PDF if generation failed
+        sendWithHtmlMailFormat(
+            user.getEmail(),
+            "Xác nhận đơn hàng #" + orderResponse.getId(),
+            "order-confirmation-mail",
+            variables);
+        log.info(
+            "Order confirmation email sent (without PDF) to: {} for order: {}",
+            user.getEmail(),
+            orderResponse.getId());
+      }
     } catch (Exception e) {
       log.error("Failed to send order confirmation email for order: {}", orderResponse.getId(), e);
       // Don't rethrow - this is async, we don't want to break the thread
@@ -329,6 +418,20 @@ public class EmailServiceImpl implements IEmailService {
         return "Đã hủy";
       default:
         return status;
+    }
+  }
+
+  private String formatOrderDate(String dateTimeString) {
+    if (dateTimeString == null || dateTimeString.isEmpty()) return "";
+    try {
+      // Parse ISO datetime string to LocalDateTime
+      LocalDateTime dateTime = LocalDateTime.parse(dateTimeString);
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy 'lúc' HH:mm");
+      return dateTime.format(formatter);
+    } catch (Exception e) {
+      // If parsing fails, return original string
+      log.warn("Failed to parse date: {}", dateTimeString, e);
+      return dateTimeString;
     }
   }
 

@@ -20,7 +20,8 @@ public interface IOrderService {
 
   Page<OrderResponse> filterOrders(OrderFilterRequest filter, int page, int size);
 
-  Page<OrderResponse> filterOrdersByUserId(Long userId, OrderFilterRequest filter, int page, int size);
+  Page<OrderResponse> filterOrdersByUserId(
+      Long userId, OrderFilterRequest filter, int page, int size);
 
   int generateSampleOrders(int count) throws Exception;
 

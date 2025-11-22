@@ -182,7 +182,8 @@ public class OrderServiceImpl implements IOrderService {
   }
 
   @Override
-  public Page<OrderResponse> filterOrdersByUserId(Long userId, OrderFilterRequest filter, int page, int size) {
+  public Page<OrderResponse> filterOrdersByUserId(
+      Long userId, OrderFilterRequest filter, int page, int size) {
     // Sort by createdAt descending (newest first) by default
     Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -389,7 +390,8 @@ public class OrderServiceImpl implements IOrderService {
             .orElseThrow(() -> new AppException(ErrorCode.INVALID_INPUT, "Order not found: " + id));
 
     // Check if order is completed - cannot update completed orders
-    if (order.getOrderStatus() == OrderStatus.COMPLETED || order.getOrderStatus() == OrderStatus.CANCELLED) {
+    if (order.getOrderStatus() == OrderStatus.COMPLETED
+        || order.getOrderStatus() == OrderStatus.CANCELLED) {
       throw new AppException(
           ErrorCode.INVALID_INPUT, "Cannot update order with COMPLETED or CANCELLED status");
     }
