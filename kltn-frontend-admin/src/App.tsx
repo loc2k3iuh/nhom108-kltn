@@ -1,7 +1,7 @@
 import {
-  Routes,
-  Route,
-  Navigate,
+    Routes,
+    Route,
+    Navigate,
 } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import SignIn from "./pages/AuthPages/SignIn";
@@ -26,6 +26,10 @@ import ProductVariants from "./pages/Forms/ProductVariants.tsx";
 import CategoryProductList from "./pages/Tables/CategoryProductList.tsx";
 import ProductList from "./pages/Tables/ProductList.tsx";
 import EditVariant from "./pages/Tables/EditVariant.tsx";
+import BrandList from "./pages/Tables/BrandList";
+import SizeList from "./pages/Tables/SizeList";
+import ColorList from "./pages/Tables/ColorList";
+import CategoryList from "./pages/Tables/CategoryList";
 import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import VoucherManagement from "./pages/voucher/VoucherManagement";
@@ -42,184 +46,233 @@ import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
 import Customers from "./pages/Tables/Customers.tsx";
 
 export default function App() {
-  const { checkAuth, authUser, isLoading, isInitialized } =
-    useAuthStore();
-  const {disconnectWebSocket} = useAuthStore();
+    const { checkAuth, authUser, isLoading, isInitialized } =
+        useAuthStore();
+    const {disconnectWebSocket} = useAuthStore();
 
-  useEffect(() => {
-      checkAuth();
-     return () => {
-       disconnectWebSocket();
-     }
-  }, [checkAuth]);
-  console.log("authUser in App.jsx: ", authUser);
+    useEffect(() => {
+        checkAuth();
+        return () => {
+            disconnectWebSocket();
+        }
+    }, [checkAuth]);
+    console.log("authUser in App.jsx: ", authUser);
 
-  useEffect(() => {
-    const handleUnload = async () => {
-        await deleteRefreshTokenFromRedis();
-       
-    };
+    useEffect(() => {
+        const handleUnload = async () => {
+            await deleteRefreshTokenFromRedis();
 
-    window.addEventListener("beforeunload", handleUnload);
+        };
 
-    return () => {
-      window.removeEventListener("beforeunload", handleUnload);
-      handleUnload();
-    };
-  }, []);
-  
-  if (isLoading || !isInitialized) {
-    return <Reloading />;
-  }
+        window.addEventListener("beforeunload", handleUnload);
 
-  return (
-    <>
-      <Toaster />
-      <ScrollToTop />
-      <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route
-              index
-              path="/"
-              element={authUser ? <Home /> : <Navigate to="/signin" />}
-            />
+        return () => {
+            window.removeEventListener("beforeunload", handleUnload);
+            handleUnload();
+        };
+    }, []);
 
-            {/* Others Page */}
-            <Route
-              path="/profile"
-              element={authUser ? <UserProfiles /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/calendar"
-              element={authUser ? <Calendar /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/vouchers"
-              element={authUser ? <VoucherManagement /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/orders/:id"
-              element={authUser ? <OrderDetail /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/orders"
-              element={authUser ? <OrderList /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/blank"
-              element={authUser ? <Blank /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/account-settings"
-              element={authUser ? <AccountSettings /> : <Navigate to="/signin" />}
-            />
+    if (isLoading || !isInitialized) {
+        return <Reloading />;
+    }
 
-            {/* Forms */}
-            <Route
-              path="/form-elements"
-              element={authUser ? <FormElements /> : <Navigate to="/signin" />}
-            />
+    return (
+        <>
+            <Toaster />
+            <ScrollToTop />
+            <Routes>
+                {/* Dashboard Layout */}
+                <Route element={<AppLayout />}>
+                    <Route
+                        index
+                        path="/"
+                        element={authUser ? <Home /> : <Navigate to="/signin" />}
+                    />
 
-            {/* Tables */}
-            <Route
-              path="/basic-tables"
-              element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
-               />
-          
-            <Route
-              path="/forms/form-elements"
-              element={authUser ? <FormElements /> : <Navigate to="/signin" />}
-            />
-            <Route
-                path="/forms/products"
-                element={authUser ? <Products /> : <Navigate to="/signin" />}
-            />
-            <Route
-                path="/forms/products-variants"
-                element={authUser ? <ProductVariants /> : <Navigate to="/signin" />}
-            />
+                    {/* Others Page */}
+                    <Route
+                        path="/profile"
+                        element={authUser ? <UserProfiles /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/calendar"
+                        element={authUser ? <Calendar /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/vouchers"
+                        element={authUser ? <VoucherManagement /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/orders/:id"
+                        element={authUser ? <OrderDetail /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/orders"
+                        element={authUser ? <OrderList /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/blank"
+                        element={authUser ? <Blank /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/account-settings"
+                        element={authUser ? <AccountSettings /> : <Navigate to="/signin" />}
+                    />
 
-            {/* Tables */}
-            <Route
-              path="/tables/category-product-list"
-              element={authUser ? <CategoryProductList /> : <Navigate to="/signin" />}
-            />
-            <Route
-                path="/tables/product-list/:id"
-                element={authUser ? <ProductList /> : <Navigate to="/signin" />}
-            />
-            <Route
-                path="/tables/customers"
-                element={authUser ? <Customers /> : <Navigate to="/signin" />}
-            />
-            <Route
-                path="/tables/edit-variant/:variantId"
-                element={authUser ? <EditVariant /> : <Navigate to="/signin" />}
-            />
+                    {/* Forms */}
+                    <Route
+                        path="/form-elements"
+                        element={authUser ? <FormElements /> : <Navigate to="/signin" />}
+                    />
 
-            {/* Ui Elements */}
-            <Route
-              path="/alerts"
-              element={authUser ? <Alerts /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/avatars"
-              element={authUser ? <Avatars /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/badge"
-              element={authUser ? <Badges /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/buttons"
-              element={authUser ? <Buttons /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/images"
-              element={authUser ? <Images /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/videos"
-              element={authUser ? <Videos /> : <Navigate to="/signin" />}
-            />
+                    <Route
+                        path="/forms/products"
+                        element={authUser ? <Products /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/forms/products-variants"
+                        element={authUser ? <ProductVariants /> : <Navigate to="/signin" />}
+                    />
 
-            {/* Charts */}
-            <Route
-              path="/line-chart"
-              element={authUser ? <LineChart /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="/bar-chart"
-              element={authUser ? <BarChart /> : <Navigate to="/signin" />}
-            />
-          </Route>
+                    {/* Tables */}
+                    <Route
+                        path="/basic-tables"
+                        element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
+                    />
 
-          {/* Auth Layout */}
-          <Route
-            path="/signin"
-            element={!authUser ? <SignIn /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/signup"
-            element={!authUser ? <SignUp /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/otp-verification"
-            element={!authUser ? <OtpVerification /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/forgot-password"
-            element={!authUser ? <ForgotPassword /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/reset-password"
-            element={!authUser ? <ResetPassword /> : <Navigate to="/" />}
-          />
+                    <Route
+                        path="/forms/form-elements"
+                        element={authUser ? <FormElements /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/forms/products"
+                        element={authUser ? <Products /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/forms/products-variants"
+                        element={authUser ? <ProductVariants /> : <Navigate to="/signin" />}
+                    />
 
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-    </>
-  );
+                    {/* Tables */}
+                    <Route
+                        path="/tables/customers"
+                        element={authUser ? <Customers /> : <Navigate to="/signin" />}
+                    />
+
+
+
+
+
+
+
+                    <Route
+                        path="/tables/category-product-list"
+                        element={authUser ? <CategoryProductList /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/tables/product-list/:id"
+                        element={authUser ? <ProductList /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/tables/brand-list"
+                        element={authUser ? <BrandList /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/tables/category-list"
+                        element={authUser ? <CategoryList /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/tables/size-list"
+                        element={authUser ? <SizeList /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/tables/color-list"
+                        element={authUser ? <ColorList /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/tables/basic-tables"
+                        element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/tables/edit-variant/:variantId"
+                        element={authUser ? <EditVariant /> : <Navigate to="/signin" />}
+                    />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    {/* Ui Elements */}
+                    <Route
+                        path="/alerts"
+                        element={authUser ? <Alerts /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/avatars"
+                        element={authUser ? <Avatars /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/badge"
+                        element={authUser ? <Badges /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/buttons"
+                        element={authUser ? <Buttons /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/images"
+                        element={authUser ? <Images /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/videos"
+                        element={authUser ? <Videos /> : <Navigate to="/signin" />}
+                    />
+
+                    {/* Charts */}
+                    <Route
+                        path="/line-chart"
+                        element={authUser ? <LineChart /> : <Navigate to="/signin" />}
+                    />
+                    <Route
+                        path="/bar-chart"
+                        element={authUser ? <BarChart /> : <Navigate to="/signin" />}
+                    />
+                </Route>
+
+                {/* Auth Layout */}
+                <Route
+                    path="/signin"
+                    element={!authUser ? <SignIn /> : <Navigate to="/" />}
+                />
+                <Route
+                    path="/signup"
+                    element={!authUser ? <SignUp /> : <Navigate to="/" />}
+                />
+                <Route
+                    path="/otp-verification"
+                    element={!authUser ? <OtpVerification /> : <Navigate to="/" />}
+                />
+                <Route
+                    path="/forgot-password"
+                    element={!authUser ? <ForgotPassword /> : <Navigate to="/" />}
+                />
+                <Route
+                    path="/reset-password"
+                    element={!authUser ? <ResetPassword /> : <Navigate to="/" />}
+                />
+
+                {/* Fallback Route */}
+                <Route path="*" element={<NotFound />} />
+            </Routes>
+        </>
+    );
 }
