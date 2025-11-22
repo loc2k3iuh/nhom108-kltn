@@ -124,7 +124,7 @@ const OrderSuccess: React.FC<OrderSuccessProps> = () => {
                 <div className="mt-4 pt-3 border-t border-gray-100">
                   <p className="text-sm font-medium">Phương thức thanh toán:</p>
                   <p className="text-sm mt-1">
-                    {orderDetails.payment_method === 'CASH_ON_DELIVERY' 
+                    {orderDetails.payment_method === 'COD' 
                       ? 'Thanh toán khi nhận hàng (COD)' 
                       : 'Thanh toán qua VNPay'}
                   </p>
@@ -159,7 +159,7 @@ const OrderSuccess: React.FC<OrderSuccessProps> = () => {
                   
                   <div className="flex">
                     <Phone className="h-5 w-5 mr-2 text-gray-400 flex-shrink-0" />
-                    <p>{orderDetails.phone_number}</p>
+                    <p>{orderDetails.receiver_phone}</p>
                   </div>
                   
                   <div className="flex">

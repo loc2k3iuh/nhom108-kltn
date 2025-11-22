@@ -61,4 +61,7 @@ public class Order {
 
   @Column(name = "voucher_code", length = 50)
   private String voucherCode;
+
+  @Column(name = "pdf_url", length = 500)
+  private String pdfUrl;
 }

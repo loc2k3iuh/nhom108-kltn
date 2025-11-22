@@ -64,6 +64,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.xhtmlrenderer:flying-saucer-pdf:9.11.6'
+	implementation 'com.github.librepdf:openpdf:2.0.3'
+
+
 
 
 }

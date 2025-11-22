@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Hóa đơn đơn hàng</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial Unicode MS', Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: #667eea;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 12px;
+            margin: 15px 0;
+            border-left: 3px solid #667eea;
+        }
+
+        .info-box h2 {
+            font-size: 12px;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .info-row {
+            display: table;
+            width: 100%;
+            padding: 4px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            display: table-cell;
+            color: #6c757d;
+            font-size: 10px;
+            width: 40%;
+        }
+
+        .info-value {
+            display: table-cell;
+            color: #333;
+            font-weight: 500;
+            font-size: 10px;
+            text-align: right;
+        }
+
+        .section-title {
+            font-size: 13px;
+            color: #333;
+            margin: 15px 0 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #667eea;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th, td {
+            padding: 6px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-size: 10px;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: 600;
+            font-size: 10px;
+        }
+
+        .product-name {
+            font-weight: 500;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .shipping-info {
+            background-color: #e7f3ff;
+            padding: 12px;
+            margin: 15px 0;
+        }
+
+        .shipping-info h3 {
+            font-size: 12px;
+            color: #0066cc;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .shipping-detail {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .shipping-detail strong {
+            color: #0066cc;
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        .total-section {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+        }
+
+        .total-row {
+            display: table;
+            width: 100%;
+            padding: 5px 0;
+            font-size: 10px;
+        }
+
+        .total-label {
+            display: table-cell;
+            color: #6c757d;
+        }
+
+        .total-value {
+            display: table-cell;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #dee2e6;
+            margin: 8px 0;
+        }
+
+        .final-total {
+            background-color: #667eea;
+            color: white;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .final-total .total-row {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .final-total .total-label,
+        .final-total .total-value {
+            color: white;
+        }
+
+        .note-section {
+            background-color: #fff3cd;
+            border-left: 3px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+
+        .note-section strong {
+            color: #856404;
+            font-size: 10px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .note-section p {
+            color: #856404;
+            font-size: 9px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+        }
+
+        .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background-color: #ffc107;
+            color: #000;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>HÓA ĐƠN ĐƠN HÀNG</h1>
+            <p>Cảm ơn bạn đã mua hàng tại cửa hàng chúng tôi</p>
+        </div>
+
+        <!-- Order Info -->
+        <div class="info-box">
+            <h2>📋 Thông tin đơn hàng</h2>
+            <div class="info-row">
+                <span class="info-label">Mã đơn hàng:</span>
+                <span class="info-value highlight" th:text="'#' + ${orderId}">#123456</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ngày đặt:</span>
+                <span class="info-value" th:text="${orderDate}">04/11/2025 10:30</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Trạng thái:</span>
+                <span class="info-value status-text" th:text="${orderStatus}">Đang xử lý</span>
+            </div>
+            <div class="info-row" th:if="${voucherCode != null}">
+                <span class="info-label">Mã giảm giá:</span>
+                <span class="info-value highlight" th:text="${voucherCode}">FREESHIP50K</span>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <h3 class="section-title">🛍️ Sản phẩm đã đặt</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th class="text-center">Số lượng</th>
+                    <th class="text-right">Đơn giá</th>
+                    <th class="text-right">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${orderItems}">
+                    <td class="product-name" th:text="${item.productName}">Tên sản phẩm</td>
+                    <td class="text-center" th:text="${item.quantity}">1</td>
+                    <td class="text-right" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">800,000 ₫</td>
+                    <td class="text-right" th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' ₫'">800,000 ₫</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Shipping Info -->
+        <h3 class="section-title">🚚 Thông tin giao hàng</h3>
+        <div class="shipping-info">
+            <h3>Địa chỉ nhận hàng</h3>
+            <div class="shipping-detail">
+                <strong>Người nhận:</strong>
+                <span th:text="${receiverName}">Nguyễn Văn A</span>
+            </div>
+            <div class="shipping-detail">
+                <strong>Số điện thoại:</strong>
+                <span th:text="${receiverPhone}">0901234567</span>
+            </div>
+            <div class="shipping-detail">
+                <strong>Địa chỉ:</strong>
+                <span th:text="${fullAddress}">123 ABC Street</span>
+            </div>
+            <div class="shipping-detail">
+                <strong>Phương thức:</strong>
+                <span th:text="${shippingMethod}">Giao hàng tiêu chuẩn</span>
+            </div>
+        </div>
+
+        <!-- Note -->
+        <div class="note-section" th:if="${note != null and note != ''}">
+            <strong>📝 Ghi chú đơn hàng:</strong>
+            <p th:text="${note}">Ghi chú của khách hàng</p>
+        </div>
+
+        <!-- Total -->
+        <div class="total-section">
+            <div class="total-row">
+                <span class="total-label">Tổng tiền sản phẩm:</span>
+                <span class="total-value" th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">2,100,000 ₫</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Phí vận chuyển:</span>
+                <span class="total-value" th:text="${shippingCost == 0 ? 'Miễn phí' : #numbers.formatDecimal(shippingCost, 0, 'COMMA', 0, 'POINT') + ' ₫'}">30,000 ₫</span>
+            </div>
+            <div class="total-row" th:if="${discountAmount > 0}">
+                <span class="total-label">Giảm giá (Voucher):</span>
+                <span class="total-value" style="color: #dc3545;" th:text="'-' + ${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">-50,000 ₫</span>
+            </div>
+            <div class="divider"></div>
+            <div class="final-total">
+                <div class="total-row">
+                    <span class="total-label">TỔNG THANH TOÁN:</span>
+                    <span class="total-value" th:text="${#numbers.formatDecimal(finalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">2,080,000 ₫</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="info-box">
+            <h2>💳 Phương thức thanh toán</h2>
+            <div class="info-row">
+                <span class="info-value" th:text="${paymentMethod}">COD - Thanh toán khi nhận hàng</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Cảm ơn bạn đã tin tưởng và mua sắm tại cửa hàng chúng tôi!</p>
+            <p style="margin-top: 8px;">Mã đơn hàng: <span th:text="'#' + ${orderId}">#123456</span></p>
+            <p style="margin-top: 5px;">© 2025 Your Store. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+

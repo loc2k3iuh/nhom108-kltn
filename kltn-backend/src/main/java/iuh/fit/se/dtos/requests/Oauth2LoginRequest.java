@@ -1,6 +1,5 @@
 package iuh.fit.se.dtos.requests;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
@@ -15,22 +14,21 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Oauth2LoginRequest {
 
-    @NotBlank(message = "EMAIL_REQUIRED")
-    String email;
+  @NotBlank(message = "EMAIL_REQUIRED")
+  String email;
 
-    @NotBlank(message = "FULLNAME_REQUIRED")
-    @JsonProperty("full_name")
-    String fullName;
+  @NotBlank(message = "FULLNAME_REQUIRED")
+  @JsonProperty("full_name")
+  String fullName;
 
-    String avatar;
+  String avatar;
 
-    @JsonProperty("is_remembered")
-    Boolean isRemembered;
+  @JsonProperty("is_remembered")
+  Boolean isRemembered;
 
+  @JsonProperty("google_id")
+  String googleId;
 
-    @JsonProperty("google_id")
-    String googleId;
-
-    @JsonProperty("facebook_id")
-    String facebookId;
+  @JsonProperty("facebook_id")
+  String facebookId;
 }
