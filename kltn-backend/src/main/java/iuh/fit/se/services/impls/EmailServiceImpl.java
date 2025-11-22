@@ -43,11 +43,11 @@ public class EmailServiceImpl implements IEmailService {
   Random random = new Random();
 
   @NonFinal
-  @Value("${vite.frontend.admin.url}")
+  @Value("${vite.front-end.admin.url}")
   String FRONTEND_ADMIN_URL;
 
   @NonFinal
-  @Value("${vite.frontend.client.url}")
+  @Value("${vite.front-end.client.url}")
   String FRONTEND_CLIENT_URL;
 
   private String generateResetToken() {

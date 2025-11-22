@@ -48,7 +48,7 @@ public class UserServiceImpl implements IUserService {
   UserMapper userMapper;
 
   @NonFinal
-  @Value("${client.url}")
+  @Value("${vite.front-end.client.url}")
   String clientUrl;
 
   @Override
