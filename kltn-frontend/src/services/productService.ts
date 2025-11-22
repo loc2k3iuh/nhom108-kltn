@@ -96,6 +96,24 @@ export const getNewestProducts = async (size: number = 10): Promise<Product[]> =
 };
 
 /**
+ * Get products by category.
+ * @param categoryId - The ID of the category.
+ * @param size - Number of products to fetch.
+ * @returns Promise<Product[]>
+ */
+export const getProductsByCategory = async (categoryId: number, size: number = 10): Promise<Product[]> => {
+    const payload: FilterPayload = {
+        status: "ACTIVE",
+        categoryIds: [categoryId],
+        page: 0,
+        size: size,
+    };
+
+    const paginatedResponse = await filterProducts(payload);
+    return paginatedResponse.content;
+};
+
+/**
  * Fetches a single product by its ID.
  * @param id - The ID of the product.
  * @returns Promise<ProductDetail>

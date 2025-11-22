@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletions/Reloading";
 import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
+import { ScrollToTop } from "./components/common/ScrollToTop";
 import { addToCart } from "./services/cartService";
 import { AddToCartPayload } from "./types/cart";
 
@@ -176,6 +177,9 @@ export default function App() {
   }
 
   return (
+      <>
+          <Toaster />
+          <ScrollToTop />
    
       <Routes>
         {/* Main Fashion E-commerce Layout */}
@@ -187,24 +191,25 @@ export default function App() {
           <Route path="/products" element={<Layout><ProductListPage /></Layout>} />
           <Route path="/category/:categoryId" element={<Layout><ProductListPage /></Layout>} />
           <Route path="/product/:id" element={<Layout><Product /></Layout>} />
-          <Route path="/search" element={<SearchPage />} />
+          <Route path="/search" element={<Layout><SearchPage /></Layout>} />
 
           {/* User Profile Pages - Require Authentication */}
           <Route path="/profile" element={authUser ? <Layout> <UserPage /> </Layout>: <Navigate to="/signin" />} />
        
-          <Route path="/user/edit" element={authUser ? <EditUser /> : <Navigate to="/signin" />} />
+          <Route path="/user/edit" element={authUser ? <Layout><EditUser /></Layout> : <Navigate to="/signin" />} />
           <Route path="/change-password" element={authUser ? <Layout>  <ChangePassword />  </Layout> : <Navigate to="/signin" />} />
           
           {/* Address Management */}
-          <Route path="/user/addresses" element={authUser ? <AddressesPage /> : <Navigate to="/signin" />} />
-          <Route path="/user/addresses/new" element={authUser ? <NewAddress /> : <Navigate to="/signin" />} />
-          <Route path="/user/addresses/edit/:id" element={authUser ? <EditAddress /> : <Navigate to="/signin" />} />
+          <Route path="/user/addresses" element={authUser ? <Layout><AddressesPage /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/user/addresses/new" element={authUser ? <Layout><NewAddress /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/user/addresses/edit/:id" element={authUser ? <Layout><EditAddress /></Layout> : <Navigate to="/signin" />} />
 
           {/* Shopping Pages */}
           <Route path="/cart" element={ <Layout><Cart /></Layout>} />
           <Route path="/orders" element={authUser ? <Layout><OrderList /></Layout> : <Navigate to="/signin" />} />
            <Route path="/order-success" element={authUser ? <Layout><OrderSuccess /></Layout> : <Navigate to="/signin" />} />
           <Route path="/favorites" element={authUser ? <Layout><FavoritesPage /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/reviews" element={authUser ? <Layout><UserReviews /></Layout> : <Navigate to="/signin" />} />
           <Route path="/voucher" element={authUser ? <Layout><VoucherPage /></Layout> : <Navigate to="/signin" />} />
 
           {/* Payment Pages */}
@@ -214,16 +219,16 @@ export default function App() {
 
 
           {/* Review Pages */}
-          <Route path="/user/reviews" element={authUser ? <UserReviews /> : <Navigate to="/signin" />} />
+          <Route path="/user/reviews" element={authUser ? <Layout><UserReviews /></Layout> : <Navigate to="/signin" />} />
 
 
           {/* Information Pages */}
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/shipping-policy" element={<ShippingPolicy />} />
+          <Route path="/about" element={<Layout><AboutPage /></Layout>} />
+          <Route path="/faq" element={<Layout><FAQ /></Layout>} />
+          <Route path="/help" element={<Layout><Help /></Layout>} />
+          <Route path="/privacy-policy" element={<Layout><PrivacyPolicy /></Layout>} />
+          <Route path="/terms-of-service" element={<Layout><TermsOfService /></Layout>} />
+          <Route path="/shipping-policy" element={<Layout><ShippingPolicy /></Layout>} />
           
     
 
@@ -239,8 +244,9 @@ export default function App() {
         <Route path="/not-authenticated" element={<NotAuthenticatedPage />} />
 
         {/* Fallback Route */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<Layout><NotFound /></Layout>} />
       </Routes>
-  
+
+</>
   );
 }
