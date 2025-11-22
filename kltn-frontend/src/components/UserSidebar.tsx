@@ -67,15 +67,12 @@ const UserSidebar: React.FC = () => {
                         <li className={`py-1 ${isActive('address') ? 'text-red-500' : 'hover:text-red-500'} cursor-pointer`}>
                             <Link to="/user/addresses">Số địa chỉ</Link>
                         </li>
-                        <li className={`py-1 ${isActive('/user/change-password') ? 'text-red-500' : 'hover:text-red-500'} cursor-pointer`}>
+                       {!authUser?.is_oauth2 && (
+                         <li className={`py-1 ${isActive('/user/change-password') ? 'text-red-500' : 'hover:text-red-500'} cursor-pointer`}>
                             <Link to="/change-password">Đổi mật khẩu</Link>
                         </li>
-                        {/* <li className="py-1 hover:text-red-500 cursor-pointer">
-                            <Link to="/user/invoice">Thông tin xuất hóa đơn GTGT</Link>
-                        </li>
-                        <li className="py-1 hover:text-red-500 cursor-pointer">
-                            <Link to="/user/membership">Ưu đãi thành viên</Link>
-                        </li> */}
+                       )}
+                       
                     </ul>
                 )}
 

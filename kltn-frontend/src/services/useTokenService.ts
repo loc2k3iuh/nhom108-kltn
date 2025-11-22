@@ -15,7 +15,7 @@ export const getTokenFromSessionStorage = (): string => {
   return sessionStorage.getItem(ACCESS_TOKEN_KEY) ?? "";
 };
 
-export const setAccessTokenToLocalStorage = (accessToken: string): void => {
+export const setAccessTokenToLocalStorage = (accessToken: string ): void => {
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   sessionStorage.removeItem(ACCESS_TOKEN_KEY);
 };

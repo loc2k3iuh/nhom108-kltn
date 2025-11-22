@@ -6,12 +6,11 @@ import { toast } from "sonner";
 
 interface UserMenuProps {
   isOpen: boolean;
-  isLoggedIn: boolean;
   authUser: UserResponse | null;
   onToggle: () => void;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onToggle }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ isOpen, authUser, onToggle }) => {
   const {isLoading, logOut} = useAuthStore();
   const navigate = useNavigate();
 
@@ -27,7 +26,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onTog
   return (
     <div className="flex flex-col cursor-pointer justify-center items-center relative">
       <div onClick={onToggle} className="flex flex-col items-center">
-        {isLoggedIn && authUser ? (
+        {authUser ? (
           <div className="w-[24px] h-[24px] rounded-full overflow-hidden border border-gray-200">
             <img
               src={authUser.avatar_url ?? undefined}
@@ -47,7 +46,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onTog
 
       {isOpen && (
         <div className="absolute top-[calc(100%+15px)] right-0 bg-white shadow-md rounded-md p-4 w-[300px] z-10">
-          {isLoggedIn && authUser ? (
+          { authUser ? (
             <>
               <div className="flex flex-col">
                 <span  onClick={() => {navigate("/profile")}} className="flex items-center p-4 border-b border-gray-100">
@@ -63,7 +62,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onTog
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-800">{authUser.full_name || authUser.username}</h3>
-                    <p className="text-sm text-gray-500">Thành viên Vuvisa</p>
+                    <p className="text-sm text-gray-500">Thành viên Davinci</p>
                   </div>
                   <div className="text-gray-400">
                     <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -73,7 +72,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onTog
                 </span>
               </div>
 
-              <a href="/user/orders" className="flex items-center p-3 hover:bg-gray-50">
+              <span onClick={() => {navigate("/orders")}} className="flex items-center p-3 hover:bg-gray-50">
                 <div className="w-8 h-8 flex items-center justify-center mr-3 text-gray-500">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M17 3H7C6.46957 3 5.96086 3.21071 5.58579 3.58579C5.21071 3.96086 5 4.46957 5 5V19C5 19.5304 5.21071 20.0391 5.58579 20.4142C5.96086 20.7893 6.46957 21 7 21H17C17.5304 21 18.0391 20.7893 18.4142 20.4142C18.7893 20.0391 19 19.5304 19 19V5C19 4.46957 18.7893 3.96086 18.4142 3.58579C18.0391 3.21071 17.5304 3 17 3Z" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -83,18 +82,18 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onTog
                   </svg>
                 </div>
                 <span className="text-gray-600">Đơn hàng của tôi</span>
-              </a>
+              </span>
 
-              <a href="/user/wishlist" className="flex items-center p-3 hover:bg-gray-50">
+              <span onClick={() => {navigate("/user/wishlist")}} className="flex items-center p-3 hover:bg-gray-50">
                 <div className="w-8 h-8 flex items-center justify-center mr-3 text-gray-500">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
                 <span className="text-gray-600">Sản phẩm yêu thích</span>
-              </a>
+              </span>
 
-              <a href="/voucher" className="flex items-center p-3 hover:bg-gray-50">
+              <span onClick={() => {navigate("/voucher")}} className="flex items-center p-3 hover:bg-gray-50">
                 <div className="w-8 h-8 flex items-center justify-center mr-3 text-gray-500">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 12V22H4V12" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -105,7 +104,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, isLoggedIn, authUser, onTog
                   </svg>
                 </div>
                 <span className="text-gray-600">Wallet Voucher</span>
-              </a>
+              </span>
 
               <button onClick={onLogout} disabled={isLoading} className="flex items-center p-3 hover:bg-gray-50 border-t border-gray-100 w-full text-left cursor-pointer">
                 <div className="w-8 h-8 flex items-center justify-center mr-3 text-gray-500">

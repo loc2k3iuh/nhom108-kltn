@@ -1,4 +1,3 @@
-
 export interface LoginResponse {
     authenticated: boolean;
     access_token: string;

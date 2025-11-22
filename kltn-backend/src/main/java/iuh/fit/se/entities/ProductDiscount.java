@@ -12,14 +12,15 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Table(name = "product_discounts")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@IdClass(ProductDiscountId.class)
 public class ProductDiscount {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @ManyToOne
   @JoinColumn(name = "product_id")
   Product product;
 
+  @Id
   @ManyToOne
   @JoinColumn(name = "discount_id")
   Discount discount;

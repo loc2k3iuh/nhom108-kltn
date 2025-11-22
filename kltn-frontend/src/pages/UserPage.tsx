@@ -1,10 +1,9 @@
 import  { useState, useEffect, ChangeEvent } from "react";
 import { toast } from "sonner";
 import UserSidebar from "../components/UserSidebar";
-import DashboardSummary from "../components/user/DashboardSummary";
 import UserProfile from "../components/user/UserProfile";
-import ProductSuggestions from "../components/user/ProductSuggestions";
-import NewsletterSignup from "../components/user/NewsletterSignup";
+import DashboardSummary from "@/components/user/DashboardSummary";
+import NewsletterSignup from "@/components/user/NewsletterSignup";
 
 interface ValidationErrors {
     fullName?: string;
@@ -73,7 +72,7 @@ const UserPage = () => {
             </div>
 
             {/* Product Suggestions */}
-            <ProductSuggestions products={products} />
+    
 
             {/* Newsletter */}
             <NewsletterSignup />

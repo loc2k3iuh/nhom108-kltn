@@ -1,12 +1,43 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
+import { getThisMonthStats, getTodayStats, DashboardStatsResponse } from "@/services/statisticsService";
 
 export default function MonthlyTarget() {
-  const series = [75.55];
+  const [monthStats, setMonthStats] = useState<DashboardStatsResponse | null>(null);
+  const [todayStats, setTodayStats] = useState<DashboardStatsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [month, today] = await Promise.all([
+          getThisMonthStats(),
+          getTodayStats()
+        ]);
+        setMonthStats(month);
+        setTodayStats(today);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // Calculate completion percentage
+  const TARGET = 100000000; // 100 million VND target
+  const completionPercentage = monthStats 
+    ? Math.min((monthStats.totalRevenue / TARGET) * 100, 100) 
+    : 0;
+
+  const series = [Number(completionPercentage.toFixed(2))];
   const options: ApexOptions = {
     colors: ["#465FFF"],
     chart: {
@@ -54,7 +85,6 @@ export default function MonthlyTarget() {
     },
     labels: ["Progress"],
   };
-  const [isOpen, setIsOpen] = useState(false);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -63,16 +93,28 @@ export default function MonthlyTarget() {
   function closeDropdown() {
     setIsOpen(false);
   }
+  
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03] animate-pulse">
+        <div className="px-5 pt-5 bg-white shadow-default rounded-2xl pb-11 dark:bg-gray-900 sm:px-6 sm:pt-6">
+          <div className="h-6 bg-gray-200 rounded dark:bg-gray-700 w-40 mb-4"></div>
+          <div className="h-[330px] bg-gray-200 rounded dark:bg-gray-700"></div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="px-5 pt-5 bg-white shadow-default rounded-2xl pb-11 dark:bg-gray-900 sm:px-6 sm:pt-6">
         <div className="flex justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-              Monthly Target
+              Mục tiêu tháng này
             </h3>
             <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
-              Target you’ve set for each month
+              Doanh thu tháng {new Date().getMonth() + 1}/{new Date().getFullYear()}
             </p>
           </div>
           <div className="relative inline-block">
@@ -110,22 +152,23 @@ export default function MonthlyTarget() {
           </div>
 
           <span className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-[95%] rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-            +10%
+            {completionPercentage >= 100 ? 'Hoàn thành!' : `${completionPercentage.toFixed(1)}%`}
           </span>
         </div>
         <p className="mx-auto mt-10 w-full max-w-[380px] text-center text-sm text-gray-500 sm:text-base">
-          You earn $3287 today, it's higher than last month. Keep up your good
-          work!
+          {monthStats && monthStats.totalRevenue > 0 
+            ? `Tháng này bạn đã đạt ${(monthStats.totalRevenue / 1000000).toFixed(1)} triệu VNĐ. ${completionPercentage >= 100 ? 'Xuất sắc!' : 'Tiếp tục phát huy!'}`
+            : 'Chưa có doanh thu trong tháng này'}
         </p>
       </div>
 
       <div className="flex items-center justify-center gap-5 px-6 py-3.5 sm:gap-8 sm:py-5">
         <div>
           <p className="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
-            Target
+            Mục tiêu
           </p>
           <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-            $20K
+            {(TARGET / 1000000).toFixed(0)}M
             <svg
               width="16"
               height="16"
@@ -147,10 +190,10 @@ export default function MonthlyTarget() {
 
         <div>
           <p className="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
-            Revenue
+            Doanh thu tháng
           </p>
           <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-            $20K
+            {monthStats ? (monthStats.totalRevenue / 1000000).toFixed(1) : 0}M
             <svg
               width="16"
               height="16"
@@ -172,10 +215,10 @@ export default function MonthlyTarget() {
 
         <div>
           <p className="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
-            Today
+            Hôm nay
           </p>
           <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-            $20K
+            {todayStats ? (todayStats.totalRevenue / 1000000).toFixed(1) : 0}M
             <svg
               width="16"
               height="16"

@@ -19,9 +19,7 @@ import java.util.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -46,10 +44,6 @@ public class UserServiceImpl implements IUserService {
   RoleRepository roleRepository;
   IConfirmationTokenService iConfirmationTokenService;
 
-  @NonFinal
-  @Value("${client.url}")
-  String clientUrl;
-
   @Override
   @Transactional
   public boolean createUser(RegisterUserRequest request) throws Exception {
@@ -64,7 +58,6 @@ public class UserServiceImpl implements IUserService {
         throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
       }
 
-      // Cập nhật thông tin user chưa xác thực
       existingUser.setUsername(request.getUsername());
       existingUser.setFullName(request.getFullName());
 
@@ -157,8 +150,6 @@ public class UserServiceImpl implements IUserService {
     iConfirmationTokenService.deleteTokensByUser(existUser);
 
     String token = iConfirmationTokenService.createConfirmationToken(existUser);
-
-    String link = clientUrl + "/user/register-success?token=" + token;
   }
 
   @Override

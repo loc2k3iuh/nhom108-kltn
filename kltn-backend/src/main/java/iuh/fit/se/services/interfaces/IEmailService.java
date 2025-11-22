@@ -3,6 +3,7 @@ package iuh.fit.se.services.interfaces;
 import iuh.fit.se.dtos.requests.ResenOtpRequest;
 import iuh.fit.se.dtos.requests.VerifyOtpRequest;
 import iuh.fit.se.dtos.requests.VerifyRegistrationRequest;
+import iuh.fit.se.dtos.responses.OrderResponse;
 import iuh.fit.se.entities.User;
 import jakarta.mail.MessagingException;
 
@@ -18,4 +19,6 @@ public interface IEmailService {
   boolean verifyOtp(VerifyOtpRequest verifyOtpRequest);
 
   boolean verifyRegistration(VerifyRegistrationRequest verifyRegistrationRequest);
+
+  void sendOrderConfirmation(OrderResponse orderResponse) throws MessagingException;
 }

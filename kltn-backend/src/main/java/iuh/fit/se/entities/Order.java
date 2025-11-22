@@ -40,6 +40,8 @@ public class Order {
   @Enumerated(EnumType.STRING)
   OrderStatus orderStatus;
 
+  String note;
+
   @Column(name = "created_at")
   @CreationTimestamp
   LocalDateTime createdAt;
@@ -56,4 +58,7 @@ public class Order {
 
   @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private Shipping shipping;
+
+  @Column(name = "voucher_code", length = 50)
+  private String voucherCode;
 }

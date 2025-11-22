@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ICalendarEventService {
 
-    void delete(Long id);
+  void delete(Long id);
 
   CalendarEventResponse create(CalendarEventRequest request);
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { CheckCircle, Package, ArrowRight, ShoppingBag, FileText, Home, MapPin, Phone, Calendar, Truck } from 'lucide-react';
+import { CheckCircle, Package, ShoppingBag, FileText, Home, MapPin, Phone, Calendar, Truck } from 'lucide-react';
 
 interface OrderSuccessProps {}
 
@@ -199,7 +199,7 @@ const OrderSuccess: React.FC<OrderSuccessProps> = () => {
             Quay về trang chủ
           </Link>
           
-          <Link to="/user/orders" className="bg-blue-500 text-white hover:bg-blue-600 font-medium px-6 py-3 rounded-lg flex items-center justify-center transition-colors">
+          <Link to="/orders" className="bg-blue-500 text-white hover:bg-blue-600 font-medium px-6 py-3 rounded-lg flex items-center justify-center transition-colors">
             <FileText className="h-4 w-4 mr-2" />
             Xem đơn hàng của tôi
           </Link>

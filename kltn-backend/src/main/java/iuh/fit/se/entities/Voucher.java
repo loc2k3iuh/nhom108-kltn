@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter
@@ -54,6 +55,10 @@ public class Voucher {
   LocalDateTime endDate;
 
   Boolean active = true;
+
+  @Column(name = "created_date")
+  @CreationTimestamp
+  LocalDateTime createdDate;
 
   @OneToMany(mappedBy = "voucher", cascade = CascadeType.ALL, orphanRemoval = true)
   List<UserVoucher> userVouchers = new ArrayList<>();

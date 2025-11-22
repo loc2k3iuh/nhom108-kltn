@@ -6,14 +6,12 @@ import {
   getUserIdFromToken,
   removeToken,
 } from "@/services/useTokenService";
-import {
-  getUserDetailFromToken,
-  updateUserService,
-} from "@/services/useUserService";
+import { getUserDetailFromToken, updateUserService } from "@/services/useUserService";
 import { LogoutRequest } from "@/types/requests/authRequest";
 import { UpdateUserRequest } from "@/types/requests/useRequest";
 import { UserResponse } from "@/types/responses/userResponse";
-import { data } from "react-router-dom";
+
+
 import { create } from "zustand";
 
 interface AuthStore {

@@ -66,6 +66,14 @@ public class AuthenticationController {
         .build();
   }
 
+  @PostMapping("/login-oauth2")
+  public  APIResponse<LoginResponse> oauth2Login(@RequestBody @Valid Oauth2LoginRequest oauth2LoginRequest, HttpServletResponse httpServletResponse) throws JOSEException {
+      return  APIResponse.<LoginResponse>builder()
+              .message("Login successfully !")
+              .result(iAuthenticationService.authenticateClientByOauth2(oauth2LoginRequest, httpServletResponse))
+              .build();
+  }
+
   @PostMapping("/admin/resend-otp")
   public APIResponse<Void> resendOtp(@Valid @RequestBody ResenOtpRequest resenOtpRequest)
       throws MessagingException {

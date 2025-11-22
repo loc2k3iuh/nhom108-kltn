@@ -38,20 +38,29 @@ public class SecurityConfig {
   String[] ALLOWED_ORIGINS;
 
   String[] PUBLIC_POST_ENDPOINTS = {
-    "/api/v1/auth/admin/login",
     "/api/v1/auth/login",
+    "/api/v1/auth/admin/login",
     "/api/v1/auth/login-temporarily",
-    "/api/v1/users/register",
-    "/api/v1/users/confirm_user",
+    "/api/v1/register",
     "/api/v1/auth/logout",
-    "/api/v1/auth/admin/verify-otp",
-    "/api/v1/auth/admin/resend-otp",
+    "/api/v1/auth/verify-otp",
+    "/api/v1/auth/resend-otp",
     "/api/v1/auth/refresh-token/{userId}",
     "/api/v1/auth/send-forgot-password",
-    "/api/v1/auth/verify-reset-token"
+    "/api/v1/auth/verify-reset-token",
+    "/api/v1/products/filter",
+    "/api/v1/auth/admin/verify-otp",
+    "/api/v1/auth/admin/resend-otp",
+          "/api/v1/auth/login-oauth2"
   };
 
-  String[] PUBLIC_GET_ENDPOINTS = {"/swagger-ui/**", "/v3/api-docs/**"};
+  String[] PUBLIC_GET_ENDPOINTS = {
+    "/api/v1/categories/root",
+    "/api/v1/categories/{parentId}/subcategories",
+    "/api/v1/products/filter/{id}",
+    "/swagger-ui/**",
+    "/v3/api-docs/**"
+  };
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -59,9 +68,11 @@ public class SecurityConfig {
 
     httpSecurity.authorizeHttpRequests(
         auth ->
-            auth.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS)
+            auth.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
                 .permitAll()
-                .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
+                .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS)
+                .permitAll()
+                .requestMatchers("/ws/**", "/swagger-ui/**", "/v3/api-docs/**")
                 .permitAll()
                 .requestMatchers("/ws/**")
                 .permitAll()

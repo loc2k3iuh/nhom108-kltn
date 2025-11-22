@@ -2,7 +2,6 @@ import axiosInstance from "@/lib/axios";
 import { RegisterUserRequest, VerifyRegistrationRequest } from "@/types/requests/authRequest";
 import { changePasswordRequest, UpdateUserRequest } from "@/types/requests/useRequest";
 import { UserResponse } from "@/types/responses/userResponse";
-import axios from "axios";
 
 export const getUserDetailFromToken = async (): Promise<UserResponse> => {
   const response = await axiosInstance.get("/users/my-information");
