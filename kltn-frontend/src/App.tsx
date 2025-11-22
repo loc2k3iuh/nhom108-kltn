@@ -14,6 +14,7 @@ import { AddToCartPayload } from "./types/cart";
 
 // Auth Pages
 
+import Authenticate from "./components/auth/Authenticate";
 import RegisterPage from './pages/auth/RegisterPage';
 import RegisterMailPage from './pages/auth/RegisterMailPage';
 import RegisterSuccessPage from './pages/auth/RegisterSuccessPage';
@@ -231,12 +232,11 @@ export default function App() {
         <Route path="/register" element={!authUser ? <RegisterPage /> : <Navigate to="/" />} />
         <Route path="/register-mail" element={!authUser ? <RegisterMailPage /> : <Navigate to="/" />} />
         <Route path="/register-success" element={<RegisterSuccessPage />} />
-  
+        <Route path="/authenticate" element={<Authenticate/>}/>
         <Route path="/forgot-password" element={!authUser ? <ForgotPasswordPage /> : <Navigate to="/" />} />
         <Route path="/forgot-password-success" element={<ForgotPasswordSuccessPage />} />
         <Route path="/change-forgot-password" element={<ChangeForgotPasswordPage />} />
         <Route path="/not-authenticated" element={<NotAuthenticatedPage />} />
-
 
         {/* Fallback Route */}
         <Route path="*" element={<NotFound />} />

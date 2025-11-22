@@ -80,6 +80,12 @@ public class User {
   @Column(name = "last_login")
   Date lastLogin = new Date();
 
+  @Column(name = "facebook_id")
+  String facebookId;
+
+  @Column(name = "google_id")
+  String googleId;
+
   @ManyToMany(fetch = FetchType.EAGER)
   @ToString.Exclude
   Set<Role> roles;

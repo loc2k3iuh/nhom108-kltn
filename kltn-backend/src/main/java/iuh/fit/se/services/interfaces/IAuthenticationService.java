@@ -37,4 +37,6 @@ public interface IAuthenticationService {
   void sendForgotPassword(String email, boolean isAdminPage) throws MessagingException;
 
   void verifyResetToken(VerifyResetTokenRequest verifyResetTokenRequest);
+
+  LoginResponse authenticateClientByOauth2(Oauth2LoginRequest oauth2LoginRequest, HttpServletResponse httpServletResponse) throws JOSEException ;
 }

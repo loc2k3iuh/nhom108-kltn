@@ -25,4 +25,5 @@ export interface UserResponse {
   roles: Role[];
   status: string | null;
   created_date: string | null;
+  is_oauth2: boolean | null;
 }

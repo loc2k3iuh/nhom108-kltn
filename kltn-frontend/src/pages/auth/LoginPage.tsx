@@ -3,9 +3,13 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
 
-import { FaBookOpen, FaFacebook, FaTshirt } from "react-icons/fa";
-
-import { useEffect } from "react";
+import { FaFacebook, FaTshirt } from "react-icons/fa";
+import { signInWithPopup, FacebookAuthProvider } from "firebase/auth";
+import {
+  auth,
+  facebookProvider,
+  googleProvider,
+} from "@/config/firebaseConfig";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaLock, FaUser } from "react-icons/fa6";
 import { login } from "@/services/useAuthService";
@@ -15,6 +19,7 @@ import {
 } from "@/services/useTokenService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import Reloading from "@/components/skeletions/Reloading";
+import { Oauth2LoginRequest } from "@/types/requests/authRequest";
 
 interface LoginForm {
   username: string;
@@ -38,18 +43,63 @@ const LoginPage: React.FC = () => {
   const [activeInput, setActiveInput] = useState<string | null>(null);
 
   const handleClickGoogle = () => {
-    toast.success("Đăng nhập Google thành công!");
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 1000);
+    signInWithPopup(auth, googleProvider).then(async (result) => {
+      try {
+        
+        const user = result.user;
+        console.log("Google user: ", user);
+
+        const googleUserRequest: Oauth2LoginRequest = {
+          full_name: user.displayName || "",
+          email: user.email || "",
+          avatar: user.photoURL || "",
+          is_remembered: staySignedIn,
+          google_id: user.uid,
+        };
+
+        const userJson = JSON.stringify(googleUserRequest);
+        const userCode = btoa(encodeURIComponent(userJson));
+
+        window.location.href = `/authenticate?code=${userCode}&is_remembered=${staySignedIn}`;
+      } catch (error) {
+        console.error("Google Login Error", error);
+        toast.error("Không thể đăng nhập Google");
+      }
+    });
   };
 
   const handleClickFacebook = () => {
-    toast.success("Đăng nhập Facebook thành công!");
+    signInWithPopup(auth, facebookProvider).then(async (result) => {
+      try {
+        const credential = FacebookAuthProvider.credentialFromResult(result);
+        const accessToken = credential?.accessToken;
 
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 1000);
+        const user = result.user;
+        const fbUser = result.user.providerData[0];
+        console.log("facebook provider: ", user);
+        console.log("facebook provider: ", user);
+        const facebookUserRequest: Oauth2LoginRequest = {
+          full_name: user.displayName || fbUser.displayName || "",
+          email: user.email || fbUser.email || "",
+          avatar: user.photoURL || fbUser.photoURL || "",
+          is_remembered: staySignedIn,
+          facebook_id: user.uid,
+        };
+
+        if (accessToken && fbUser.uid) {
+          const largerPhotoURL = `https://graph.facebook.com/${fbUser.uid}/picture?height=1000&access_token=${accessToken}`;
+          facebookUserRequest.avatar = largerPhotoURL;
+        }
+
+        const fbDataString = JSON.stringify(facebookUserRequest);
+        const fbCode = btoa(fbDataString);
+
+        window.location.href = `/authenticate?code=${fbCode}&is_rememebered=${staySignedIn}`;
+      } catch (error) {
+        console.error("Having Error in Auth Error", error);
+        toast.error("Đăng nhập bằng Facebook thất bại !");
+      }
+    });
   };
 
   const onSubmit = async (data: LoginForm) => {
@@ -62,7 +112,7 @@ const LoginPage: React.FC = () => {
         return;
       }
 
-      const isCustomer = response?.roles.some(
+      const isCustomer = response?.roles?.some(
         (role) => role.name === "CUSTOMER"
       );
       if (!isCustomer) {
@@ -75,17 +125,17 @@ const LoginPage: React.FC = () => {
         : setAccessTokenToSessionStorage(response.access_token);
 
       await checkAuth();
-      
+
       // Check if there's a redirect with buy now item
       const buyNowItem = location.state?.buyNowItem;
       const redirectTo = location.state?.redirectTo;
-      
+
       if (buyNowItem && redirectTo) {
         // Navigate to payment with buy now item
-        navigate(redirectTo, { 
-          state: { 
-            buyNowItems: [buyNowItem]
-          } 
+        navigate(redirectTo, {
+          state: {
+            buyNowItems: [buyNowItem],
+          },
         });
       } else {
         navigate("/");

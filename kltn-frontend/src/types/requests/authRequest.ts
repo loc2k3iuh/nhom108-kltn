@@ -28,3 +28,13 @@ export interface VerifyResetTokenRequest {
 export interface LogoutRequest {
     token: string;
 }
+
+export interface Oauth2LoginRequest {
+    email : string;
+    full_name : string;
+    avatar: string;
+    is_remembered: boolean;
+    facebook_id?: string;
+    google_id?: string;
+}
+

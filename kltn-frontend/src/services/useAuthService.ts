@@ -2,6 +2,7 @@ import {
   VerifyResetTokenRequest,
   LogoutRequest,
   LoginRequest,
+  Oauth2LoginRequest,
 } from "./../types/requests/authRequest";
 import axiosInstance from "@/lib/axios";
 
@@ -35,3 +36,9 @@ export const verifyResetPasswordTokenService = async (
 ): Promise<void> => {
   await axiosInstance.post("/auth/verify-reset-token", data);
 };
+
+
+export const oauth2Login = async(data : Oauth2LoginRequest) : Promise<LoginResponse> => {
+  const reponse =  await axiosInstance.post("/auth/login-oauth2", data);
+  return reponse.data.result as LoginResponse|| null;
+}

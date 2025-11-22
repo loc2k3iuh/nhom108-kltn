@@ -51,6 +51,7 @@ public class SecurityConfig {
     "/api/v1/products/filter",
     "/api/v1/auth/admin/verify-otp",
     "/api/v1/auth/admin/resend-otp",
+          "/api/v1/auth/login-oauth2"
   };
 
   String[] PUBLIC_GET_ENDPOINTS = {

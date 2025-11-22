@@ -50,4 +50,7 @@ public class UserResponse {
 
   @JsonProperty("status")
   String status;
+
+  @JsonProperty("is_oauth2")
+  Boolean isOauth2;
 }
