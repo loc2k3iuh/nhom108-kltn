@@ -323,7 +323,7 @@ const FavoritesPage = () => {
                     {/* Product Image */}
                     <div 
                       className="h-40 bg-gray-100 relative cursor-pointer"
-                      onClick={() => navigate(`/product?id=${product.id}`)}
+                      onClick={() => navigate(`/product/${product.id}`)}
                     >
                       <img 
                         src={product.imageUrl} 

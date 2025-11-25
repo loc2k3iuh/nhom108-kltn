@@ -26,6 +26,7 @@ export interface Order {
   discount_amount: number;
   final_amount: number;
   note?: string;
+  invoice_url: string;
   order_details: OrderDetail[];
 }
 
@@ -49,23 +50,23 @@ export interface OrderFilterRequest {
 }
 
 export interface CreateOrderItemRequest {
-  productVariantId: number;
+  product_variant_id: number;
   quantity: number;
 }
 
 export interface CreateOrderRequest {
-  userId: number;
+  user_id: number;
   items: CreateOrderItemRequest[];
-  receiverName: string;
-  receiverPhone: string;
+  receiver_name: string;
+  receiver_phone: string;
   address: string;
   city: string;
   district: string;
   ward: string;
-  shippingMethod: string;
-  shippingFee: number;
-  paymentMethod: string;
-  discountCode?: string;
+  shipping_method: string;
+  shipping_cost: number;
+  payment_method: string;
+  discount_code?: string;
   note?: string;
 }
 

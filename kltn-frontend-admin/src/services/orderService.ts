@@ -73,11 +73,11 @@ export const orderService = {
     });
   },
 
-  // Generate PDFs for orders
-  generateOrderPdfs: async (orderIds: number[]): Promise<Blob[]> => {
-    const response = await axiosInstance.post(`${BASE_URL}/pdfs`, orderIds, {
+  // Generate PDF for orders (merged into one file)
+  generateOrderPdfs: async (orderIds: number[]): Promise<Blob> => {
+    const response = await axiosInstance.post(`${BASE_URL}/pdfs/merge`, orderIds, {
       responseType: 'arraybuffer',
     });
-    return [new Blob([response.data], { type: 'application/pdf' })];
+    return new Blob([response.data], { type: 'application/pdf' });
   },
 };

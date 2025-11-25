@@ -466,4 +466,74 @@ public class EmailServiceImpl implements IEmailService {
         return method;
     }
   }
+
+  @Override
+  public byte[] generateOrderPdfBytes(OrderResponse orderResponse) {
+    try {
+      // Prepare order items for PDF
+      List<Map<String, Object>> orderItems = new ArrayList<>();
+      if (orderResponse.getOrderDetails() != null) {
+        for (var item : orderResponse.getOrderDetails()) {
+          Map<String, Object> orderItem = new HashMap<>();
+          orderItem.put("productName", item.getProductName() != null ? item.getProductName() : "");
+          orderItem.put("quantity", item.getQuantity() != null ? item.getQuantity() : 0);
+          orderItem.put("price", item.getPrice() != null ? item.getPrice() : 0L);
+          long itemTotal =
+              (item.getQuantity() != null ? item.getQuantity() : 0L)
+                  * (item.getPrice() != null ? item.getPrice() : 0L);
+          orderItem.put("totalPrice", itemTotal);
+          orderItems.add(orderItem);
+        }
+      }
+
+      // Format full address
+      String fullAddress =
+          String.format(
+              "%s, %s, %s, %s",
+              orderResponse.getAddress() != null ? orderResponse.getAddress() : "",
+              orderResponse.getWard() != null ? orderResponse.getWard() : "",
+              orderResponse.getDistrict() != null ? orderResponse.getDistrict() : "",
+              orderResponse.getCity() != null ? orderResponse.getCity() : "");
+
+      // Prepare variables for PDF
+      Map<String, Object> variables = new HashMap<>();
+      variables.put(
+          "customerName", orderResponse.getFullName() != null ? orderResponse.getFullName() : "");
+      variables.put("orderId", orderResponse.getId());
+      variables.put("orderDate", formatOrderDate(orderResponse.getOrderDate()));
+      variables.put("orderStatus", formatOrderStatus(orderResponse.getStatus()));
+      variables.put("voucherCode", orderResponse.getDiscountCode());
+      variables.put("orderItems", orderItems);
+      variables.put("receiverName", orderResponse.getFullName());
+      variables.put("receiverPhone", orderResponse.getPhoneNumber());
+      variables.put("fullAddress", fullAddress);
+      variables.put("shippingMethod", formatShippingMethod(orderResponse.getShippingMethod()));
+      variables.put("note", orderResponse.getNote());
+      variables.put(
+          "totalAmount",
+          orderResponse.getTotalAmount() != null
+              ? orderResponse.getTotalAmount()
+              : BigDecimal.ZERO);
+      variables.put(
+          "shippingCost",
+          orderResponse.getShippingCost() != null ? orderResponse.getShippingCost() : 0L);
+      variables.put(
+          "discountAmount",
+          orderResponse.getDiscountAmount() != null
+              ? orderResponse.getDiscountAmount()
+              : BigDecimal.ZERO);
+      variables.put(
+          "finalAmount",
+          orderResponse.getFinalAmount() != null
+              ? orderResponse.getFinalAmount()
+              : BigDecimal.ZERO);
+      variables.put("paymentMethod", formatPaymentMethod(orderResponse.getPaymentMethod()));
+
+      // Generate and return PDF
+      return generateOrderPdf(orderResponse, variables);
+    } catch (Exception e) {
+      log.error("Failed to generate PDF bytes for order: {}", orderResponse.getId(), e);
+      return null;
+    }
+  }
 }

@@ -56,6 +56,7 @@ public class OrderServiceImpl implements IOrderService {
     OrderResponse.OrderResponseBuilder builder =
         OrderResponse.builder()
             .id(order.getId())
+            .invoiceUrl(order.getPdfUrl())
             .userId(order.getUser() != null ? order.getUser().getId() : null)
             .status(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)
             .orderDate(
@@ -220,8 +221,62 @@ public class OrderServiceImpl implements IOrderService {
 
   @Override
   public List<byte[]> generateOrderPdfs(List<Long> orderIds) throws Exception {
-    // PDF generation service is not available in the current codebase
-    return List.of();
+    if (orderIds == null || orderIds.isEmpty()) {
+      return List.of();
+    }
+
+    List<byte[]> pdfList = new ArrayList<>();
+    for (Long orderId : orderIds) {
+      OrderResponse orderResponse = getOrderById(orderId);
+      // Generate PDF for each order using email service
+      byte[] pdfBytes = emailService.generateOrderPdfBytes(orderResponse);
+      if (pdfBytes != null && pdfBytes.length > 0) {
+        pdfList.add(pdfBytes);
+      }
+    }
+    return pdfList;
+  }
+
+  @Override
+  public byte[] mergeOrderPdfs(List<Long> orderIds) throws Exception {
+    if (orderIds == null || orderIds.isEmpty()) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "Order IDs list cannot be empty");
+    }
+
+    log.info("Merging PDFs for {} orders", orderIds.size());
+
+    // Generate individual PDFs for each order
+    List<byte[]> pdfBytesList = new ArrayList<>();
+    for (Long orderId : orderIds) {
+      try {
+        OrderResponse orderResponse = getOrderById(orderId);
+        byte[] pdfBytes = emailService.generateOrderPdfBytes(orderResponse);
+
+        if (pdfBytes != null && pdfBytes.length > 0) {
+          pdfBytesList.add(pdfBytes);
+          log.debug("Generated PDF for order ID: {} ({} bytes)", orderId, pdfBytes.length);
+        } else {
+          log.warn("Could not generate PDF for order ID: {}", orderId);
+        }
+      } catch (Exception e) {
+        log.error("Error generating PDF for order ID: {}", orderId, e);
+        // Continue with other orders instead of failing completely
+      }
+    }
+
+    if (pdfBytesList.isEmpty()) {
+      throw new AppException(
+          ErrorCode.INVALID_INPUT, "No valid PDFs could be generated from the provided order IDs");
+    }
+
+    // Merge all PDFs into one
+    byte[] mergedPdf = iuh.fit.se.utils.PdfUtils.mergePdfBytes(pdfBytesList);
+    log.info(
+        "Successfully merged {} PDFs into one file ({} bytes)",
+        pdfBytesList.size(),
+        mergedPdf.length);
+
+    return mergedPdf;
   }
 
   @Override
@@ -239,9 +294,23 @@ public class OrderServiceImpl implements IOrderService {
   }
 
   @Override
+  @Transactional
   public void deleteOrders(List<Long> orderIds) throws Exception {
     if (orderIds == null || orderIds.isEmpty()) return;
-    orderRepository.deleteAllByIdInBatch(orderIds);
+
+    // Fetch all orders first to ensure they exist and cascade delete works properly
+    List<Order> ordersToDelete = orderRepository.findAllById(orderIds);
+
+    if (ordersToDelete.isEmpty()) {
+      log.warn("No orders found for the provided IDs");
+      return;
+    }
+
+    // Delete each order individually to trigger cascade delete for child entities
+    // (shipping, payment, orderDetails)
+    orderRepository.deleteAll(ordersToDelete);
+
+    log.info("Successfully deleted {} orders", ordersToDelete.size());
   }
 
   @Override

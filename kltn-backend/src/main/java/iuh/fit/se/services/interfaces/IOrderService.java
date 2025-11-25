@@ -27,6 +27,15 @@ public interface IOrderService {
 
   List<byte[]> generateOrderPdfs(List<Long> orderIds) throws Exception;
 
+  /**
+   * Merge multiple order PDFs into a single PDF file.
+   *
+   * @param orderIds list of order IDs whose PDFs should be merged
+   * @return merged PDF as byte array
+   * @throws Exception if any error occurs during PDF generation or merging
+   */
+  byte[] mergeOrderPdfs(List<Long> orderIds) throws Exception;
+
   List<OrderResponse> updateOrdersStatus(List<Long> orderIds, OrderStatus status) throws Exception;
 
   void deleteOrders(List<Long> orderIds) throws Exception;

@@ -17,6 +17,8 @@ import {
   Edit,
   Save,
   X,
+  Download,
+  Eye,
 } from "lucide-react";
 import { orderService } from "@/services/orderService";
 import { Order, UpdateOrderRequest } from "@/types/order";
@@ -135,6 +137,14 @@ export default function OrderDetail() {
       });
     }
   };
+
+  const handleViewInvoice = () => {
+    if (order?.invoice_url) {
+      window.open(order.invoice_url, "_blank");
+    }
+  };
+
+
 
   const formatMoney = (amount: number | undefined) => {
     if (amount === undefined || amount === null) return "0 ₫";
@@ -263,7 +273,7 @@ export default function OrderDetail() {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Order Items */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-dark">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-dark min-h-[px]">
             <div className="flex items-center gap-2 mb-4">
               <Package className="w-5 h-5 text-purple-500" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Sản phẩm</h2>
@@ -280,28 +290,28 @@ export default function OrderDetail() {
                       <img
                         src={item.image_url}
                         alt={item.product_name || "Product"}
-                        className="w-20 h-20 object-cover rounded-lg"
+                        className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                        <Package className="w-8 h-8 text-gray-400" />
+                      <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Package className="w-10 h-10 text-gray-400" />
                       </div>
                     )}
 
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-base">
                         {item.product_name || "N/A"}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         Số lượng: {item.quantity || 0}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Đơn giá: {formatMoney(item.price)}
                       </p>
                     </div>
 
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                    <div className="text-right flex-shrink-0 ml-4">
+                      <p className="font-semibold text-gray-900 dark:text-white text-base">
                         {formatMoney((item.price || 0) * (item.quantity || 0))}
                       </p>
                     </div>
@@ -633,6 +643,28 @@ export default function OrderDetail() {
               </div>
             </div>
           </div>
+
+          {/* Invoice Section */}
+          {order.invoice_url && (
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-dark">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-5 h-5 text-purple-500" />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Hóa đơn</h2>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleViewInvoice}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
+                >
+                  <Eye className="w-5 h-5" />
+                  Xem hóa đơn
+                </button>
+
+             
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

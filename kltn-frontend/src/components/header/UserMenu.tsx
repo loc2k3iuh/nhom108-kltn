@@ -84,7 +84,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, authUser, onToggle }) => {
                 <span className="text-gray-600">Đơn hàng của tôi</span>
               </span>
 
-              <span onClick={() => {navigate("/user/wishlist")}} className="flex items-center p-3 hover:bg-gray-50">
+              <span onClick={() => {navigate("/favorites")}} className="flex items-center p-3 hover:bg-gray-50">
                 <div className="w-8 h-8 flex items-center justify-center mr-3 text-gray-500">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

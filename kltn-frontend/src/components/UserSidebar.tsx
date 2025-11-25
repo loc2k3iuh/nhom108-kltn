@@ -79,7 +79,7 @@ const UserSidebar: React.FC = () => {
                 {/* Các menu khác */}
                 <li className={`flex items-center space-x-2 py-2 mt-1 ${isActive('/user/orders') ? 'text-red-500' : ''}`}>
                     <FontAwesomeIcon icon={faClipboardList} className="text-lg" />
-                    <Link to="/user/orders" className="hover:text-red-500 cursor-pointer">
+                    <Link to="/orders" className="hover:text-red-500 cursor-pointer">
                         Đơn hàng của tôi
                     </Link>
                 </li>
@@ -97,7 +97,7 @@ const UserSidebar: React.FC = () => {
                 </li>
                 <li className={`flex items-center space-x-2 py-2 mt-1 ${isActive('/user/wishlist') ? 'text-red-500' : ''}`}>
                     <FontAwesomeIcon icon={faHeart} className="text-lg" />
-                    <Link to="/user/wishlist" className="hover:text-red-500 cursor-pointer">
+                    <Link to="/favorites" className="hover:text-red-500 cursor-pointer">
                         Sản phẩm yêu thích
                     </Link>
                 </li>

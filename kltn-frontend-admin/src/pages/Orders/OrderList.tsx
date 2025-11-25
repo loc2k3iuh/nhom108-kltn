@@ -15,6 +15,7 @@ import {
   Loader2,
   Package,
   Plus,
+  Printer,
 } from "lucide-react";
 import ChangeStatusModal from "./ChangeStatusModal";
 import { orderService } from "@/services/orderService";
@@ -24,9 +25,7 @@ import { toast } from "sonner";
 const statusOptions = [
   { value: "ALL", label: "Tất cả trạng thái", icon: ArrowLeftRight },
   { value: "PENDING", label: "Chờ xác nhận", icon: NotebookPen },
-  { value: "CONFIRMED", label: "Đã xác nhận", icon: Check },
-  { value: "PACKING", label: "Đang đóng gói", icon: FileUp },
-  { value: "DELIVERING", label: "Đang giao", icon: Truck },
+  { value: "PROCESSING", label: "Đang giao", icon: Truck },
   { value: "COMPLETED", label: "Hoàn thành", icon: Banknote },
   { value: "CANCELLED", label: "Đã hủy", icon: X },
 ];
@@ -210,24 +209,48 @@ export default function OrderList() {
 
     try {
       setLoading(true);
-      const pdfs = await orderService.generateOrderPdfs(selectedOrders);
+      toast.info("Đang tạo file PDF...");
+      const pdf = await orderService.generateOrderPdfs(selectedOrders);
       
-      // Download PDFs
-      pdfs.forEach((pdf, index) => {
-        const url = window.URL.createObjectURL(pdf);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `don-hang-${selectedOrders[index]}.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      });
+      // Download merged PDF
+      const url = window.URL.createObjectURL(pdf);
+      const link = document.createElement("a");
+      link.href = url;
+      // Create filename based on number of orders selected
+      const fileName = selectedOrders.length === 1 
+        ? `hoa-don-${selectedOrders[0]}.pdf`
+        : `hoa-don-${selectedOrders.length}-don-hang-${Date.now()}.pdf`;
+      link.download = fileName;
+      link.click();
+      window.URL.revokeObjectURL(url);
 
-      toast.success("Tải xuống PDF thành công");
+      toast.success(`Tải xuống PDF thành công (${selectedOrders.length} đơn hàng)`);
     } catch (error: any) {
       console.error("Lỗi khi tạo PDF:", error);
       toast.error(error.response?.data?.message || "Không thể tạo PDF");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // In PDF cho một đơn hàng
+  const handlePrintOrder = async (orderId: number) => {
+    try {
+      toast.info("Đang tạo file PDF...");
+      const pdf = await orderService.generateOrderPdfs([orderId]);
+      
+      // Download PDF
+      const url = window.URL.createObjectURL(pdf);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `hoa-don-${orderId}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Tải xuống PDF thành công");
+    } catch (error: any) {
+      console.error("Lỗi khi tạo PDF:", error);
+      toast.error(error.response?.data?.message || "Không thể tạo PDF");
     }
   };
 
@@ -531,6 +554,13 @@ export default function OrderList() {
                           >
                             <Edit className="w-4 h-4" />
                           </Link>
+                          <button
+                            onClick={() => handlePrintOrder(order.id)}
+                            className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
+                            title="In hóa đơn"
+                          >
+                            <Printer className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>

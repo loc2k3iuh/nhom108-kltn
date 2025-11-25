@@ -17,8 +17,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -193,5 +195,25 @@ public class OrderController {
         .message("Order PDFs generated successfully")
         .code(HttpStatus.OK.value())
         .build();
+  }
+
+  @PostMapping(value = "/pdfs/merge", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      summary = "Merge multiple order PDFs into a single PDF file",
+      description = "Generate and merge PDFs for multiple orders into one combined PDF document",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+  public ResponseEntity<byte[]> mergeOrderPdfs(@RequestBody List<Long> orderIds) throws Exception {
+    byte[] mergedPdf = orderService.mergeOrderPdfs(orderIds);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_PDF);
+    headers.setContentDisposition(
+        org.springframework.http.ContentDisposition.builder("attachment")
+            .filename("merged-orders-" + System.currentTimeMillis() + ".pdf")
+            .build());
+    headers.setContentLength(mergedPdf.length);
+
+    return new ResponseEntity<>(mergedPdf, headers, HttpStatus.OK);
   }
 }

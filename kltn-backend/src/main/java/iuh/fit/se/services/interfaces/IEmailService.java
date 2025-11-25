@@ -21,4 +21,12 @@ public interface IEmailService {
   boolean verifyRegistration(VerifyRegistrationRequest verifyRegistrationRequest);
 
   void sendOrderConfirmation(OrderResponse orderResponse) throws MessagingException;
+
+  /**
+   * Generate PDF bytes for an order without sending email.
+   *
+   * @param orderResponse the order response data
+   * @return PDF as byte array
+   */
+  byte[] generateOrderPdfBytes(OrderResponse orderResponse);
 }

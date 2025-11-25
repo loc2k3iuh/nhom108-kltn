@@ -31,6 +31,7 @@ import Blank from "./pages/Blank";
 import VoucherManagement from "./pages/voucher/VoucherManagement";
 import OrderList from "./pages/Orders/OrderList";
 import OrderDetail from "./pages/Orders/OrderDetail";
+import CreateOrder from "./pages/Orders/CreateOrder";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
@@ -97,6 +98,10 @@ export default function App() {
             <Route
               path="/vouchers"
               element={authUser ? <VoucherManagement /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="/orders/create"
+              element={authUser ? <CreateOrder /> : <Navigate to="/signin" />}
             />
             <Route
               path="/orders/:id"

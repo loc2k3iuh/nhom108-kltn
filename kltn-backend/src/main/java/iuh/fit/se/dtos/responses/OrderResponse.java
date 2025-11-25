@@ -72,6 +72,9 @@ public class OrderResponse {
   @JsonProperty("order_date")
   String orderDate;
 
+  @JsonProperty("invoice_url")
+  String invoiceUrl;
+
   @JsonProperty("order_details")
   private List<OrderDetailRequest> orderDetails;
 }
