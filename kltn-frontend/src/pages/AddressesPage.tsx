@@ -19,132 +19,105 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import UserSidebar from "../components/UserSidebar";
-
-// Static user and address data
-interface AddressResponse {
-    id: number;
-    phoneNumber: string;
-    street: string;
-    city: string;
-    district: string;
-    ward: string;
-    detailAddress: string;
-    zip?: string;
-}
+import { getMyAddresses, deleteAddress as deleteAddressAPI, AddressResponse } from "../services/addressService";
+import { useAuthStore } from "../stores/useAuthStore";
 
 const AddressesPage = () => {
-    // Static user data
-    const staticUserData = {
-        id: 1,
-        username: "user123",
-        full_name: "Nguyễn Văn A",
-        email: "user@example.com",
-        phone_number: "0912345678",
-        avatar_url: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYVcJXjU8HnMTXVmjER0yIET4AwAuHp0LO_YCiQjUsf1228qq0lYbABHFTSasYlk61e6Y-1ygAjWXFLEUTCloPcTvbAwe7nNba7SW9ot9QMce7BYus-H6eDIUvyFXh9UmAmV5eVTMultDo57c048MmDws-a65QYOzoBfUkHLv5OiMhMaUfh2WeP_3ej9du/s1600/istockphoto-1337144146-612x612.jpg",
-        roles: [{ name: "USER" }]
-    };
-
-    // Static addresses data
-    const staticAddresses: AddressResponse[] = [
-        {
-            id: 1,
-            phoneNumber: "0912345678",
-            street: "123 Đường Nguyễn Văn Linh",
-            city: "Thành phố Hồ Chí Minh",
-            district: "Quận 7",
-            ward: "Phường Tân Phú",
-            detailAddress: "123 Đường Nguyễn Văn Linh, Phường Tân Phú",
-            zip: "70000"
-        },
-        {
-            id: 2,
-            phoneNumber: "0987654321",
-            street: "456 Đường Lê Văn Việt",
-            city: "Thành phố Hồ Chí Minh",
-            district: "Quận 9",
-            ward: "Phường Hiệp Phú",
-            detailAddress: "456 Đường Lê Văn Việt, Phường Hiệp Phú",
-            zip: "71000"
-        }
-    ];
-
-    const [isAccountOpen, setIsAccountOpen] = useState(true);
+    const { authUser } = useAuthStore();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [userData, setUserData] = useState(staticUserData);
-    const [addresses, setAddresses] = useState<AddressResponse[]>(staticAddresses);
+    const [addresses, setAddresses] = useState<AddressResponse[]>([]);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(0);
+    const [totalPages, setTotalPages] = useState<number>(0);
+    const [totalElements, setTotalElements] = useState<number>(0);
+    const pageSize = 3;
 
-    // Function to fetch user data (now uses static data)
-    const fetchUserData = async () => {
+    // Function to fetch addresses
+    const fetchAddresses = async (page: number = 0) => {
         try {
             setIsLoading(true);
-            
-            // Simulate loading delay
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Use static user data
-            setUserData(staticUserData);
-        } catch (error: any) {
-            toast.error("Không thể tải dữ liệu người dùng");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Function to fetch addresses (now uses static data)
-    const fetchAddresses = async () => {
-        if (!userData?.id) return;
-        
-        try {
-            setIsLoading(true);
-            
-            // Simulate loading delay
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Use static addresses data
-            setAddresses(staticAddresses);
+            const data = await getMyAddresses(page, pageSize);
+            setAddresses(data.content);
+            setTotalPages(data.totalPages);
+            setTotalElements(data.totalElements);
+            setCurrentPage(page);
         } catch (error) {
             console.error('Error fetching addresses:', error);
+            toast.error("Đã xảy ra lỗi khi tải danh sách địa chỉ");
         } finally {
             setIsLoading(false);
         }
     };
     
     useEffect(() => {
-        fetchUserData();
-    }, []);
-
-    useEffect(() => {
-        if (userData?.id) {
+        if (authUser?.id) {
             fetchAddresses();
         }
-    }, [userData]);
+    }, [authUser]);
 
     const handleDeleteAddress = async (addressId: number) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này không?')) {
-            try {
-                setIsDeleting(addressId);
-                
-                // Simulate API call delay
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                console.log("Static delete address:", addressId);
-                
-                // Remove address from local state
-                setAddresses(prev => prev.filter(addr => addr.id !== addressId));
-                toast.success("Xóa địa chỉ thành công!");
-            } catch (error) {
-                console.error('Error deleting address:', error);
-                toast.error("Không thể xóa địa chỉ!");
-            } finally {
-                setIsDeleting(null);
-            }
+        toast.custom((t) => (
+            <div className="bg-white rounded-lg shadow-lg p-4 max-w-md">
+                <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                        <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-gray-900">Xác nhận xóa</h3>
+                        <p className="mt-1 text-sm text-gray-600">Bạn có chắc chắn muốn xóa địa chỉ này không?</p>
+                        <div className="mt-4 flex gap-2">
+                            <button
+                                onClick={async () => {
+                                    toast.dismiss(t);
+                                    try {
+                                        setIsDeleting(addressId);
+                                        await deleteAddressAPI(addressId);
+                                        toast.success("Xóa địa chỉ thành công!");
+                                        
+                                        // Reload current page or go to previous page if current page becomes empty
+                                        const remainingItems = addresses.length - 1;
+                                        if (remainingItems === 0 && currentPage > 0) {
+                                            fetchAddresses(currentPage - 1);
+                                        } else {
+                                            fetchAddresses(currentPage);
+                                        }
+                                    } catch (error: any) {
+                                        console.error('Error deleting address:', error);
+                                        toast.error(error?.response?.data?.message || "Không thể xóa địa chỉ!");
+                                    } finally {
+                                        setIsDeleting(null);
+                                    }
+                                }}
+                                className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 transition-colors"
+                            >
+                                Xóa
+                            </button>
+                            <button
+                                onClick={() => toast.dismiss(t)}
+                                className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
+                            >
+                                Hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ), {
+            duration: Infinity,
+        });
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            fetchAddresses(newPage);
         }
     };    return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-6xl mx-auto p-4 flex flex-col md:flex-row">
                 {/* Sidebar */}
-                <UserSidebar userData={userData as any} />
+                <UserSidebar />
 
                 {/* Main Content */}
                 <div className="w-full md:w-3/4 mt-3 md:mt-0 space-y-4 ml-0 md:ml-6">
@@ -230,6 +203,64 @@ const AddressesPage = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+
+                        {/* Pagination */}
+                        {!isLoading && totalPages > 1 && (
+                            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-100">
+                                <div className="text-sm text-gray-600">
+                                    Hiển thị <span className="font-semibold">{addresses.length}</span> / <span className="font-semibold">{totalElements}</span> địa chỉ
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 0}
+                                        className="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Trước
+                                    </button>
+                                    
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+                                            // Show first page, last page, current page and surrounding pages
+                                            if (
+                                                page === 0 ||
+                                                page === totalPages - 1 ||
+                                                (page >= currentPage - 1 && page <= currentPage + 1)
+                                            ) {
+                                                return (
+                                                    <button
+                                                        key={page}
+                                                        onClick={() => handlePageChange(page)}
+                                                        className={`px-3 py-2 rounded-lg transition-colors ${
+                                                            currentPage === page
+                                                                ? 'bg-red-500 text-white font-semibold'
+                                                                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {page + 1}
+                                                    </button>
+                                                );
+                                            } else if (
+                                                page === currentPage - 2 ||
+                                                page === currentPage + 2
+                                            ) {
+                                                return <span key={page} className="px-2 text-gray-500">...</span>;
+                                            }
+                                            return null;
+                                        })}
+                                    </div>
+                                    
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages - 1}
+                                        className="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Sau
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </article>

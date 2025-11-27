@@ -134,7 +134,13 @@ public enum ErrorCode {
   VOUCHER_INVALID_DISCOUNT_VALUE(
       1091,
       "Invalid discount value! Percentage must be 0.01-100, fixed amount must be greater than 0",
-      HttpStatus.BAD_REQUEST);
+      HttpStatus.BAD_REQUEST),
+
+  // Address related errors
+  ADDRESS_NOT_FOUND(1092, "Address not found!", HttpStatus.NOT_FOUND),
+  PHONE_NUMBER_ALREADY_EXISTS(1093, "Phone number already exists!", HttpStatus.BAD_REQUEST),
+  ADDRESS_ACCESS_DENIED(
+      1094, "You don't have permission to access this address!", HttpStatus.FORBIDDEN);
 
   int code;
   String message;

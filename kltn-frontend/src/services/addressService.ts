@@ -98,3 +98,70 @@ export const fetchWardsByDistrict = async (districtCode: string) => {
         return [];
     }
 };
+
+// Address API interfaces
+import axiosInstance from '../lib/axios';
+
+export interface AddressRequest {
+    phoneNumber: string;
+    street?: string;
+    city: string;
+    district: string;
+    ward: string;
+    detailAddress: string;
+    zip?: string;
+}
+
+export interface AddressResponse {
+    id: number;
+    phoneNumber: string;
+    street?: string;
+    city: string;
+    district: string;
+    ward: string;
+    detailAddress: string;
+    zip?: string;
+    userId: number;
+    username?: string;
+}
+
+export interface PaginatedAddressResponse {
+    content: AddressResponse[];
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
+}
+
+// Get all addresses for current user with pagination
+export const getMyAddresses = async (page: number = 0, size: number = 10, city?: string): Promise<PaginatedAddressResponse> => {
+    const params: any = { page, size, sortBy: 'id', sortDir: 'desc' };
+    if (city) {
+        params.city = city;
+    }
+    const response = await axiosInstance.get('/addresses/my-addresses', { params });
+    return response.data.result;
+};
+
+// Get address by ID
+export const getAddressById = async (id: number): Promise<AddressResponse> => {
+    const response = await axiosInstance.get(`/addresses/${id}`);
+    return response.data.result;
+};
+
+// Create new address
+export const createAddress = async (data: AddressRequest): Promise<AddressResponse> => {
+    const response = await axiosInstance.post('/addresses', data);
+    return response.data.result;
+};
+
+// Update address
+export const updateAddress = async (id: number, data: AddressRequest): Promise<AddressResponse> => {
+    const response = await axiosInstance.put(`/addresses/${id}`, data);
+    return response.data.result;
+};
+
+// Delete address
+export const deleteAddress = async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/addresses/${id}`);
+};

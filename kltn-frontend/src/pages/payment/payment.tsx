@@ -7,7 +7,8 @@ import {
     fetchWardsByDistrict, 
     fetchProvinces,
     Province, 
-    Ward 
+    Ward,
+    getMyAddresses
 } from '@/services/addressService';
 import { createOrder, CreateOrderItem } from '@/services/orderService';
 import { clearCart } from '@/services/cartService';
@@ -57,6 +58,14 @@ const Payment: React.FC = () => {
     
     // Track if order is from "Buy Now" or "Cart Checkout"
     const [isBuyNow, setIsBuyNow] = useState(false);
+    
+    // Modal states for address selection
+    const [showAddressModal, setShowAddressModal] = useState(false);
+    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+    const [addressPage, setAddressPage] = useState(0);
+    const [addressTotalPages, setAddressTotalPages] = useState(0);
+    const [addressCityFilter, setAddressCityFilter] = useState('');
+    const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
 
     // Danh sách sản phẩm (ví dụ)
     const [orderItems, setOrderItems] = useState<any>([]);
@@ -76,6 +85,64 @@ const Payment: React.FC = () => {
             console.error('Error fetching provinces:', error);
             toast.error('Không thể tải danh sách tỉnh/thành phố');
         }
+    };
+    
+    const loadSavedAddresses = async (page: number = 0, cityFilter: string = '') => {
+        if (!authUser) return;
+        
+        try {
+            setIsLoadingAddresses(true);
+            const data = await getMyAddresses(page, 4, cityFilter || undefined);
+            
+            setSavedAddresses(data.content);
+            setAddressTotalPages(data.totalPages);
+            setAddressPage(page);
+        } catch (error) {
+            console.error('Error loading saved addresses:', error);
+            toast.error('Không thể tải danh sách địa chỉ đã lưu');
+        } finally {
+            setIsLoadingAddresses(false);
+        }
+    };
+    
+    const handleSelectAddress = async (address: any) => {
+        // Set form fields from selected address
+        setFullName(authUser?.full_name || '');
+        setEmail(authUser?.email || '');
+        setPhone(address.phoneNumber);
+        setAddressDetail(address.detailAddress);
+        
+        // Find province code from name
+        const selectedProvince = provinces.find((p: Province) => p.name === address.city);
+        if (selectedProvince) {
+            setCity(selectedProvince.code);
+            setCityName(selectedProvince.name);
+            
+            // Load districts for this province
+            const districtsList = await fetchDistrictsByProvince(selectedProvince.code);
+            setDistricts(districtsList);
+            
+            // Find district code from name
+            const selectedDistrict = districtsList.find((d: District) => d.name === address.district);
+            if (selectedDistrict) {
+                setDistrict(selectedDistrict.code);
+                setDistrictName(selectedDistrict.name);
+                
+                // Load wards for this district
+                const wardsList = await fetchWardsByDistrict(selectedDistrict.code);
+                setWards(wardsList);
+                
+                // Find ward code from name
+                const selectedWard = wardsList.find((w: Ward) => w.name === address.ward);
+                if (selectedWard) {
+                    setWard(selectedWard.code);
+                    setWardName(selectedWard.name);
+                }
+            }
+        }
+        
+        setShowAddressModal(false);
+        toast.success('Đã chọn địa chỉ');
     };
 
     const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -427,6 +494,144 @@ const Payment: React.FC = () => {
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
                 </div>
             )}
+            
+            {/* Address Selection Modal */}
+            {showAddressModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                </svg>
+                                Chọn địa chỉ giao hàng
+                            </h3>
+                            <button
+                                onClick={() => setShowAddressModal(false)}
+                                className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        {/* Search by City */}
+                        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                            <div className="flex gap-3">
+                                <div className="flex-1">
+                                    <input
+                                        type="text"
+                                        placeholder="Tìm kiếm theo tỉnh/thành phố..."
+                                        value={addressCityFilter}
+                                        onChange={(e) => setAddressCityFilter(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => loadSavedAddresses(0, addressCityFilter)}
+                                    className="px-6 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 220px)' }}>
+                            {isLoadingAddresses ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
+                                </div>
+                            ) : savedAddresses.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {savedAddresses.map((addr: any) => (
+                                        <div
+                                            key={addr.id}
+                                            onClick={() => handleSelectAddress(addr)}
+                                            className="border-2 border-gray-200 rounded-lg p-4 hover:border-red-500 hover:bg-red-50 cursor-pointer transition-all group"
+                                        >
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    </svg>
+                                                    <span className="font-semibold text-gray-900">{authUser?.full_name}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="space-y-2 text-sm text-gray-600">
+                                                <div className="flex items-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                    </svg>
+                                                    <span>{addr.phoneNumber}</span>
+                                                </div>
+                                                <div className="flex items-start gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    </svg>
+                                                    <span className="flex-1">{addr.detailAddress}</span>
+                                                </div>
+                                                <div className="flex items-start gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                                    </svg>
+                                                    <span className="flex-1">{addr.ward}, {addr.district}, {addr.city}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-end">
+                                                <span className="text-xs font-medium text-red-500 group-hover:text-red-600">Chọn địa chỉ này →</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                    </svg>
+                                    <p className="text-gray-500 text-lg font-medium">Không tìm thấy địa chỉ nào</p>
+                                    <p className="text-gray-400 text-sm mt-2">Vui lòng thêm địa chỉ mới hoặc thử tìm kiếm khác</p>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Pagination */}
+                        {!isLoadingAddresses && addressTotalPages > 1 && (
+                            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+                                <div className="text-sm text-gray-600">
+                                    Trang <span className="font-semibold">{addressPage + 1}</span> / <span className="font-semibold">{addressTotalPages}</span>
+                                </div>
+                                
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => loadSavedAddresses(addressPage - 1, addressCityFilter)}
+                                        disabled={addressPage === 0}
+                                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Trước
+                                    </button>
+                                    <button
+                                        onClick={() => loadSavedAddresses(addressPage + 1, addressCityFilter)}
+                                        disabled={addressPage === addressTotalPages - 1}
+                                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Sau
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            
             <div className="bg-gray-100 min-h-screen py-6">
 
                 <div className="max-w-5xl mx-auto">
@@ -464,6 +669,22 @@ const Payment: React.FC = () => {
                                     </svg>
                                     ĐỊA CHỈ GIAO HÀNG
                                 </h2>
+                                
+                                {authUser && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowAddressModal(true);
+                                            loadSavedAddresses(0, '');
+                                        }}
+                                        className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                        </svg>
+                                        Chọn địa chỉ đã lưu
+                                    </button>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

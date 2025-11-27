@@ -1,63 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faUser, faBell,
-    faClipboardList,
-    faTicketAlt,
-    faHeart,
-    faBook,
-    faStar,
-    faChevronDown,
-    faChevronUp,
-    faMailBulk,
-    faArrowLeft
-} from "@fortawesome/free-solid-svg-icons";
-
-// Service imports removed - using static data
-import { fetchDistrictsByProvince, fetchWardsByDistrict } from "../services/addressService";
-
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate, useParams } from "react-router-dom";
-// Type imports removed - using static data
 import { toast } from "sonner";
 import UserSidebar from "../components/UserSidebar";
+import {
+    fetchProvinces,
+    fetchDistrictsByProvince,
+    fetchWardsByDistrict,
+    getAddressById,
+    updateAddress,
+    Province,
+    District,
+    Ward
+} from "../services/addressService";
+import { useAuthStore } from "../stores/useAuthStore";
 
 const EditAddress = () => {
     const navigate = useNavigate();
     const { addressId } = useParams<{ addressId: string }>();
-    const [isAccountOpen, setIsAccountOpen] = useState(false);
+    const { authUser } = useAuthStore();
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    // Static user data
-    const staticUserData = {
-        id: 1,
-        username: "user123",
-        full_name: "Nguyễn Văn A",
-        email: "user@example.com",
-        phone_number: "0912345678",
-        avatar_url: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYVcJXjU8HnMTXVmjER0yIET4AwAuHp0LO_YCiQjUsf1228qq0lYbABHFTSasYlk61e6Y-1ygAjWXFLEUTCloPcTvbAwe7nNba7SW9ot9QMce7BYus-H6eDIUvyFXh9UmAmV5eVTMultDo57c048MmDws-a65QYOzoBfUkHLv5OiMhMaUfh2WeP_3ej9du/s1600/istockphoto-1337144146-612x612.jpg",
-        roles: [{ name: "USER" }]
-    };
-
-    const [userData, setUserData] = useState(staticUserData);
     
-    interface City {
-        code: string;
-        name: string;
-    }
-
-    interface District {
-        code: string;
-        name: string;
-    }
-
-    interface Ward {
-        code: string;
-        name: string;
-    }
-
-    const [cities, setCities] = useState<City[]>([]);
+    const [cities, setCities] = useState<Province[]>([]);
     const [districts, setDistricts] = useState<District[]>([]);
     const [wards, setWards] = useState<Ward[]>([]);
-    const [selectedCity, setSelectedCity] = useState<City | null>(null);
+    const [selectedCity, setSelectedCity] = useState<Province | null>(null);
     const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,44 +39,13 @@ const EditAddress = () => {
         postalCode: ''
     });
 
-    // Function to fetch user data (now uses static data)
-    const fetchUserData = async () => {
-        try {
-            setIsLoading(true);
-            
-            // Simulate loading delay
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Use static user data
-            setUserData(staticUserData);
-        } catch (error: any) {
-            toast.error("Không thể tải dữ liệu người dùng");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    // Fetch address data (now uses static data)
+    // Fetch address data
     const fetchAddressData = async () => {
         if (!addressId) return;
         
         try {
             setIsLoading(true);
-            
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Static address data for demo
-            const address = {
-                id: parseInt(addressId),
-                phoneNumber: "0912345678",
-                street: "123 Đường ABC",
-                city: "Thành phố Hồ Chí Minh",
-                district: "Quận 1", 
-                ward: "Phường Bến Nghé",
-                detailAddress: "123 Đường ABC, Phường Bến Nghé",
-                zip: "70000"
-            };
+            const address = await getAddressById(parseInt(addressId));
             
             setFormData({
                 phone: address.phoneNumber || '',
@@ -121,7 +58,7 @@ const EditAddress = () => {
             });
 
             // Load districts and wards based on selected city/district
-            if (address.city) {
+            if (address.city && cities.length > 0) {
                 const cityObj = cities.find(city => city.name === address.city);
                 if (cityObj) {
                     setSelectedCity(cityObj);
@@ -129,7 +66,7 @@ const EditAddress = () => {
                     setDistricts(districtData);
                     
                     if (address.district) {
-                        const districtObj: District | undefined = districtData.find((district: District) => district.name === address.district);
+                        const districtObj = districtData.find((d: District) => d.name === address.district);
                         if (districtObj) {
                             setSelectedDistrict(districtObj);
                             const wardData = await fetchWardsByDistrict(districtObj.code);
@@ -140,6 +77,7 @@ const EditAddress = () => {
             }
             
         } catch (error: any) {
+            console.error('Error fetching address:', error);
             toast.error(error?.response?.data?.message || "Không thể tải thông tin địa chỉ");
             navigate('/user/addresses');
         } finally {
@@ -148,19 +86,16 @@ const EditAddress = () => {
     };
     
     useEffect(() => {
-        fetchUserData();
-        
-        const fetchCities = async () => {
+        const loadCities = async () => {
             try {
-                const response = await fetch('https://provinces.open-api.vn/api/p/');
-                const data = await response.json();
+                const data = await fetchProvinces();
                 setCities(data);
             } catch (error) {
                 console.error('Error fetching cities:', error);
             }
         };
         
-        fetchCities();
+        loadCities();
     }, []);
 
     useEffect(() => {
@@ -174,13 +109,11 @@ const EditAddress = () => {
         setFormData({ ...formData, [target.name]: target.value });
 
         if (target.name === 'city') {
-            // Khi chọn thành phố, tìm city object tương ứng
             const cityObj = cities.find(city => city.name === target.value);
             setSelectedCity(cityObj || null);
             setSelectedDistrict(null);
             setFormData(prev => ({ ...prev, district: '', ward: '' }));
             
-            // Fetch districts của thành phố được chọn
             if (cityObj) {
                 fetchDistrictsByProvince(cityObj.code)
                     .then(districtData => {
@@ -189,12 +122,10 @@ const EditAddress = () => {
                     .catch(err => console.error('Error fetching districts:', err));
             }
         } else if (target.name === 'district') {
-            // Khi chọn quận/huyện, tìm district object tương ứng
             const districtObj = districts.find(district => district.name === target.value);
             setSelectedDistrict(districtObj || null);
             setFormData(prev => ({ ...prev, ward: '' }));
             
-            // Fetch wards của quận/huyện được chọn
             if (districtObj) {
                 fetchWardsByDistrict(districtObj.code)
                     .then(wardData => {
@@ -229,13 +160,6 @@ const EditAddress = () => {
         setIsSubmitting(true);
 
         try {
-            // Chuẩn bị data để gửi đi
-            if (typeof userData?.id !== "number") {
-                toast.error("Không tìm thấy thông tin người dùng hợp lệ");
-                setIsSubmitting(false);
-                return;
-            }
-
             const addressRequest = {
                 phoneNumber: formData.phone,
                 city: formData.city,
@@ -244,19 +168,14 @@ const EditAddress = () => {
                 street: formData.street || '',
                 detailAddress: formData.address,
                 zip: formData.postalCode || '',
-                userId: userData.id,
             };
 
-            // Simulate API call to update address
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            console.log("Static address update:", addressRequest);
+            await updateAddress(parseInt(addressId), addressRequest);
             toast.success("Cập nhật địa chỉ thành công!");
-            
-            // Chuyển hướng sau khi cập nhật thành công
             navigate('/user/addresses');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating address:', error);
+            toast.error(error?.response?.data?.message || "Không thể cập nhật địa chỉ");
         } finally {
             setIsSubmitting(false);
         }
@@ -266,97 +185,143 @@ const EditAddress = () => {
         <div>
             <div className="max-w-6xl mx-auto p-4 flex flex-col md:flex-row">
                 {/* Sidebar */}
-                <UserSidebar userData={userData as any} />
+                <UserSidebar />
 
                 {/* Main Content */}
                 <div className="w-full md:w-3/4 mt-3 md:mt-0 space-y-4 ml-0 md:ml-6">
                     {isLoading ? (
-                        <div className="bg-white p-6 rounded shadow-md flex justify-center">
+                        <div className="mt-10 flex justify-center">
                             <div className="text-center">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-                                <p className="mt-2 text-gray-500">Đang tải thông tin địa chỉ...</p>
+                                <div className="animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-red-500 mx-auto"></div>
+                                <p className="mt-4 text-gray-500 font-medium">Đang tải dữ liệu...</p>
                             </div>
                         </div>
                     ) : (
-                        <article className="bg-white p-6 rounded shadow-md">
-                            <h2 className="text-xl font-bold">Chỉnh sửa địa chỉ</h2>
-                            <form onSubmit={handleSubmit}>
-                                <div className="mt-7 grid grid-cols-2 gap-4">
+                        <article className="bg-white p-6 rounded-lg shadow-md">
+                            <div className="flex items-center mb-6">
+                                <Link to="/user/addresses" className="mr-4 text-gray-600 hover:text-gray-800">
+                                    <FontAwesomeIcon icon={faArrowLeft} className="text-xl" />
+                                </Link>
+                                <h2 className="text-2xl font-bold text-gray-800">Chỉnh Sửa Địa Chỉ</h2>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-gray-700">Điện thoại<span className="text-red-500">*</span></label>
-                                        <input type="text" name="phone" placeholder="Ex: 0972xxxx" value={formData.phone} onChange={handleChange} className="w-full p-2 border rounded" required />
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-gray-700">Tỉnh/Thành phố<span className="text-red-500">*</span></label>
-                                        <select name="city" value={formData.city} onChange={handleChange} className="w-full p-2 border rounded" required>
-                                            <option value="">Vui lòng chọn</option>
-                                            {cities && cities.length > 0 && cities.map((city) => (
-                                                <option key={city.code} value={city.name}>
-                                                    {city.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-gray-700">Quận/Huyện<span className="text-red-500">*</span></label>
-                                        <select name="district" value={formData.district} onChange={handleChange} className="w-full p-2 border rounded" required disabled={!selectedCity}>
-                                            <option value="">Vui lòng chọn</option>
-                                            {districts && districts.length > 0 && districts.map((district) => (
-                                                <option key={district.code} value={district.name}>
-                                                    {district.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-gray-700">Xã/Phường<span className="text-red-500">*</span></label>
-                                        <select name="ward" value={formData.ward} onChange={handleChange} className="w-full p-2 border rounded" required disabled={!selectedDistrict}>
-                                            <option value="">Vui lòng chọn</option>
-                                            {wards && wards.length > 0 && wards.map((ward) => (
-                                                <option key={ward.code} value={ward.name}>
-                                                    {ward.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-gray-700">Đường<span className="text-red-500">*</span></label>
-                                        <input type="text" name="street" value={formData.street} onChange={handleChange} className="w-full p-2 border rounded" required />
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-gray-700">Mã bưu điện</label>
-                                        <input type="text" name="postalCode" placeholder="Mã bưu điện VN: 700000" value={formData.postalCode} onChange={handleChange} className="w-full p-2 border rounded" />
-                                    </div>
-                                    
-                                    <div className="w-full col-span-2">
-                                        <label className="block text-gray-700">Địa chỉ chi tiết<span className="text-red-500">*</span></label>
-                                        <input 
-                                            type="text" 
-                                            name="address" 
-                                            value={formData.address} 
-                                            onChange={handleChange} 
-                                            className="w-full p-2 border rounded"
-                                            placeholder="Số nhà, tên đường, tòa nhà, địa điểm cụ thể" 
+                                        <label className="block text-gray-700 font-medium mb-2">Số điện thoại *</label>
+                                        <input
+                                            type="text"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="Nhập số điện thoại"
                                             required
                                         />
                                     </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">Tỉnh/Thành phố *</label>
+                                        <select
+                                            name="city"
+                                            value={formData.city}
+                                            onChange={handleChange}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        >
+                                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                            {cities.map(city => (
+                                                <option key={city.code} value={city.name}>{city.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">Quận/Huyện *</label>
+                                        <select
+                                            name="district"
+                                            value={formData.district}
+                                            onChange={handleChange}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                            disabled={!selectedCity}
+                                        >
+                                            <option value="">-- Chọn Quận/Huyện --</option>
+                                            {districts.map(district => (
+                                                <option key={district.code} value={district.name}>{district.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">Phường/Xã *</label>
+                                        <select
+                                            name="ward"
+                                            value={formData.ward}
+                                            onChange={handleChange}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                            disabled={!selectedDistrict}
+                                        >
+                                            <option value="">-- Chọn Phường/Xã --</option>
+                                            {wards.map(ward => (
+                                                <option key={ward.code} value={ward.name}>{ward.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-gray-700 font-medium mb-2">Đường *</label>
+                                        <input
+                                            type="text"
+                                            name="street"
+                                            value={formData.street}
+                                            onChange={handleChange}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="Nhập tên đường"
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-gray-700 font-medium mb-2">Địa chỉ chi tiết *</label>
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleChange}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="Nhập địa chỉ chi tiết (Số nhà, tên đường...)"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">Mã bưu điện</label>
+                                        <input
+                                            type="text"
+                                            name="postalCode"
+                                            value={formData.postalCode}
+                                            onChange={handleChange}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="Nhập mã bưu điện (nếu có)"
+                                        />
+                                    </div>
                                 </div>
-                                
-                                <div className="flex justify-between items-center mt-6">
-                                    <p className="text-blue-500 cursor-pointer">
-                                        <Link to="/user/addresses"><FontAwesomeIcon icon={faArrowLeft} className="text-blue-500" /> Quay lại</Link>
-                                    </p>
-                                    <button 
-                                        type="submit" 
-                                        className="mt-8 bg-red-500 text-white py-2 px-4 rounded cursor-pointer block"
-                                        disabled={isSubmitting}
+
+                                <div className="flex gap-4 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/user/addresses')}
+                                        className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                                     >
-                                        {isSubmitting ? "Đang lưu..." : "Cập nhật địa chỉ"}
+                                        Hủy
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật địa chỉ'}
                                     </button>
                                 </div>
                             </form>

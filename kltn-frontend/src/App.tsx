@@ -196,9 +196,9 @@ export default function App() {
           <Route path="/change-password" element={authUser ? <Layout>  <ChangePassword />  </Layout> : <Navigate to="/signin" />} />
           
           {/* Address Management */}
-          <Route path="/user/addresses" element={authUser ? <AddressesPage /> : <Navigate to="/signin" />} />
-          <Route path="/user/addresses/new" element={authUser ? <NewAddress /> : <Navigate to="/signin" />} />
-          <Route path="/user/addresses/edit/:id" element={authUser ? <EditAddress /> : <Navigate to="/signin" />} />
+          <Route path="/user/addresses" element={authUser ? <Layout><AddressesPage /></Layout> : <Navigate to="/login" />} />
+          <Route path="/user/addresses/new" element={authUser ? <Layout><NewAddress /></Layout> : <Navigate to="/login" />} />
+          <Route path="/user/addresses/:addressId/edit" element={authUser ? <Layout><EditAddress /></Layout> : <Navigate to="/login" />} />
 
           {/* Shopping Pages */}
           <Route path="/cart" element={ <Layout><Cart /></Layout>} />
