@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     path: "/profile",
   },
   {
-    name: "Forms",
+    name: "Sản phẩm",
     icon: <ListIcon />,
     subItems: [
         { name: "Sản phẩm", path: "/forms/products", pro: false }, 
@@ -60,7 +60,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    name: "Tables",
+    name: "Danh sách",
     icon: <TableIcon />,
     subItems: [
         { name: "Danh sách khách hàng", path: "/tables/customers", pro: false }, 
@@ -306,23 +306,23 @@ const AppSidebar: React.FC = () => {
                 className="dark:hidden"
                 src="/images/logo/logo.svg"
                 alt="Logo"
-                width={150}
-                height={40}
+                width={180}
+                height={48}
               />
               <img
                 className="hidden dark:block"
                 src="/images/logo/logo-dark.svg"
                 alt="Logo"
-                width={150}
-                height={40}
+                width={180}
+                height={48}
               />
             </>
           ) : (
             <img
               src="/images/logo/logo-icon.svg"
               alt="Logo"
-              width={32}
-              height={32}
+              width={40}
+              height={40}
             />
           )}
         </Link>

@@ -101,7 +101,7 @@ public class AuthenticationController {
       @CookieValue(name = "refresh_token", required = false) String refreshToken,
       @PathVariable String userId)
       throws JOSEException {
-    if (refreshToken.isBlank()) {
+    if (refreshToken == null || refreshToken.isBlank()) {
       throw new AppException(ErrorCode.REFRESH_TOKEN_REQUIRED);
     }
     return APIResponse.<TokenResponse>builder()

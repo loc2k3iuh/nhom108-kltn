@@ -466,13 +466,13 @@ const Calendar: React.FC = () => {
     const formatDateTime = (date: Date | null, allDay: boolean) => {
       if (!date) return "";
       if (allDay) {
-        return date.toLocaleDateString("en-US", {
+        return date.toLocaleDateString("vi-VN", {
           year: "numeric",
           month: "short",
           day: "numeric",
         });
       }
-      return date.toLocaleString("en-US", {
+      return date.toLocaleString("vi-VN", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -506,7 +506,7 @@ const Calendar: React.FC = () => {
         }
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <div style="display: flex; align-items: flex-start; gap: 8px;">
-            <span style="color: ${secondaryTextColor}; min-width: 45px;">Start:</span>
+            <span style="color: ${secondaryTextColor}; min-width: 60px;">Bắt đầu:</span>
             <span style="color: ${textColor}; font-weight: 500;">${formatDateTime(
       event.start,
       event.allDay
@@ -516,7 +516,7 @@ const Calendar: React.FC = () => {
             event.end
               ? `
             <div style="display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: ${secondaryTextColor}; min-width: 45px;">End:</span>
+              <span style="color: ${secondaryTextColor}; min-width: 60px;">Kết thúc:</span>
               <span style="color: ${textColor}; font-weight: 500;">${formatDateTime(
                   event.end,
                   event.allDay
@@ -526,7 +526,7 @@ const Calendar: React.FC = () => {
               : ""
           }
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="color: ${secondaryTextColor}; min-width: 45px;">Priority:</span>
+            <span style="color: ${secondaryTextColor}; min-width: 60px;">Ưu tiên:</span>
             <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: ${priorityColor}20; color: ${priorityColor}; font-weight: 600; font-size: 12px;">${priority}</span>
           </div>
         </div>
@@ -574,18 +574,18 @@ const Calendar: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="React.js Calendar Dashboard | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Calendar Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="Lịch công việc | Quản trị hệ thống"
+        description="Trang quản lý lịch công việc và sự kiện"
       />
       <div className="rounded-2xl border  border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         {/* Filter Section */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-            Calendar Events
+            Sự kiện lịch
           </h2>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              View:
+              Hiển thị:
             </span>
             <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-700 p-1">
               <button
@@ -596,7 +596,7 @@ const Calendar: React.FC = () => {
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
-                My Events
+                Sự kiện của tôi
               </button>
               <button
                 onClick={() => setViewFilter("all")}
@@ -606,7 +606,7 @@ const Calendar: React.FC = () => {
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
-                All Events
+                Tất cả sự kiện
               </button>
             </div>
           </div>
@@ -631,7 +631,7 @@ const Calendar: React.FC = () => {
             eventMouseLeave={handleEventMouseLeave}
             customButtons={{
               addEventButton: {
-                text: "Add Event +",
+                text: "Thêm sự kiện +",
                 click: openModal,
               },
             }}
@@ -645,18 +645,18 @@ const Calendar: React.FC = () => {
           <div className="flex flex-col px-2 overflow-y-auto custom-scrollbar">
             <div>
               <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
-                {selectedEvent ? (isEventOwner() ? "Edit Event" : "View Event") : "Add Event"}
+                {selectedEvent ? (isEventOwner() ? "Chỉnh sửa sự kiện" : "Xem sự kiện") : "Thêm sự kiện"}
               </h5>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {selectedEvent && !isEventOwner() 
-                  ? "You can only view this event. Only the creator can edit or delete it."
-                  : "Plan your next big moment: schedule or edit an event to stay on track"
+                  ? "Bạn chỉ có thể xem sự kiện này. Chỉ người tạo mới có quyền chỉnh sửa hoặc xóa."
+                  : "Lên kế hoạch cho khoảnh khắc quan trọng: tạo hoặc chỉnh sửa sự kiện để theo dõi tiến độ"
                 }
               </p>
               {selectedEvent && !isEventOwner() && (
                 <div className="mt-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <p className="text-sm text-amber-800 dark:text-amber-200">
-                    🔒 Read-only mode: This event was created by {selectedEvent.extendedProps.createdByUsername || 'another user'}
+                    🔒 Chế độ chỉ đọc: Sự kiện này được tạo bởi {selectedEvent.extendedProps.createdByUsername || 'người dùng khác'}
                   </p>
                 </div>
               )}
@@ -665,7 +665,7 @@ const Calendar: React.FC = () => {
               <div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Event Title
+                    Tiêu đề sự kiện
                   </label>
                   <input
                     id="event-title"
@@ -679,7 +679,7 @@ const Calendar: React.FC = () => {
               </div>
               <div className="mt-6">
                 <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Event Color
+                  Mức độ ưu tiên
                 </label>
                 <div className="flex flex-wrap items-center gap-4 sm:gap-5">
                   {Object.entries(calendarsEvents).map(([key, value]) => (
@@ -721,7 +721,7 @@ const Calendar: React.FC = () => {
               {/* Start Date and Time */}
               <div className="mt-6">
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Start Date & Time
+                  Ngày & Giờ bắt đầu
                 </label>
                 <div className="flex gap-3 items-end">
                   <div className="flex-1">
@@ -819,7 +819,7 @@ const Calendar: React.FC = () => {
               {/* End Date and Time */}
               <div className="mt-6">
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  End Date & Time
+                  Ngày & Giờ kết thúc
                 </label>
                 <div className="flex gap-3 items-end">
                   <div className="flex-1">
@@ -910,7 +910,7 @@ const Calendar: React.FC = () => {
                 type="button"
                 className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
               >
-                Close
+                Đóng
               </button>
               {selectedEvent && isEventOwner() ? (
                 <button
@@ -939,7 +939,7 @@ const Calendar: React.FC = () => {
                     isDeleting ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {isDeleting ? "Đang xóa..." : "Xóa"}
                 </button>
               ) : null}
               {(!selectedEvent || isEventOwner()) && (
@@ -948,7 +948,7 @@ const Calendar: React.FC = () => {
                   type="button"
                   className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
                 >
-                  {selectedEvent ? "Update Changes" : "Add Event"}
+                  {selectedEvent ? "Cập nhật" : "Thêm sự kiện"}
                 </button>
               )}
             </div>

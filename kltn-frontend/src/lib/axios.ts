@@ -48,6 +48,15 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Don't retry if it's a logout or refresh-token request
+    if (
+      originalRequest.url?.includes('/logout') || 
+      originalRequest.url?.includes('/refresh-token') ||
+      error.response?.status === 401 && originalRequest._retry
+    ) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
@@ -67,33 +76,38 @@ axiosInstance.interceptors.response.use(
         const userId = getUserIdFromToken();
         if (!userId) {
           console.error("UserId not found in token, cannot refresh token");
-        } else {
-          const res = await axios.post(
-            `${BASE_URL}${PREFIX_URL}/auth/refresh-token/${userId}`,
-            {},
-            {
-              withCredentials: true,
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          const newAccessToken = res?.data?.result?.token;
-          if (!newAccessToken) {
-            window.location.href = "/login";
-          }
-
-          getTokenFromLocalStorage()
-            ? setAccessTokenToLocalStorage(newAccessToken)
-            : setAccessTokenToSessionStorage(newAccessToken);
-          axiosInstance.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${newAccessToken}`;
-
-          processQueue(null, newAccessToken);
-          return axiosInstance(originalRequest);
+          removeToken();
+          window.location.href = "/login";
+          return Promise.reject(error);
         }
+
+        const res = await axios.post(
+          `${BASE_URL}${PREFIX_URL}/auth/refresh-token/${userId}`,
+          {},
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const newAccessToken = res?.data?.result?.token;
+        if (!newAccessToken) {
+          removeToken();
+          window.location.href = "/login";
+          return Promise.reject(error);
+        }
+
+        getTokenFromLocalStorage()
+          ? setAccessTokenToLocalStorage(newAccessToken)
+          : setAccessTokenToSessionStorage(newAccessToken);
+        axiosInstance.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${newAccessToken}`;
+
+        processQueue(null, newAccessToken);
+        return axiosInstance(originalRequest);
       } catch (err) {
         processQueue(err, null);
         removeToken();
