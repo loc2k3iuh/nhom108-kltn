@@ -70,6 +70,7 @@ export default function App() {
   const { checkAuth, authUser, isLoading, isInitialized } = useAuthStore();
   const navigate = useNavigate();
   const prevAuthUser = useRef(authUser);
+  const hasSynced = useRef(false);
 
   useEffect(() => {
     checkAuth();
@@ -77,20 +78,19 @@ export default function App() {
     console.log("authUser in App.jsx: ", authUser);
 
   useEffect(() => {
-
     const handleLoginSync = async () => {
-      // Check if user has just logged in
-      if (authUser && !prevAuthUser.current) {
+      // Check if user has just logged in and sync has not happened yet
+      if (authUser && !prevAuthUser.current && !hasSynced.current) {
+        hasSynced.current = true; // Set the flag immediately to prevent re-entry
+
         const localCartData = localStorage.getItem('cart');
         const buyNowItemData = localStorage.getItem('buyNowItem');
-
-        let syncPromise = Promise.resolve();
-        let shouldNavigateToCart = false;
 
         if (localCartData || buyNowItemData) {
             const toastId = toast.loading("Đang đồng bộ giỏ hàng của bạn...");
 
             const syncTasks: Promise<any>[] = [];
+            let shouldNavigateToCart = false;
 
             // Sync local cart
             if (localCartData) {
@@ -127,7 +127,7 @@ export default function App() {
                 }
             }
 
-            syncPromise = Promise.allSettled(syncTasks).then(results => {
+            await Promise.allSettled(syncTasks).then(results => {
                 const failedTasks = results.filter(r => r.status === 'rejected');
                 if (failedTasks.length > 0) {
                     toast.error(`Có lỗi xảy ra khi đồng bộ ${failedTasks.length} sản phẩm. Vui lòng kiểm tra lại giỏ hàng.`, { id: toastId });
@@ -144,11 +144,14 @@ export default function App() {
                 }
             });
         }
-
-        await syncPromise;
       }
-      // Update previous auth user state
+      // Update previous auth user state for the next render
       prevAuthUser.current = authUser;
+
+      // Reset sync flag if user logs out
+      if (!authUser) {
+        hasSynced.current = false;
+      }
     };
 
     handleLoginSync();
