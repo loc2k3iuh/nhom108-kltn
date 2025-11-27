@@ -1,8 +1,12 @@
 package iuh.fit.se.dtos.responses;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -14,6 +18,13 @@ public class ReviewResponse {
   Long id;
   Long rating;
   String comment;
-  ProductResponse product;
+  ProductDetailResponse product;
   UserResponse user;
+    @Schema(description = "Date when the product was added to reviews")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    LocalDateTime createdDate;
+
+    @Schema(description = "Date when the review was last updated")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    LocalDateTime updatedDate;
 }

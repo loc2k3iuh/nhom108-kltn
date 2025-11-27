@@ -19,7 +19,7 @@ public class ProductVariant {
   Long id;
 
   @Column(unique = true, nullable = false)
-  String sku;
+  private String sku;
 
   Double price;
 
