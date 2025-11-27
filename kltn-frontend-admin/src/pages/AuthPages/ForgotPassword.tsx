@@ -27,7 +27,7 @@ export default function ForgotPassword() {
     if (response == "") {
       setEmailSent(true);
       toast.success(
-        "Reset password email has been sent to your email address!"
+        "Đã gửi email đặt lại mật khẩu đến địa chỉ email của bạn!"
       );
     }else{
       toast.error(response);
@@ -60,10 +60,10 @@ export default function ForgotPassword() {
                   </div>
                 </div>
                 <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-                  Check Your Email
+                  Kiểm tra Email của bạn
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  We've sent a password reset link to{" "}
+                  Chúng tôi đã gửi liên kết đặt lại mật khẩu đến{" "}
                   <span className="font-medium text-gray-700 dark:text-gray-300">
                     {getValues("email")}
                   </span>
@@ -76,14 +76,14 @@ export default function ForgotPassword() {
                   className="w-full"
                   size="sm"
                 >
-                  Back to email form
+                  Quay lại form email
                 </Button>
                 <div className="text-center">
                   <Link
                     to="/signin"
                     className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                   >
-                    Back to Sign In
+                    Quay lại đăng nhập
                   </Link>
                 </div>
               </div>
@@ -102,29 +102,28 @@ export default function ForgotPassword() {
           <div>
             <div className="mb-5 sm:mb-8">
               <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-                Forgot Password?
+                Quên mật khẩu?
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Enter your email address and we'll send you a link to reset your
-                password.
+                Nhập địa chỉ email của bạn và chúng tôi sẽ gửi liên kết để đặt lại mật khẩu.
               </p>
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-6">
                 <div>
                   <Label htmlFor="email">
-                    Email Address <span className="text-error-500">*</span>
+                    Địa chỉ Email <span className="text-error-500">*</span>
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     className="mt-2"
-                    placeholder="Enter your email address"
+                    placeholder="Nhập địa chỉ email của bạn"
                     {...register("email", {
-                      required: "Email is required",
+                      required: "Email là bắt buộc",
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email address",
+                        message: "Địa chỉ email không hợp lệ",
                       },
                     })}
                   />
@@ -141,7 +140,7 @@ export default function ForgotPassword() {
                     size="sm"
                     
                   >
-                  Send
+                  Gửi
                   </Button>
                 </div>
               </div>
@@ -151,7 +150,7 @@ export default function ForgotPassword() {
                 to="/signin"
                 className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
               >
-                Back to Sign In
+                Quay lại đăng nhập
               </Link>
             </div>
           </div>
