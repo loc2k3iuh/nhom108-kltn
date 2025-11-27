@@ -26,7 +26,7 @@ import ChangeForgotPasswordPage from './pages/auth/ChangeForgotPasswordPage';
 // Main Pages
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import SearchPage from './pages/SearchPage';
+import SearchResultPage from './pages/SearchResultPage';
 
 // User Pages
 import UserPage from './pages/UserPage';
@@ -191,7 +191,7 @@ export default function App() {
           <Route path="/products" element={<Layout><ProductListPage /></Layout>} />
           <Route path="/category/:categoryId" element={<Layout><ProductListPage /></Layout>} />
           <Route path="/product/:id" element={<Layout><Product /></Layout>} />
-          <Route path="/search" element={<Layout><SearchPage /></Layout>} />
+          <Route path="/search/products" element={<Layout><SearchResultPage /></Layout>} />
 
           {/* User Profile Pages - Require Authentication */}
           <Route path="/profile" element={authUser ? <Layout> <UserPage /> </Layout>: <Navigate to="/signin" />} />
