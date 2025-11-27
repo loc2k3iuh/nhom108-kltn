@@ -30,7 +30,7 @@ export default function SignInForm() {
         state: {email, isChecked}
       });
     }else{
-      toast.error("Username or password is incorrect !");
+      toast.error("Tên đăng nhập hoặc mật khẩu không đúng!");
     }
    
   
@@ -43,10 +43,10 @@ export default function SignInForm() {
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Sign In
+              Đăng nhập
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign in!
+              Nhập tên đăng nhập và mật khẩu để đăng nhập!
             </p>
           </div>
           <div>
@@ -60,14 +60,14 @@ export default function SignInForm() {
               <div className="space-y-6">
                 <div>
                   <Label htmlFor="username">
-                    username <span className="text-error-500">*</span>{" "}
+                    Tên đăng nhập <span className="text-error-500">*</span>{" "}
                   </Label>
                   <Input
                     id="username"
                     className="mt-2"
-                    placeholder="Enter your username"
+                    placeholder="Nhập tên đăng nhập"
                     {...register("username", {
-                      required: "Username is required !",
+                      required: "Tên đăng nhập là bắt buộc!",
                     })}
                   />
                   {errors.username && (
@@ -78,16 +78,16 @@ export default function SignInForm() {
                 </div>
                 <div>
                   <Label htmlFor="password">
-                    Password <span className="text-error-500">*</span>{" "}
+                    Mật khẩu <span className="text-error-500">*</span>{" "}
                   </Label>
                   <div className="relative">
                     <Input
                       id="password"
                       className="mt-2"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder="Nhập mật khẩu"
                       {...register("password", {
-                        required: "Password is required",
+                        required: "Mật khẩu là bắt buộc",
                       })}
                     />
                     <span
@@ -111,19 +111,19 @@ export default function SignInForm() {
                   <div className="flex items-center gap-3">
                     <Checkbox checked={isChecked} onChange={setIsChecked} />
                     <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                      Keep me logged in
+                      Duy trì đăng nhập
                     </span>
                   </div>
                   <Link
                     to="/forgot-password"
                     className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                   >
-                    Forgot password?
+                    Quên mật khẩu?
                   </Link>
                 </div>
                 <div>
                   <Button type="submit" className="w-full" size="sm">
-                    Sign in
+                    Đăng nhập
                   </Button>
                 </div>
               </div>

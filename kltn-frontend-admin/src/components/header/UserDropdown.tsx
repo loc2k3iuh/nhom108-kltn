@@ -22,7 +22,7 @@ export default function UserDropdown() {
 
     if (isSuccess) {
       toast.success("Logout successfully !");
-      navigate("/");
+      navigate("/signin");
     } else {
       toast.error("Logout failed !");
     }

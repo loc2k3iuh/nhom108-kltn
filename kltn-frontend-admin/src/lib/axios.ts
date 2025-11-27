@@ -14,6 +14,7 @@ const PREFIX_URL  = import.meta.env.VITE_API_PREFIX;
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
+let isRedirecting = false;
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL + PREFIX_URL,
@@ -50,16 +51,26 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Don't retry if it's a logout or refresh-token request
-    if (
-      originalRequest.url?.includes('/logout') || 
-      originalRequest.url?.includes('/refresh-token') ||
-      error.response?.status === 401 && originalRequest._retry
-    ) {
+    // Bỏ qua nếu đang ở trang signin hoặc đang redirect
+    if (window.location.pathname === '/signin' || isRedirecting) {
       return Promise.reject(error);
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Kiểm tra userId trước khi vào queue
+      const userId = getUserIdFromStorage();
+      const existingToken = getTokenFromLocalStorage() || getTokenFromSessionStorage();
+      
+      if (!userId || !existingToken) {
+        // Không có userId hoặc token, chuyển về trang đăng nhập ngay
+        if (!isRedirecting) {
+          isRedirecting = true;
+          removeToken();
+          window.location.href = "/signin";
+        }
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
@@ -68,21 +79,20 @@ axiosInstance.interceptors.response.use(
             originalRequest.headers["Authorization"] = `Bearer ${token}`;
             return axiosInstance(originalRequest);
           })
-          .catch((err) => Promise.reject(err));
+          .catch((err) => {
+            if (!isRedirecting) {
+              isRedirecting = true;
+              removeToken();
+              window.location.href = "/signin";
+            }
+            return Promise.reject(err);
+          });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const userId = getUserIdFromStorage();
-        if (!userId) {
-          console.error("UserId not found in token, cannot refresh token");
-          removeToken();
-          window.location.href = "/signin";
-          return Promise.reject(error);
-        }
-
         const res = await axios.post(
           `${BASE_URL}${PREFIX_URL}/auth/refresh-token/${userId}`,
           {},
@@ -96,9 +106,7 @@ axiosInstance.interceptors.response.use(
 
         const newAccessToken = res?.data?.result?.token;
         if (!newAccessToken) {
-          removeToken();
-          window.location.href = "/signin";
-          return Promise.reject(error);
+          throw new Error("No access token received");
         }
 
         getTokenFromLocalStorage()
@@ -112,8 +120,11 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (err) {
         processQueue(err, null);
-        removeToken();
-        window.location.href = "/signin";
+        if (!isRedirecting) {
+          isRedirecting = true;
+          removeToken();
+          window.location.href = "/signin";
+        }
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
