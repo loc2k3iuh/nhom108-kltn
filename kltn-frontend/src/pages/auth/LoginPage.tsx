@@ -45,6 +45,7 @@ const LoginPage: React.FC = () => {
   const handleClickGoogle = () => {
     signInWithPopup(auth, googleProvider).then(async (result) => {
       try {
+        debugger
         
         const user = result.user;
         console.log("Google user: ", user);

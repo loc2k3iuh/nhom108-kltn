@@ -200,7 +200,7 @@ export default function App() {
           <Route path="/user/addresses/new" element={authUser ? <Layout><NewAddress /></Layout> : <Navigate to="/login" />} />
           <Route path="/user/addresses/:addressId/edit" element={authUser ? <Layout><EditAddress /></Layout> : <Navigate to="/login" />} />
 
-          {/* Shopping Pages */}
+          {/* Shopping Pages */}  
           <Route path="/cart" element={ <Layout><Cart /></Layout>} />
           <Route path="/orders" element={authUser ? <Layout><OrderList /></Layout> : <Navigate to="/signin" />} />
            <Route path="/order-success" element={authUser ? <Layout><OrderSuccess /></Layout> : <Navigate to="/signin" />} />

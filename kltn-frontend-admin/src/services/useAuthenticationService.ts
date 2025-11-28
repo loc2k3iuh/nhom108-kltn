@@ -23,7 +23,7 @@ export const verify = async (
 };
 
 export const resendOtp = async(data: ResendOtpRequest) : Promise<void> => {
-    await axiosInstance.post("/auth/resend-otp", data);
+    await axiosInstance.post("/auth/admin/resend-otp", data);
 }
 
 export const signOut = async(data: SignOutRequest): Promise<void> => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import vuvisaLogo from '/logo_v2.png';
+import vuvisaLogo from '@/assets/img/logo.svg';
 
 const Logo: React.FC = () => {
   const navigate = useNavigate();
