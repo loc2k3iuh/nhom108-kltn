@@ -24,11 +24,11 @@ public class RegisterUserRequest {
     String username;
 
     @NotBlank(message = "EMAIL_REQUIRED")
-    @FullNameConstraint(message = "FULLNAME_INVALID")
     @Pattern(regexp = "^[A-Za-z0-9._%+-]+@gmail\\.com$", message = "EMAIL_INVALID")
     String email;
 
     @NotBlank(message = "FULLNAME_REQUIRED")
+    @FullNameConstraint(message = "FULLNAME_INVALID")
     @Size(min = 5, message = "FULLNAME_INVALID")
     String fullName;
 

@@ -41,7 +41,7 @@ public class SecurityConfig {
             "/api/v1/auth/login",
             "/api/v1/auth/admin/login",
             "/api/v1/auth/login-temporarily",
-            "/api/v1/register",
+            "/api/v1/users/register",
             "/api/v1/auth/logout",
             "/api/v1/auth/verify-otp",
             "/api/v1/auth/resend-otp",
@@ -51,13 +51,17 @@ public class SecurityConfig {
             "/api/v1/products/filter",
             "/api/v1/auth/admin/verify-otp",
             "/api/v1/auth/admin/resend-otp",
-            "/api/v1/auth/login-oauth2"
+            "/api/v1/auth/login-oauth2",
+            "/api/v1/users/confirm_user"
     };
 
     String[] PUBLIC_GET_ENDPOINTS = {
             "/api/v1/categories/root",
             "/api/v1/categories/{parentId}/subcategories",
             "/api/v1/products/filter/{id}",
+            "/api/v1/sizes",
+            "/api/v1/brands",
+            "/api/v1/colors",
             "/swagger-ui/**",
             "/v3/api-docs/**"
     };
