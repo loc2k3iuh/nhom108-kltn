@@ -1,16 +1,21 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import "swiper/swiper-bundle.css";
+import "flatpickr/dist/flatpickr.css";
 import App from "./App.tsx";
-
-import { Toaster } from "sonner";
-import { BrowserRouter, Router } from "react-router-dom";
+import { AppWrapper } from "./components/common/PageMeta.tsx";
+import { ThemeProvider } from "./context/ThemeContext.tsx";
+import { BrowserRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <Toaster />
-      <App />
-    </BrowserRouter>
-  </StrictMode>
+    <StrictMode>
+        <ThemeProvider>
+            <AppWrapper>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </AppWrapper>
+        </ThemeProvider>
+    </StrictMode>,
 );

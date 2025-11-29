@@ -19,25 +19,25 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RegisterUserRequest {
 
-  @NotBlank(message = "USERNAME_REQUIRED")
-  @Size(min = 5, message = "USERNAME_INVALID")
-  String username;
+    @NotBlank(message = "USERNAME_REQUIRED")
+    @Size(min = 5, message = "USERNAME_INVALID")
+    String username;
 
-  @NotBlank(message = "EMAIL_REQUIRED")
-  @FullNameConstraint(message = "FULLNAME_INVALID")
-  @Pattern(regexp = "^[A-Za-z0-9._%+-]+@gmail\\.com$", message = "EMAIL_INVALID")
-  String email;
+    @NotBlank(message = "EMAIL_REQUIRED")
+    @FullNameConstraint(message = "FULLNAME_INVALID")
+    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@gmail\\.com$", message = "EMAIL_INVALID")
+    String email;
 
-  @NotBlank(message = "FULLNAME_REQUIRED")
-  @Size(min = 5, message = "FULLNAME_INVALID")
-  String fullName;
+    @NotBlank(message = "FULLNAME_REQUIRED")
+    @Size(min = 5, message = "FULLNAME_INVALID")
+    String fullName;
 
-  @NotBlank(message = "PASSWORD_REQUIRED")
-  @Size(min = 8, message = "PASSWORD_INVALID")
-  String password;
+    @NotBlank(message = "PASSWORD_REQUIRED")
+    @Size(min = 8, message = "PASSWORD_INVALID")
+    String password;
 
-  @NotBlank(message = "RETYPE_PASSWORD_REQUIRED")
-  String retypePassword;
+    @NotBlank(message = "RETYPE_PASSWORD_REQUIRED")
+    String retypePassword;
 
-  MultipartFile file;
+    MultipartFile file;
 }

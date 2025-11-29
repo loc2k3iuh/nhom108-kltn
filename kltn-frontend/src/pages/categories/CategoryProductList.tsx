@@ -8,7 +8,7 @@ import { getSubCategories, getRootCategories } from "@/services/categoryService"
 import { getBrands, getColors, getSizes } from "@/services/filterService";
 import { mapProductToViewModel, ProductViewModel } from "@/mappers/productMapper";
 import { PaginatedProductResponse } from "@/types/product";
-import { CategoryResponse } from "@/types/responses/categoryResponse";
+import { Category } from "@/types/category.ts";
 import { Brand } from "@/types/brand";
 import { Color } from "@/types/color";
 import { Size } from "@/types/size";
@@ -38,8 +38,8 @@ const ProductListPage: React.FC = () => {
 
     const [products, setProducts] = useState<ProductViewModel[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [category, setCategory] = useState<CategoryResponse | null>(null);
-    const [rootCategory, setRootCategory] = useState<CategoryResponse | null>(null);
+    const [category, setCategory] = useState<Category | null>(null);
+    const [rootCategory, setRootCategory] = useState<Category | null>(null);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
@@ -76,6 +76,14 @@ const ProductListPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const sortFromUrl = params.get('sort');
+        if (sortFromUrl && sortOptions.some(option => option.value === sortFromUrl)) {
+            setSortOption(sortFromUrl);
+        }
+    }, [location.search]);
+
+    useEffect(() => {
         const fetchProducts = async () => {
             setIsLoading(true);
             try {
@@ -91,8 +99,8 @@ const ProductListPage: React.FC = () => {
                 if (categoryId) {
                     const catId = parseInt(categoryId, 10);
                     const allRootCategories = await getRootCategories();
-                    let targetCategory: CategoryResponse | undefined;
-                    let parentCategory: CategoryResponse | undefined;
+                    let targetCategory: Category | undefined;
+                    let parentCategory: Category | undefined;
                     let subCategoryIds: number[] = [];
 
                     targetCategory = allRootCategories.find(c => c.id === catId);
@@ -152,21 +160,21 @@ const ProductListPage: React.FC = () => {
     };
 
     const handleColorChange = (colorId: number, isChecked: boolean) => {
-        setSelectedColorIds(prev => 
+        setSelectedColorIds(prev =>
             isChecked ? [...prev, colorId] : prev.filter(id => id !== colorId)
         );
         setPage(0);
     };
 
     const handleSizeChange = (sizeId: number, isChecked: boolean) => {
-        setSelectedSizeIds(prev => 
+        setSelectedSizeIds(prev =>
             isChecked ? [...prev, sizeId] : prev.filter(id => id !== sizeId)
         );
         setPage(0);
     };
 
     const handleBrandChange = (brandId: number, isChecked: boolean) => {
-        setSelectedBrandIds(prev => 
+        setSelectedBrandIds(prev =>
             isChecked ? [...prev, brandId] : prev.filter(id => id !== brandId)
         );
         setPage(0);
@@ -212,7 +220,7 @@ const ProductListPage: React.FC = () => {
                         <div className="border-b py-3 px-1">
                             <h3 className="font-semibold mb-2">Khoảng giá</h3>
                             <div className="flex items-center gap-2 mb-2">
-                                <input 
+                                <input
                                     type="number"
                                     placeholder="Từ"
                                     value={tempMinPrice}
@@ -220,7 +228,7 @@ const ProductListPage: React.FC = () => {
                                     className="w-full px-2 py-1 border rounded-md text-sm"
                                 />
                                 <span>-</span>
-                                <input 
+                                <input
                                     type="number"
                                     placeholder="Đến"
                                     value={tempMaxPrice}
@@ -228,29 +236,29 @@ const ProductListPage: React.FC = () => {
                                     className="w-full px-2 py-1 border rounded-md text-sm"
                                 />
                             </div>
-                            <button 
+                            <button
                                 onClick={handleApplyPriceFilter}
                                 className="w-full bg-red-500 text-white py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
                             >
                                 Áp dụng
                             </button>
                         </div>
-                        
-                        <FilterDropdown 
+
+                        <FilterDropdown
                             title="Thương hiệu"
                             options={brands}
                             selectedIds={selectedBrandIds}
                             onSelectionChange={handleBrandChange}
                         />
 
-                        <FilterDropdown 
+                        <FilterDropdown
                             title="Màu sắc"
                             options={colors}
                             selectedIds={selectedColorIds}
                             onSelectionChange={handleColorChange}
                         />
 
-                        <FilterDropdown 
+                        <FilterDropdown
                             title="Kích thước"
                             options={sizes}
                             selectedIds={selectedSizeIds}
@@ -312,7 +320,7 @@ const ProductListPage: React.FC = () => {
                                                         {product.discountLabel}
                                                     </div>
                                                 )}
-                                                {product.isNew && (
+                                                {product.product.isNew && (
                                                     <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
                                                         Mới
                                                     </div>

@@ -6,6 +6,20 @@ import {
   ApiErrorResponse
 } from "@/types/responses/categoryResponse";
 
+interface ApiResponse<T> {
+  code: number;
+  message: string;
+  result: T;
+}
+
+export interface PaginatedCategories {
+  content: CategoryResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 /**
  * Get all root categories (parent categories without parent)
  * @returns Promise<CategoryResponse[]>
@@ -154,4 +168,82 @@ export const getCachedRootCategories = async (): Promise<CategoryResponse[]> => 
 export const clearCategoriesCache = (): void => {
   localStorage.removeItem(CATEGORIES_CACHE_KEY);
   localStorage.removeItem(CACHE_EXPIRY_KEY);
+};
+
+// New: Paginated + CRUD functions
+
+export const getCategoriesPaginated = async (page = 0, size = 10, sortBy = 'id', sortDir = 'ASC'): Promise<PaginatedCategories> => {
+  try {
+    const params = { page, size, sortBy, sortDir };
+    const response = await axiosInstance.get<ApiResponse<PaginatedCategories>>('/categories', { params });
+    if (response.data.code === 200) return response.data.result;
+    throw new Error(response.data.message || 'Failed to fetch categories');
+  } catch (error: any) {
+    console.error('Error fetching paginated categories:', error);
+    throw new Error(error.response?.data?.message || error.message || 'Network error');
+  }
+};
+
+export const getAllCategories = async (): Promise<CategoryResponse[]> => {
+  try {
+    const response = await axiosInstance.get<ApiResponse<CategoryResponse[]>>('/categories/all');
+    if (response.data.code === 200) return response.data.result;
+    throw new Error(response.data.message || 'Failed to fetch categories');
+  } catch (error: any) {
+    console.error('Error fetching all categories:', error);
+    throw new Error(error.response?.data?.message || error.message || 'Network error');
+  }
+};
+
+export const getCategoryById = async (id: number): Promise<CategoryResponse> => {
+  try {
+    const response = await axiosInstance.get<ApiResponse<CategoryResponse>>(`/categories/${id}`);
+    if (response.data.code === 200) return response.data.result;
+    throw new Error(response.data.message || 'Failed to fetch category');
+  } catch (error: any) {
+    console.error(`Error fetching category ${id}:`, error);
+    throw new Error(error.response?.data?.message || error.message || 'Network error');
+  }
+};
+
+export const createCategory = async (name: string, description?: string, parentId?: number): Promise<CategoryResponse> => {
+  try {
+    // Controller expects RequestParam; send as params
+    const params: any = { name };
+    if (description !== undefined) params.description = description;
+    if (parentId !== undefined && parentId !== null) params.parentId = parentId;
+
+    const response = await axiosInstance.post<ApiResponse<CategoryResponse>>('/categories', null, { params });
+    if (response.data.code === 201 || response.data.code === 200) return response.data.result;
+    throw new Error(response.data.message || 'Failed to create category');
+  } catch (error: any) {
+    console.error('Error creating category:', error);
+    throw new Error(error.response?.data?.message || error.message || 'Network error');
+  }
+};
+
+export const updateCategory = async (id: number, name?: string, description?: string, parentId?: number): Promise<CategoryResponse> => {
+  try {
+    const params: any = {};
+    if (name !== undefined) params.name = name;
+    if (description !== undefined) params.description = description;
+    if (parentId !== undefined) params.parentId = parentId;
+
+    const response = await axiosInstance.put<ApiResponse<CategoryResponse>>(`/categories/${id}`, null, { params });
+    if (response.data.code === 200) return response.data.result;
+    throw new Error(response.data.message || 'Failed to update category');
+  } catch (error: any) {
+    console.error(`Error updating category ${id}:`, error);
+    throw new Error(error.response?.data?.message || error.message || 'Network error');
+  }
+};
+
+export const deleteCategory = async (id: number): Promise<void> => {
+  try {
+    const response = await axiosInstance.delete<ApiResponse<null>>(`/categories/${id}`);
+    if (response.data.code !== 200) throw new Error(response.data.message || 'Failed to delete category');
+  } catch (error: any) {
+    console.error(`Error deleting category ${id}:`, error);
+    throw new Error(error.response?.data?.message || error.message || 'Network error');
+  }
 };

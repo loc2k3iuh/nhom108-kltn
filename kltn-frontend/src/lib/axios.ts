@@ -77,7 +77,9 @@ axiosInstance.interceptors.response.use(
         if (!userId) {
           console.error("UserId not found in token, cannot refresh token");
           removeToken();
-          window.location.href = "/login";
+          // if (window.location.pathname !== '/login') {
+          //   window.location.href = "/login";
+          // }
           return Promise.reject(error);
         }
 
@@ -95,7 +97,9 @@ axiosInstance.interceptors.response.use(
         const newAccessToken = res?.data?.result?.token;
         if (!newAccessToken) {
           removeToken();
-          window.location.href = "/login";
+          // if (window.location.pathname !== '/login') {
+          //   window.location.href = "/login";
+          // }
           return Promise.reject(error);
         }
 
@@ -111,7 +115,9 @@ axiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         removeToken();
-        window.location.href = "/login";
+        // if (window.location.pathname !== '/login') {
+        //   window.location.href = "/login";
+        // }
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

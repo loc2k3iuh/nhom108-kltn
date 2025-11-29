@@ -37,7 +37,6 @@ const FavoritePage: React.FC = () => {
             const data: PaginatedFavorites = await getUserFavorites(authUser.id, currentPage, 8);
             const mappedProducts = data.content.map(fav => mapProductToViewModel(fav.product));
             setFavorites(mappedProducts);
-           
             setTotalPages(data.totalPages);
         } catch (error) {
             console.error("Failed to fetch favorites:", error);
@@ -51,7 +50,6 @@ const FavoritePage: React.FC = () => {
         document.title = "Danh sách yêu thích | DAVINCI";
         if (authUser) {
             fetchFavorites(page);
-         
         } else {
             setLoading(false);
         }
@@ -78,7 +76,6 @@ const FavoritePage: React.FC = () => {
                 toast.success("Đã xóa sản phẩm khỏi danh sách yêu thích.", { id: toastId });
                 // Refresh the list
                 setFavorites(prev => prev.filter(fav => fav.id !== productId));
-                  
             } catch (error) {
                 console.error("Failed to remove favorite:", error);
                 toast.error("Không thể xóa sản phẩm. Vui lòng thử lại.", { id: toastId });
@@ -93,7 +90,6 @@ const FavoritePage: React.FC = () => {
     };
 
     if (!authUser) {
-         
         return (
             <div className="container mx-auto max-w-4xl py-16 text-center">
                 <div className="bg-white p-8 rounded-lg shadow-md">
@@ -154,7 +150,6 @@ const FavoritePage: React.FC = () => {
         }
 
         return (
-          
             <div className="flex justify-center items-center gap-2 mt-8">
                 <button
                     onClick={() => handlePageChange(page - 1)}
@@ -228,7 +223,6 @@ const FavoritePage: React.FC = () => {
                 <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {favorites.map((product) => (
-                        
                             <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 group relative">
                                 <button
                                     onClick={() => handleRemoveFavorite(product.id)}
@@ -236,7 +230,6 @@ const FavoritePage: React.FC = () => {
                                     title="Xóa khỏi yêu thích"
                                 >
                                     <Trash2 size={18} />
-                                    
                                 </button>
                                 <Link to={product.link} className="block">
                                     <div className="h-48 overflow-hidden relative rounded-t-lg">

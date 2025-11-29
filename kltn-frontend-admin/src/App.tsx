@@ -41,6 +41,10 @@ import { useAuthStore } from "./stores/useAuthStore";
 import Reloading from "./components/skeletions/Reloading";
 import { deleteRefreshTokenFromRedis } from "./services/useTokenService";
 import Customers from "./pages/Tables/Customers.tsx";
+import CategoryList from "@/pages/Tables/CategoryList.tsx";
+import BrandList from "@/pages/Tables/BrandList.tsx";
+import SizeList from "@/pages/Tables/SizeList.tsx";
+import ColorList from "@/pages/Tables/ColorList.tsx";
 
 export default function App() {
   const { checkAuth, authUser, isLoading, isInitialized } =
@@ -162,6 +166,22 @@ export default function App() {
                 path="/tables/edit-variant/:variantId"
                 element={authUser ? <EditVariant /> : <Navigate to="/signin" />}
             />
+              <Route
+                  path="/tables/category-list"
+                  element={authUser ? <CategoryList /> : <Navigate to="/signin" />}
+              />
+              <Route
+                  path="/tables/brand-list"
+                  element={authUser ? <BrandList /> : <Navigate to="/signin" />}
+              />
+              <Route
+                  path="/tables/size-list"
+                  element={authUser ? <SizeList /> : <Navigate to="/signin" />}
+              />
+              <Route
+                  path="/tables/color-list"
+                  element={authUser ? <ColorList /> : <Navigate to="/signin" />}
+              />
 
             {/* Ui Elements */}
             <Route

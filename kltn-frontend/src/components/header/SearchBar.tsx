@@ -12,13 +12,13 @@ const SearchBar: React.FC = () => {
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/search/products?keyword=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
   const handleSearchClick = () => {
     if (searchTerm.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/search/products?keyword=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
