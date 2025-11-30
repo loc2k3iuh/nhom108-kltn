@@ -30,14 +30,22 @@ public class ApplicationInitConfig {
     @Bean
     ApplicationRunner applicationRunner(
             UserRepository userRepository, RoleRepository roleRepository) {
-        HashSet<Role> roles = new HashSet<>();
-        Role defaultRole =
-                roleRepository
-                        .findByName(RoleType.valueOf("ADMIN"))
-                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        roles.add(defaultRole);
 
         return args -> {
+            // First, create all roles if they don't exist
+
+            createRoleIfNotExists(roleRepository, RoleType.ADMIN, "Administrator role");
+            createRoleIfNotExists(roleRepository, RoleType.STAFF, "Staff role");
+            createRoleIfNotExists(roleRepository, RoleType.CUSTOMER, "Customer role");
+
+            // Then create admin user
+            HashSet<Role> roles = new HashSet<>();
+            Role adminRole =
+                    roleRepository
+                            .findByName(RoleType.ADMIN)
+                            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+            roles.add(adminRole);
+
             Optional<User> existUser = userRepository.findByUsername("admin");
             if (existUser.isEmpty()) {
                 userRepository.save(
@@ -50,11 +58,21 @@ public class ApplicationInitConfig {
                                 .enabled(true)
                                 .roles(roles)
                                 .build());
+
+                log.info("Created admin user with default password: admin");
             } else {
                 if (passwordEncoder.matches("admin", existUser.get().getPassword())) {
                     log.warn("User admin created with default password: admin, please change it !!!");
                 }
             }
         };
+    }
+
+    private void createRoleIfNotExists(
+            RoleRepository roleRepository, RoleType roleType, String description) {
+        if (!roleRepository.existsByName(roleType)) {
+            roleRepository.save(Role.builder().name(roleType).description(description).build());
+            log.info("Created role: {}", roleType.name());
+        }
     }
 }

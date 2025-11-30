@@ -96,10 +96,11 @@ const ColorListPage: React.FC = () => {
             <PageBreadcrumb pageTitle="Color Management" />
 
             <div className="space-y-6">
-                <ComponentCard
-                    title="All Colors"
-                    headerContent={<Button onClick={openCreateModal} variant="primary">Create Color</Button>}
-                >
+                <ComponentCard title="Color Controls">
+                    <Button onClick={openCreateModal} variant="primary">Create Color</Button>
+                </ComponentCard>
+
+                <ComponentCard title="All Colors">
                     <div className="max-w-full overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead>

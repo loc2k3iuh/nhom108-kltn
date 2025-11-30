@@ -96,10 +96,11 @@ const SizeListPage: React.FC = () => {
             <PageBreadcrumb pageTitle="Size Management" />
 
             <div className="space-y-6">
-                <ComponentCard
-                    title="All Sizes"
-                    headerContent={<Button onClick={openCreateModal} variant="primary">Create Size</Button>}
-                >
+                <ComponentCard title="Size Controls">
+                    <Button onClick={openCreateModal} variant="primary">Create Size</Button>
+                </ComponentCard>
+
+                <ComponentCard title="All Sizes">
                     <div className="max-w-full overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead>

@@ -106,10 +106,11 @@ const BrandListPage: React.FC = () => {
             <PageBreadcrumb pageTitle="Brand Management" />
 
             <div className="space-y-6">
-                <ComponentCard
-                    title="All Brands"
-                    headerContent={<Button onClick={openCreateModal} variant="primary">Create Brand</Button>}
-                >
+                <ComponentCard title="Brand Controls">
+                    <Button onClick={openCreateModal} variant="primary">Create Brand</Button>
+                </ComponentCard>
+
+                <ComponentCard title="All Brands">
                     <div className="max-w-full overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead>

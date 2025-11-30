@@ -168,17 +168,16 @@ const CategoryListPage: React.FC = () => {
             <PageBreadcrumb pageTitle="Category Management" />
 
             <div className="space-y-6">
-                <ComponentCard
-                    title="All Categories"
-                    headerContent={
-                        <div className="flex items-center gap-3">
-                            <Button onClick={() => setViewMode('paginated')} variant={viewMode === 'paginated' ? 'primary' : 'outline'} size="sm">Paginated</Button>
-                            <Button onClick={() => setViewMode('tree')} variant={viewMode === 'tree' ? 'primary' : 'outline'} size="sm">Roots Tree</Button>
-                            <Button onClick={() => openCreateModal('root')} variant="secondary" size="sm">Create Root</Button>
-                            <Button onClick={() => openCreateModal('sub')} variant="secondary" size="sm">Create Sub</Button>
-                        </div>
-                    }
-                >
+                <ComponentCard title="Category Controls">
+                    <div className="flex items-center gap-3">
+                        <Button onClick={() => setViewMode('paginated')} variant={viewMode === 'paginated' ? 'primary' : 'outline'} size="sm">Paginated</Button>
+                        <Button onClick={() => setViewMode('tree')} variant={viewMode === 'tree' ? 'primary' : 'outline'} size="sm">Roots Tree</Button>
+                        <Button onClick={() => openCreateModal('root')} variant="secondary" size="sm">Create Root</Button>
+                        <Button onClick={() => openCreateModal('sub')} variant="secondary" size="sm">Create Sub</Button>
+                    </div>
+                </ComponentCard>
+
+                <ComponentCard title="All Categories">
                     {viewMode === 'paginated' ? (
                         <>
                             <div className="max-w-full overflow-x-auto">
