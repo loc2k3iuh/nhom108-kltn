@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import { getAllProductsForSelect } from '../../services/productService';
+import { getProductById } from '../../services/productService';
 import { createProductVariant } from '../../services/productVariantService';
 import { getProductDiscounts } from '../../services/discountService';
-import { Product } from '@/types/product';
+import { ProductDetailResponse } from '@/types/product';
 import { Color } from "@/types/color";
 import { Size } from "@/types/size";
 import { getColors, getSizes } from "@/services/filterService";
+import Label from '@/components/form/Label';
+import Input from '@/components/form/input/InputField';
+import Select from '@/components/form/Select';
+import ComponentCard from '@/components/common/ComponentCard';
+import Button from '@/components/ui/button/Button';
 
 const toSkuString = (str: string | undefined): string => {
     if (!str) return '';
@@ -25,7 +31,10 @@ const toSkuString = (str: string | undefined): string => {
 };
 
 export default function AddProductVariantForm() {
-  const [productId, setProductId] = useState<number | ''>('');
+  const { productId } = useParams<{ productId: string }>();
+  const navigate = useNavigate();
+
+  const [product, setProduct] = useState<ProductDetailResponse | null>(null);
   const [sku, setSku] = useState('');
   const [price, setPrice] = useState('');
   const [discountedPrice, setDiscountedPrice] = useState<number | null>(null);
@@ -35,65 +44,55 @@ export default function AddProductVariantForm() {
   const [colorId, setColorId] = useState<number | ''>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const [products, setProducts] = useState<Product[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
   const [sizes, setSizes] = useState<Size[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      if (!productId) {
+        toast.error("No product ID provided.");
+        navigate('/tables/category-product-list');
+        return;
+      }
       try {
-        const [productList, colorsData, sizesData] = await Promise.all([
-          getAllProductsForSelect(),
+        setLoading(true);
+        const [productData, colorsData, sizesData] = await Promise.all([
+          getProductById(Number(productId)),
           getColors(),
           getSizes(),
         ]);
-        setProducts(productList);
+        
+        setProduct(productData);
+        setPrice(String(productData.basePrice));
         setColors(colorsData);
         setSizes(sizesData);
+
+        const discounts = await getProductDiscounts(Number(productId));
+        if (discounts && discounts.length > 0) {
+          setDiscountedPrice(discounts[0].discountedPrice);
+          toast.info(`Active discount found! Price is updated.`);
+        }
+
       } catch (err) {
         toast.error('Failed to fetch initial data.');
         console.error(err);
+        navigate('/tables/category-product-list');
+      } finally {
+        setLoading(false);
       }
     };
     fetchInitialData();
-  }, []);
-
-  const handleProductChange = async (selectedProductId: number) => {
-    setProductId(selectedProductId);
-    setDiscountedPrice(null);
-
-    const product = products.find(p => p.id === selectedProductId);
-    if (product) {
-      setPrice(String(product.basePrice));
-
-      try {
-        const discounts = await getProductDiscounts(selectedProductId);
-        if (discounts && discounts.length > 0) {
-          setDiscountedPrice(discounts[0].discountedPrice);
-          toast.info(`Discount found! New price is ${discounts[0].discountedPrice.toLocaleString()}đ`);
-        } else {
-          setDiscountedPrice(null);
-        }
-      } catch (err) {
-        console.error("Failed to fetch discounts:", err);
-        toast.error("Could not fetch discount information for this product.");
-      }
-    } else {
-      setPrice('');
-    }
-  };
+  }, [productId, navigate]);
 
   useEffect(() => {
-    if (productId && colorId && sizeId) {
-      const product = products.find(p => p.id === productId);
+    if (product && colorId && sizeId) {
       const color = colors.find(c => c.id === colorId);
       const size = sizes.find(s => s.id === sizeId);
 
-      if (product && color && size) {
+      if (color && size) {
         const subCatName = toSkuString(product.category.name);
         const brandName = toSkuString(product.brand.name);
         const colorName = toSkuString(color.name);
@@ -104,21 +103,21 @@ export default function AddProductVariantForm() {
     } else {
       setSku('');
     }
-  }, [productId, colorId, sizeId, products, colors, sizes]);
+  }, [product, colorId, sizeId, colors, sizes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productId || !sku || !price || !stockQuantity || !sizeId || !colorId || !imageFile) {
       setError('Please fill in all fields and upload an image.');
+      toast.error('Please fill in all fields and upload an image.');
       return;
     }
 
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     const formData = new FormData();
-    formData.append('productId', String(productId));
+    formData.append('productId', productId);
     formData.append('sku', sku);
     formData.append('price', price);
     formData.append('stockQuantity', stockQuantity);
@@ -129,18 +128,8 @@ export default function AddProductVariantForm() {
 
     try {
       await createProductVariant(formData);
-      setSuccess('Product variant created successfully!');
       toast.success('Product variant created successfully!');
-      // Reset form
-      setProductId('');
-      setSku('');
-      setPrice('');
-      setDiscountedPrice(null);
-      setStockQuantity('');
-      setMaterial('');
-      setSizeId('');
-      setColorId('');
-      setImageFile(null);
+      navigate(`/tables/product-list/${productId}`);
     } catch (err: any) {
       setError(err.message || 'Failed to create product variant.');
       toast.error(err.message || 'Failed to create product variant.');
@@ -156,57 +145,44 @@ export default function AddProductVariantForm() {
   return (
     <div>
       <PageMeta title="Add Product Variant | Admin Dashboard" />
-      <PageBreadcrumb pageTitle="Add New Product Variant" />
+      <div className="flex justify-between items-center mb-4">
+        <PageBreadcrumb pageTitle="Add New Product Variant" />
+        <Button variant="outline" onClick={() => navigate(-1)}>
+            Back
+        </Button>
+      </div>
 
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-          <h3 className="font-medium text-black dark:text-white">
-            Product Variant Information
-          </h3>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6.5">
-          {error && <div className="mb-4 text-red-500">{error}</div>}
-          {success && <div className="mb-4 text-green-500">{success}</div>}
+      <ComponentCard title="Product Variant Information">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && <div className="text-red-500">{error}</div>}
 
-          <div className="mb-4.5">
-            <label className="mb-2.5 block text-black dark:text-white">
-              Product <span className="text-meta-1">*</span>
-            </label>
-            <select
-              value={productId}
-              onChange={(e) => handleProductChange(Number(e.target.value))}
-              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-              required
-            >
-              <option value="">Select Product</option>
-              {products.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+          <div>
+            <Label>Product</Label>
+            <Input
+              type="text"
+              value={product ? product.name : 'Loading...'}
+              className="bg-gray-200 dark:bg-form-input"
+              readOnly
+            />
           </div>
 
-          <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-            <div className="w-full xl:w-1/2">
-                <label className="mb-2.5 block text-black dark:text-white">
-                SKU <span className="text-meta-1">*</span>
-                </label>
-                <input
-                type="text"
-                value={sku}
-                placeholder="SKU will be auto-generated"
-                className="w-full rounded border-[1.5px] border-stroke bg-gray-200 py-3 px-5 font-medium outline-none transition dark:border-form-strokedark dark:bg-form-input"
-                readOnly
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div>
+                <Label>SKU <span className="text-meta-1">*</span></Label>
+                <Input
+                  type="text"
+                  value={sku}
+                  placeholder="SKU will be auto-generated"
+                  className="bg-gray-200 dark:bg-form-input"
+                  readOnly
                 />
             </div>
-            <div className="w-full xl:w-1/2">
-                <label className="mb-2.5 block text-black dark:text-white">
-                Price <span className="text-meta-1">*</span>
-                </label>
-                <input
+            <div>
+                <Label>Base Price <span className="text-meta-1">*</span></Label>
+                <Input
                   type="number"
                   value={price}
-                  placeholder="Select a product to see the price"
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray-200 py-3 px-5 font-medium outline-none transition dark:border-form-strokedark dark:bg-form-input"
+                  className="bg-gray-200 dark:bg-form-input"
                   readOnly
                   required
                 />
@@ -218,73 +194,53 @@ export default function AddProductVariantForm() {
             </div>
           </div>
 
-          <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-            <div className="w-full xl:w-1/2">
-                <label className="mb-2.5 block text-black dark:text-white">
-                Stock Quantity <span className="text-meta-1">*</span>
-                </label>
-                <input
-                type="number"
-                value={stockQuantity}
-                onChange={(e) => setStockQuantity(e.target.value)}
-                placeholder="Enter stock quantity"
-                className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary"
-                required
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div>
+                <Label htmlFor="stockQuantity">Stock Quantity <span className="text-meta-1">*</span></Label>
+                <Input
+                  id="stockQuantity"
+                  type="number"
+                  value={stockQuantity}
+                  onChange={(e) => setStockQuantity(e.target.value)}
+                  placeholder="Enter stock quantity"
+                  required
                 />
             </div>
-            <div className="w-full xl:w-1/2">
-                <label className="mb-2.5 block text-black dark:text-white">
-                Material
-                </label>
-                <input
-                type="text"
-                value={material}
-                onChange={(e) => setMaterial(e.target.value)}
-                placeholder="Enter material"
-                className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary"
+            <div>
+                <Label htmlFor="material">Material</Label>
+                <Input
+                  id="material"
+                  type="text"
+                  value={material}
+                  onChange={(e) => setMaterial(e.target.value)}
+                  placeholder="Enter material"
                 />
             </div>
           </div>
 
-          <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-            <div className="w-full xl:w-1/2">
-              <label className="mb-2.5 block text-black dark:text-white">
-                Color <span className="text-meta-1">*</span>
-              </label>
-              <select
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div>
+              <Label>Color <span className="text-meta-1">*</span></Label>
+              <Select
+                options={colors.map(c => ({ value: c.id, label: c.name }))}
+                onChange={(value) => setColorId(Number(value))}
+                placeholder="Select Color"
                 value={colorId}
-                onChange={(e) => setColorId(Number(e.target.value))}
-                className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                required
-              >
-                <option value="">Select Color</option>
-                {colors.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              />
             </div>
-            <div className="w-full xl:w-1/2">
-              <label className="mb-2.5 block text-black dark:text-white">
-                Size <span className="text-meta-1">*</span>
-              </label>
-              <select
+            <div>
+              <Label>Size <span className="text-meta-1">*</span></Label>
+              <Select
+                options={sizes.map(s => ({ value: s.id, label: s.name }))}
+                onChange={(value) => setSizeId(Number(value))}
+                placeholder="Select Size"
                 value={sizeId}
-                onChange={(e) => setSizeId(Number(e.target.value))}
-                className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                required
-              >
-                <option value="">Select Size</option>
-                {sizes.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
-          <div className="mb-4.5">
-            <label className="mb-2.5 block text-black dark:text-white">
-              Variant Image <span className="text-meta-1">*</span>
-            </label>
+          <div>
+            <Label>Variant Image <span className="text-meta-1">*</span></Label>
             <input
               type="file"
               accept="image/*"
@@ -293,33 +249,35 @@ export default function AddProductVariantForm() {
                   setImageFile(e.target.files[0]);
                 }
               }}
-              className="mb-2"
+              className="mb-2 text-black dark:text-white"
               required
             />
             {imageFile && (
               <div className="relative group flex gap-4">
                 <img src={URL.createObjectURL(imageFile)} alt="Preview" style={{ maxWidth: 120, borderRadius: 8 }} />
-                <button
+                <Button
                   type="button"
+                  variant="danger"
+                  size="sm"
                   onClick={handleDeleteImageFile}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-80 hover:opacity-100"
-                  title="Xóa ảnh"
+                  className="absolute top-1 right-1 !p-1 !h-6 !w-6"
                 >
                   ×
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
-            <button
+            <Button
                 type="submit"
-                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-white hover:text-yellow-300"
+                variant="primary"
+                className="w-full"
                 disabled={loading}
             >
                 {loading ? 'Creating...' : 'Create Variant'}
-            </button>
+            </Button>
         </form>
-      </div>
+      </ComponentCard>
     </div>
   );
 }

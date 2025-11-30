@@ -12,6 +12,10 @@ import {
     getRootCategories,
     getSubCategories,
 } from '@/services/categoryService';
+import ComponentCard from '@/components/common/ComponentCard';
+import Button from '@/components/ui/button/Button';
+import { Modal } from '@/components/ui/modal';
+import Select from '@/components/form/Select';
 
 const getErrorMessage = (error: unknown) => {
     if (!error) return 'Unknown error';
@@ -27,13 +31,11 @@ const CategoryListPage: React.FC = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
-    // View mode: paginated list or tree by root categories
     const [viewMode, setViewMode] = useState<'paginated' | 'tree'>('paginated');
     const [treeData, setTreeData] = useState<{ category: CategoryResponse; subCategories: CategoryResponse[] }[]>([]);
     const [isTreeLoading, setIsTreeLoading] = useState(false);
     const [expandedRootIds, setExpandedRootIds] = useState<number[]>([]);
 
-    // Create/Edit form state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<CategoryResponse | null>(null);
     const [name, setName] = useState('');
@@ -70,7 +72,6 @@ const CategoryListPage: React.FC = () => {
     const fetchTree = async () => {
         setIsTreeLoading(true);
         try {
-            // Use service to fetch roots then subcategories for each
             const roots = await getRootCategories();
             const promises = roots.map(async (r) => {
                 try {
@@ -123,7 +124,6 @@ const CategoryListPage: React.FC = () => {
 
         try {
             if (editingCategory) {
-                // If editing and type is root, ensure parentId is undefined
                 const pid = createType === 'root' ? undefined : parentId;
                 await updateCategory(editingCategory.id, name, description, pid);
                 toast.success('Category updated');
@@ -133,7 +133,6 @@ const CategoryListPage: React.FC = () => {
                 toast.success('Category created');
             }
             setIsModalOpen(false);
-            // refresh relevant data
             if (viewMode === 'tree') {
                 fetchTree();
             }
@@ -168,168 +167,159 @@ const CategoryListPage: React.FC = () => {
             <PageMeta title="Category Management | Admin" description="Manage product categories" />
             <PageBreadcrumb pageTitle="Category Management" />
 
-            <div className="mb-6 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-                <div className="flex justify-between items-center">
-                    <h3 className="font-medium">Categories</h3>
-                    <div className="flex items-center gap-3">
-                        <div>
-                            <button onClick={() => setViewMode('paginated')} className={`px-3 py-1 rounded ${viewMode === 'paginated' ? 'bg-primary text-white' : 'bg-gray-200'}`}>Paginated</button>
-                            <button onClick={() => setViewMode('tree')} className={`ml-2 px-3 py-1 rounded ${viewMode === 'tree' ? 'bg-primary text-white' : 'bg-gray-200'}`}>Roots Tree</button>
+            <div className="space-y-6">
+                <ComponentCard
+                    title="All Categories"
+                    headerContent={
+                        <div className="flex items-center gap-3">
+                            <Button onClick={() => setViewMode('paginated')} variant={viewMode === 'paginated' ? 'primary' : 'outline'} size="sm">Paginated</Button>
+                            <Button onClick={() => setViewMode('tree')} variant={viewMode === 'tree' ? 'primary' : 'outline'} size="sm">Roots Tree</Button>
+                            <Button onClick={() => openCreateModal('root')} variant="secondary" size="sm">Create Root</Button>
+                            <Button onClick={() => openCreateModal('sub')} variant="secondary" size="sm">Create Sub</Button>
                         </div>
-                        <div>
-                            <button onClick={() => openCreateModal('root')} className="ml-2 rounded border px-4 py-2">Create Root</button>
-                            <button onClick={() => openCreateModal('sub')} className="ml-2 rounded border px-4 py-2">Create Sub</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-4">
+                    }
+                >
                     {viewMode === 'paginated' ? (
                         <>
-                            <table className="w-full table-auto">
-                                <thead>
-                                    <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                                        <th className="py-3 px-4">ID</th>
-                                        <th className="py-3 px-4">Name</th>
-                                        <th className="py-3 px-4">Description</th>
-                                        <th className="py-3 px-4">Parent</th>
-                                        <th className="py-3 px-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {isLoading ? (
-                                        <tr><td colSpan={5} className="text-center py-6">Loading...</td></tr>
-                                    ) : categories.length === 0 ? (
-                                        <tr><td colSpan={5} className="text-center py-6">No categories found.</td></tr>
-                                    ) : categories.map(c => (
-                                        <tr key={c.id}>
-                                            <td className="py-3 px-4">{c.id}</td>
-                                            <td className="py-3 px-4">{c.name}</td>
-                                            <td className="py-3 px-4">{c.description}</td>
-                                            <td className="py-3 px-4">{c.parentCategory ? c.parentCategory.name : '-'}</td>
-                                            <td className="py-3 px-4">
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => openEditModal(c)} className="text-blue-500">Edit</button>
-                                                    <button onClick={() => handleDelete(c.id)} className="text-red-500">Delete</button>
-                                                </div>
-                                            </td>
+                            <div className="max-w-full overflow-x-auto">
+                                <table className="w-full table-auto">
+                                    <thead>
+                                        <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Name</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Description</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Parent</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {isLoading ? (
+                                            <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Loading...</td></tr>
+                                        ) : categories.length === 0 ? (
+                                            <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">No categories found.</td></tr>
+                                        ) : categories.map(c => (
+                                            <tr key={c.id}>
+                                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.id}</td>
+                                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.name}</td>
+                                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.description}</td>
+                                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.parentCategory ? c.parentCategory.name : '-'}</td>
+                                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                    <div className="flex items-center space-x-3.5">
+                                                        <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>Edit</Button>
+                                                        <Button variant="danger" size="sm" onClick={() => handleDelete(c.id)}>Delete</Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
 
-                            <div className="flex justify-center mt-4">
+                            <div className="flex justify-center mt-6">
                                 {Array.from({ length: totalPages }, (_, i) => (
-                                    <button key={i} onClick={() => fetchCategories(i)} className={`mx-1 px-3 py-1 rounded ${page === i ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-meta-4'}`}>
+                                    <Button key={i} onClick={() => fetchCategories(i)} variant={page === i ? 'primary' : 'outline'} size="sm" className="mx-1">
                                         {i + 1}
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
                         </>
                     ) : (
-                        <div>
+                        <div className="space-y-3">
                             {isTreeLoading ? (
-                                <div className="text-center py-6">Loading tree...</div>
+                                <div className="text-center py-10 text-black dark:text-white">Loading tree...</div>
                             ) : treeData.length === 0 ? (
-                                <div className="text-center py-6">No root categories found.</div>
+                                <div className="text-center py-10 text-black dark:text-white">No root categories found.</div>
                             ) : (
-                                <div className="space-y-3">
-                                    {treeData.map(({ category, subCategories }) => (
-                                        <div key={category.id} className="border rounded p-3">
-                                            <div className="flex justify-between items-center">
+                                treeData.map(({ category, subCategories }) => (
+                                    <div key={category.id} className="border rounded p-3 dark:border-strokedark">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <Button onClick={() => toggleExpand(category.id)} variant="outline" size="sm" className="mr-3">{expandedRootIds.includes(category.id) ? '-' : '+'}</Button>
                                                 <div>
-                                                    <button onClick={() => toggleExpand(category.id)} className="mr-3">{expandedRootIds.includes(category.id) ? '-' : '+'}</button>
-                                                    <strong>{category.name}</strong>
-                                                    <div className="text-sm">{category.description}</div>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => openEditModal(category)} className="text-blue-500">Edit</button>
-                                                    <button onClick={() => handleDelete(category.id)} className="text-red-500">Delete</button>
+                                                    <strong className="text-black dark:text-white">{category.name}</strong>
+                                                    <div className="text-sm text-gray-600 dark:text-gray-400">{category.description}</div>
                                                 </div>
                                             </div>
-
-                                            {expandedRootIds.includes(category.id) && (
-                                                <div className="mt-3">
-                                                    {subCategories.length === 0 ? (
-                                                        <div className="text-sm">No subcategories.</div>
-                                                    ) : (
-                                                        <ul className="pl-6 list-disc">
-                                                            {subCategories.map(s => (
-                                                                <li key={s.id} className="flex justify-between items-center">
-                                                                    <div>
-                                                                        <span className="font-medium">{s.name}</span>
-                                                                        <div className="text-sm ">{s.description}</div>
-                                                                    </div>
-                                                                    <div className="flex gap-2">
-                                                                        <button onClick={() => openEditModal(s)} className="text-blue-500">Edit</button>
-                                                                        <button onClick={() => handleDelete(s.id)} className="text-red-500">Delete</button>
-                                                                    </div>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    )}
-                                                    <div className="mt-2">
-                                                        <button onClick={() => openCreateModal('sub')}
-                                                            className="px-3 py-1 rounded bg-primary text-white">Create Subcategory</button>
-                                                    </div>
-                                                </div>
-                                            )}
+                                            <div className="flex items-center space-x-3.5">
+                                                <Button variant="outline" size="sm" onClick={() => openEditModal(category)}>Edit</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDelete(category.id)}>Delete</Button>
+                                            </div>
                                         </div>
-                                    ))}
-                                </div>
+
+                                        {expandedRootIds.includes(category.id) && (
+                                            <div className="mt-4 pl-10">
+                                                {subCategories.length === 0 ? (
+                                                    <div className="text-sm text-gray-600 dark:text-gray-400">No subcategories.</div>
+                                                ) : (
+                                                    <ul className="space-y-2">
+                                                        {subCategories.map(s => (
+                                                            <li key={s.id} className="flex justify-between items-center">
+                                                                <div>
+                                                                    <span className="font-medium text-black dark:text-white">{s.name}</span>
+                                                                    <div className="text-sm text-gray-600 dark:text-gray-400">{s.description}</div>
+                                                                </div>
+                                                                <div className="flex items-center space-x-3.5">
+                                                                    <Button variant="outline" size="sm" onClick={() => openEditModal(s)}>Edit</Button>
+                                                                    <Button variant="danger" size="sm" onClick={() => handleDelete(s.id)}>Delete</Button>
+                                                                </div>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
                             )}
                         </div>
                     )}
-                </div>
+                </ComponentCard>
             </div>
 
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="w-full max-w-lg rounded bg-white p-6 dark:bg-boxdark">
-                        <h3 className="font-medium mb-4">{editingCategory ? 'Edit Category' : 'Create Category'}</h3>
-                        <div className="grid grid-cols-1 gap-3">
-                            <div>
-                                <label className="block mb-1">Type</label>
-                                <div className="flex gap-3">
-                                    <label className="flex items-center gap-2">
-                                        <input type="radio" name="type" checked={createType === 'root'} onChange={() => setCreateType('root')} />
-                                        <span>Root</span>
-                                    </label>
-                                    <label className="flex items-center gap-2">
-                                        <input type="radio" name="type" checked={createType === 'sub'} onChange={() => setCreateType('sub')} />
-                                        <span>Subcategory</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block mb-1">Name</label>
-                                <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border p-2 dark:bg-form-input" />
-                            </div>
-                            <div>
-                                <label className="block mb-1">Description</label>
-                                <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border p-2 dark:bg-form-input" />
-                            </div>
-                            <div>
-                                <label className="block mb-1">Parent (only for Subcategory)</label>
-                                <select value={parentId ?? ''} onChange={e => setParentId(e.target.value ? Number(e.target.value) : undefined)} disabled={createType === 'root'} className="w-full rounded border p-2 dark:bg-form-input">
-                                    <option value="">-- Select parent root --</option>
-                                    {rootCategories.map(r => (
-                                        <option key={r.id} value={r.id}>{r.name}</option>
-                                    ))}
-                                </select>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <div className="p-6">
+                    <h3 className="font-medium text-black dark:text-white mb-4">{editingCategory ? 'Edit Category' : 'Create Category'}</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-black dark:text-white mb-1">Type</label>
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2 text-black dark:text-white">
+                                    <input type="radio" name="type" checked={createType === 'root'} onChange={() => setCreateType('root')} />
+                                    Root
+                                </label>
+                                <label className="flex items-center gap-2 text-black dark:text-white">
+                                    <input type="radio" name="type" checked={createType === 'sub'} onChange={() => setCreateType('sub')} />
+                                    Subcategory
+                                </label>
                             </div>
                         </div>
-
-                        <div className="flex justify-end gap-2 mt-4">
-                            <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded border">Cancel</button>
-                            <button onClick={handleSubmit} className="px-4 py-2 rounded bg-primary text-white">Save</button>
+                        <div>
+                            <label className="block text-black dark:text-white mb-1">Name</label>
+                            <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
+                        </div>
+                        <div>
+                            <label className="block text-black dark:text-white mb-1">Description</label>
+                            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
+                        </div>
+                        <div>
+                            <label className="block text-black dark:text-white mb-1">Parent (for Subcategory)</label>
+                            <Select
+                                options={[{ value: '', label: '-- Select parent root --' }, ...rootCategories.map(r => ({ value: r.id, label: r.name }))]}
+                                value={parentId}
+                                onChange={(value) => setParentId(value ? Number(value) : undefined)}
+                                disabled={createType === 'root'}
+                            />
                         </div>
                     </div>
+
+                    <div className="flex justify-end gap-3 mt-6">
+                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Cancel</Button>
+                        <Button onClick={handleSubmit} variant="primary">Save</Button>
+                    </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 };
 
 export default CategoryListPage;
-

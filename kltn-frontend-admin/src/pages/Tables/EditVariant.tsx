@@ -8,6 +8,10 @@ import { getColors, getSizes } from "@/services/filterService";
 import { ProductVariant, ProductReference } from '@/types/product';
 import { Color } from '@/types/color';
 import { Size } from '@/types/size';
+import Label from '@/components/form/Label';
+import Input from '@/components/form/input/InputField';
+import ComponentCard from '@/components/common/ComponentCard';
+import Button from '@/components/ui/button/Button';
 
 const toSkuString = (str: string | undefined): string => {
     if (!str) return '';
@@ -144,81 +148,80 @@ export default function EditVariant() {
         }
     };
 
-    if (loading) return <div>Đang tải dữ liệu...</div>;
+    if (loading) return <div className="text-black dark:text-white">Đang tải dữ liệu...</div>;
     if (error) return <div className="text-red-500">{error}</div>;
-    if (!variant) return <div>Không tìm thấy variant.</div>;
+    if (!variant) return <div className="text-black dark:text-white">Không tìm thấy variant.</div>;
 
     return (
         <div>
             <PageMeta title="Edit Variant" />
-            <PageBreadcrumb pageTitle="Edit Variant" />
-            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-xl mx-auto mt-8">
-                <form onSubmit={handleSubmit} className="p-6.5">
-                    {error && <div className="mb-4 text-red-500">{error}</div>}
-                    {success && <div className="mb-4 text-green-500">{success}</div>}
-                    <div className="mb-4.5">
-                        <label className="mb-2.5 block text-black dark:text-white">SKU</label>
-                        <input type="text" value={sku} className="w-full rounded border p-2 bg-gray-200 dark:bg-form-input" readOnly />
-                    </div>
-                    <div className="mb-4.5">
-                        <label className="mb-2.5 block text-black dark:text-white">Giá</label>
-                        <input type="number" value={price} className="w-full rounded border p-2 bg-gray-200 dark:bg-form-input" readOnly />
-                    </div>
-                    <div className="mb-4.5">
-                        <label className="mb-2.5 block text-black dark:text-white">Số lượng tồn kho</label>
-                        <input type="number" value={stockQuantity} onChange={e => setStockQuantity(e.target.value)} min={0} className="w-full rounded border p-2" required />
-                    </div>
-                    <div className="mb-4.5">
-                        <label className="mb-2.5 block text-black dark:text-white">Chất liệu</label>
-                        <input type="text" value={material} onChange={e => setMaterial(e.target.value)} maxLength={255} className="w-full rounded border p-2" />
-                    </div>
-                    {/*<div className="mb-4.5 flex gap-4">*/}
-                    {/*    <div className="w-1/2">*/}
-                    {/*        <label className="mb-2.5 block text-black dark:text-white">Màu sắc</label>*/}
-                    {/*        <select disabled value={colorId} onChange={e => setColorId(Number(e.target.value))} className="w-full rounded border p-2" required>*/}
-                    {/*            <option value="">Chọn màu</option>*/}
-                    {/*            {colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}*/}
-                    {/*        </select>*/}
-                    {/*    </div>*/}
-                    {/*    <div className="w-1/2">*/}
-                    {/*        <label className="mb-2.5 block text-black dark:text-white">Kích cỡ</label>*/}
-                    {/*        <select disabled value={sizeId} onChange={e => setSizeId(Number(e.target.value))} className="w-full rounded border p-2" required>*/}
-                    {/*            <option value="">Chọn size</option>*/}
-                    {/*            {sizes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}*/}
-                    {/*        </select>*/}
-                    {/*    </div>*/}
-                    {/*</div>*/}
-
-                    <div className="mb-4.5 flex gap-4">
-                        <div className="w-1/2">
-                            <label className="block text-black dark:text-white mb-1">Màu sắc</label>
-                            <p className="w-full rounded border p-2 bg-gray-100 dark:bg-gray-800">
-                                {colors.find(c => c.id === colorId)?.name || 'Chưa chọn'}
-                            </p>
+            <div className="flex justify-between items-center mb-4">
+                <PageBreadcrumb pageTitle="Edit Variant" />
+                <Button variant="outline" onClick={() => navigate(-1)}>
+                    Back
+                </Button>
+            </div>
+            <div className="max-w-xl mx-auto">
+                <ComponentCard title="Edit Variant Information">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {error && <div className="text-red-500">{error}</div>}
+                        {success && <div className="text-green-500">{success}</div>}
+                        <div>
+                            <Label>SKU</Label>
+                            <Input type="text" value={sku} className="bg-gray-200 dark:bg-form-input" readOnly />
                         </div>
-                        <div className="w-1/2">
-                            <label className="block text-black dark:text-white mb-1">Kích cỡ</label>
-                            <p className="w-full rounded border p-2 bg-gray-100 dark:bg-gray-800">
-                                {sizes.find(s => s.id === sizeId)?.name || 'Chưa chọn'}
-                            </p>
+                        <div>
+                            <Label>Giá</Label>
+                            <Input type="number" value={price} className="bg-gray-200 dark:bg-form-input" readOnly />
                         </div>
-                    </div>
+                        <div>
+                            <Label htmlFor="stockQuantity">Số lượng tồn kho</Label>
+                            <Input id="stockQuantity" type="number" value={stockQuantity} onChange={e => setStockQuantity(e.target.value)} min={0} required />
+                        </div>
+                        <div>
+                            <Label htmlFor="material">Chất liệu</Label>
+                            <Input id="material" type="text" value={material} onChange={e => setMaterial(e.target.value)} maxLength={255} />
+                        </div>
 
-
-                    <div className="mb-4.5">
-                        <label className="mb-2.5 block text-black dark:text-white">Ảnh variant</label>
-                        <input type="file" accept="image/*" onChange={e => {
-                            if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0]);
-                        }} className="mb-2" />
-                        {(imageFile || imageUrl) && (
-                            <div className="relative group flex gap-4">
-                                <img src={imageFile ? URL.createObjectURL(imageFile) : imageUrl!} alt="Preview" style={{ maxWidth: 120, borderRadius: 8 }} />
-                                <button type="button" onClick={handleDeleteImageFile} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-80 hover:opacity-100" title="Xóa ảnh">×</button>
+                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                            <div>
+                                <Label>Màu sắc</Label>
+                                <p className="w-full rounded border p-3 bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
+                                    {colors.find(c => c.id === colorId)?.name || 'Chưa chọn'}
+                                </p>
                             </div>
-                        )}
-                    </div>
-                    <button type="submit" className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray">Cập nhật Variant</button>
-                </form>
+                            <div>
+                                <Label>Kích cỡ</Label>
+                                <p className="w-full rounded border p-3 bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
+                                    {sizes.find(s => s.id === sizeId)?.name || 'Chưa chọn'}
+                                </p>
+                            </div>
+                        </div>
+
+
+                        <div>
+                            <Label>Ảnh variant</Label>
+                            <input type="file" accept="image/*" onChange={e => {
+                                if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0]);
+                            }} className="mb-2 text-black dark:text-white" />
+                            {(imageFile || imageUrl) && (
+                                <div className="relative group flex gap-4">
+                                    <img src={imageFile ? URL.createObjectURL(imageFile) : imageUrl!} alt="Preview" style={{ maxWidth: 120, borderRadius: 8 }} />
+                                    <Button
+                                        type="button"
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={handleDeleteImageFile}
+                                        className="absolute top-1 right-1 !p-1 !h-6 !w-6"
+                                    >
+                                        ×
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                        <Button type="submit" variant="primary" className="w-full">Cập nhật Variant</Button>
+                    </form>
+                </ComponentCard>
             </div>
         </div>
     );

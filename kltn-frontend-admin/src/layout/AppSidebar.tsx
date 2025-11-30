@@ -52,14 +52,6 @@ const navItems: NavItem[] = [
     path: "/profile",
   },
   {
-    name: "Sản phẩm",
-    icon: <ListIcon />,
-    subItems: [
-        { name: "Sản phẩm", path: "/forms/products", pro: false }, 
-        { name: "Biến thể sản phẩm", path: "/forms/products-variants", pro: false }
-    ],
-  },
-  {
     name: "Danh sách",
     icon: <TableIcon />,
     subItems: [
