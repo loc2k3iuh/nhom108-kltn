@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface CartIconProps {
   cartItemCount: number;
@@ -7,7 +8,7 @@ interface CartIconProps {
 const CartIcon: React.FC<CartIconProps> = ({ cartItemCount }) => {
   return (
     <div className="flex flex-col cursor-pointer justify-center items-center group relative min-w-[60px]">
-      <a href={'/cart'} className='flex items-center justify-center flex-col'>
+      <Link to={'/cart'} className='flex items-center justify-center flex-col'>
         <div className="relative">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <rect className="fill-none" width="24" height="24" />
@@ -25,7 +26,7 @@ const CartIcon: React.FC<CartIconProps> = ({ cartItemCount }) => {
         <span className="text-[11px] text-white md:text-[#7A7E7F] group-hover:md:stroke-[#5A5E5F] hidden md:block whitespace-nowrap">
           Giỏ hàng
         </span>
-      </a>
+      </Link>
     </div>
   );
 };

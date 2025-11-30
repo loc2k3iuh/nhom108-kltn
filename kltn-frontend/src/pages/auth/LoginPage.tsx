@@ -200,7 +200,7 @@ const LoginPage: React.FC = () => {
 
           <div className="hidden md:block mt-8">
             <p className="text-white/80 text-sm">
-              © 2024 VUVISA. Mọi quyền được bảo lưu.
+              © 2025 DAVINCI. Mọi quyền được bảo lưu.
             </p>
           </div>
         </div>
@@ -346,12 +346,12 @@ const LoginPage: React.FC = () => {
 
             <p className="text-center text-gray-600 mt-8">
               Chưa có tài khoản?
-              <label
+              <span
                 onClick={() => navigate("/register")}
                 className="text-[#C92127] hover:text-[#a71b20] font-medium ml-1 transition-colors cursor-pointer"
               >
                 Đăng ký ngay
-              </label>
+              </span>
             </p>
           </div>
         </div>

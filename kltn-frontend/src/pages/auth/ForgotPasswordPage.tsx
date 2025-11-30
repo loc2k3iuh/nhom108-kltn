@@ -79,7 +79,7 @@ const ForgotPasswordPage: React.FC = () => {
           </div>
 
           <div className="hidden md:block mt-8">
-            <p className="text-white/80 text-sm">© 2024 DAVINCI. Mọi quyền được bảo lưu.</p>
+            <p className="text-white/80 text-sm">© 2025 DAVINCI. Mọi quyền được bảo lưu.</p>
           </div>
         </div>
 

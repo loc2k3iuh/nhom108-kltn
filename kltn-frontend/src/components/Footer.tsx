@@ -85,7 +85,7 @@ const Footer: React.FC = () => {
                     {/* About Column */}
                     <div className="md:col-span-4">
                         <div className="flex items-center mb-5">
-                            <img src={vuvisaIco} className="h-10 mr-3" alt="DAVINCI Logo" />
+                            <img src="./src/assets/img/small.png" className="h-10 mr-3" alt="DAVINCI Logo" />
                             <span className="text-3xl font-bold text-red-600">DAVINCI</span>
                         </div>
                         <p className="text-gray-600 mb-6">

@@ -236,12 +236,12 @@ export default function App() {
     
 
         {/* Authentication Pages - No Layout */}
-        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
-        <Route path="/register" element={!authUser ? <RegisterPage /> : <Navigate to="/" />} />
+        <Route path="/login" element={!authUser ? <Layout><LoginPage /></Layout> : <Navigate to="/" />} />
+        <Route path="/register" element={!authUser ? <Layout><RegisterPage /></Layout> : <Navigate to="/" />} />
         <Route path="/register-mail" element={!authUser ? <RegisterMailPage /> : <Navigate to="/" />} />
         <Route path="/register-success" element={<RegisterSuccessPage />} />
         <Route path="/authenticate" element={<Authenticate/>}/>
-        <Route path="/forgot-password" element={!authUser ? <ForgotPasswordPage /> : <Navigate to="/" />} />
+        <Route path="/forgot-password" element={!authUser ?  <Layout><ForgotPasswordPage /></Layout> : <Navigate to="/" />} />
         <Route path="/forgot-password-success" element={<ForgotPasswordSuccessPage />} />
         <Route path="/change-forgot-password" element={<ChangeForgotPasswordPage />} />
         <Route path="/not-authenticated" element={<NotAuthenticatedPage />} />

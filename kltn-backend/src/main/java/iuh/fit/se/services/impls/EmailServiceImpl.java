@@ -212,6 +212,10 @@ public class EmailServiceImpl implements IEmailService {
             .findByEmail(email)
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+    if(user.getIsOauth2()){
+        throw new AppException(ErrorCode.USER_NOT_FOUND);
+    }
+
     String key = "reset:token:userId=" + user.getId();
 
     Long ttl = stringRedisTemplate.getExpire(key, TimeUnit.SECONDS);
