@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
@@ -9,11 +8,14 @@ import { CategoryResponse } from "@/types/responses/categoryResponse";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import FilterDropdown from "@/components/common/FilterDropdown";
-
 import { getBrands, getColors, getSizes } from "@/services/filterService";
 import { Brand } from "@/types/brand";
 import { Color } from "@/types/color";
 import { Size } from "@/types/size";
+import Button from "@/components/ui/button/Button";
+import ComponentCard from "@/components/common/ComponentCard";
+import Select from "@/components/form/Select";
+import Input from "@/components/form/input/InputField";
 
 const mockStatus = [
     { id: 1, name: 'ACTIVE' }, { id: 2, name: 'INACTIVE' }, { id: 3, name: 'OUT_OF_STOCK' }
@@ -22,22 +24,16 @@ const mockStatus = [
 const sortOptions = [
     { label: "Mới nhất", value: "createdAt,DESC" },
     { label: "Cũ nhất", value: "createdAt,ASC" },
-
     { label: "Bán chạy nhất", value: "orderCount,DESC" },
     { label: "Bán ít nhất", value: "orderCount,ASC" },
-
     { label: "Đánh giá cao nhất", value: "averageRating,DESC" },
     { label: "Đánh giá thấp nhất", value: "averageRating,ASC" },
-
     { label: "Giá: Thấp đến cao", value: "discountedPrice,ASC" },
     { label: "Giá: Cao đến thấp", value: "discountedPrice,DESC" },
-
     { label: "Lượt yêu thích", value: "favoriteCount,DESC" },
     { label: "Lượt yêu thích ít nhất", value: "favoriteCount,ASC" },
-
     { label: "Đánh giá nhiều nhất", value: "reviewCount,DESC" },
     { label: "Đánh giá ít nhất", value: "reviewCount,ASC" },
-
     { label: "Giảm giá nhiều nhất", value: "currentDiscountPercent,DESC" },
     { label: "Giảm giá ít nhất", value: "currentDiscountPercent,ASC" },
 ];
@@ -53,7 +49,6 @@ const CategoryProductList: React.FC = () => {
     const [colors, setColors] = useState<Color[]>([]);
     const [sizes, setSizes] = useState<Size[]>([]);
 
-    // Filter states
     const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
     const [subCategories, setSubCategories] = useState<CategoryResponse[]>([]);
     const [selectedRootCatId, setSelectedRootCatId] = useState<number | ''>('');
@@ -108,7 +103,6 @@ const CategoryProductList: React.FC = () => {
 
             const response = await filterProducts(payload);
             setProducts(response.content);
-            console.log(response.content);
             setTotalPages(response.totalPages);
         } catch (error) {
             toast.error("Failed to fetch products.");
@@ -135,8 +129,8 @@ const CategoryProductList: React.FC = () => {
 
     const resetPage = () => setPage(0);
 
-    const handleRootCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedRootCatId(Number(e.target.value) || '');
+    const handleRootCategoryChange = (value: string | number) => {
+        setSelectedRootCatId(Number(value) || '');
         setSelectedSubCatId('');
         resetPage();
     };
@@ -161,121 +155,136 @@ const CategoryProductList: React.FC = () => {
         navigate(`/tables/product-list/${productId}`);
     };
 
+    const handleAddProduct = () => {
+        navigate('/forms/add-product');
+    };
+
     return (
         <div>
             <PageMeta title="Product Management | Admin Dashboard" />
-            <PageBreadcrumb pageTitle="Product Management" />
-
-            {/* Filter Section */}
-            <div className="mb-6 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                    <select value={selectedRootCatId} onChange={handleRootCategoryChange} className="w-full rounded border p-2 dark:bg-form-input">
-                        <option value="">All Root Categories</option>
-                        {rootCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                    </select>
-                    <select value={selectedSubCatId} onChange={e => {setSelectedSubCatId(Number(e.target.value) || ''); resetPage();}} disabled={!selectedRootCatId} className="w-full rounded border p-2 disabled:bg-gray-200 dark:bg-form-input">
-                        <option value="">All Sub-Categories</option>
-                        {subCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                    </select>
-
-                    <select value={selectedStatus} onChange={e => {setSelectedStatus(e.target.value); resetPage();}} className="w-full rounded border p-2 dark:bg-form-input">
-                        <option value="">All Statuses</option>
-                        {mockStatus.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                    </select>
-
-                    <div className="flex items-center gap-2">
-                        <input type="number" placeholder="Min Price" value={tempMinPrice} onChange={e => setTempMinPrice(e.target.value)} className="w-full rounded border p-2 dark:bg-form-input" />
-                        <span>-</span>
-                        <input type="number" placeholder="Max Price" value={tempMaxPrice} onChange={e => setTempMaxPrice(e.target.value)} className="w-full rounded border p-2 dark:bg-form-input" />
-                        <button onClick={handleApplyPriceFilter} className="rounded bg-primary px-4 py-2 text-white">Go</button>
-                    </div>
-
-                    <select value={sortOption} onChange={e => {setSortOption(e.target.value); resetPage();}} className="w-full rounded border p-2 dark:bg-form-input">
-                        {sortOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                    </select>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <FilterDropdown title="Brands" options={brands} selectedIds={selectedBrandIds} onSelectionChange={handleBrandChange} />
-                    <FilterDropdown title="Colors" options={colors} selectedIds={selectedColorIds} onSelectionChange={handleColorChange} />
-                    <FilterDropdown title="Sizes" options={sizes} selectedIds={selectedSizeIds} onSelectionChange={handleSizeChange} />
-                </div>
+            <div className="flex justify-between items-center mb-4">
+                <PageBreadcrumb pageTitle="Product Management" />
+                <Button onClick={handleAddProduct} variant="primary">
+                    Add Product
+                </Button>
             </div>
 
-            {/* Table Section */}
-            <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-                <div className="max-w-full overflow-x-auto">
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                                <th className="min-w-[250px] py-4 px-4 font-medium text-black dark:text-white">Product</th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">Brand</th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">Category</th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Base Price</th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Discounted Price</th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Discount Percent</th>
-                                <th className="py-4 px-4 font-medium text-black dark:text-white">Status</th>
-                                <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoading ? (
-                                <tr><td colSpan={6} className="text-center py-10">Loading products...</td></tr>
-                            ) : products.length === 0 ? (
-                                <tr><td colSpan={6} className="text-center py-10">No products found.</td></tr>
-                            ) : (products.map(product => (
-                                <tr key={product.id}>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="text-black dark:text-white font-medium">{product.name}</p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="text-black dark:text-white">{product.brand.name}</p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="text-black dark:text-white">{product.category.name}</p>
-                                    </td>
-                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="text-black dark:text-white">{product.basePrice.toLocaleString()}đ</p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="text-black dark:text-white">
-                                            {product.discountedPrice != null
-                                                ? `${product.discountedPrice.toLocaleString()}đ`
-                                                : `${product.basePrice.toLocaleString()}đ`}
-                                        </p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="text-black dark:text-white">
-                                            {product.currentDiscountPercent
-                                                ? `${product.currentDiscountPercent.toLocaleString()}%`
-                                                : '0%'}
-                                        </p>
-                                    </td>
+            <div className="space-y-6">
+                <ComponentCard title="Filter Products">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                        <Select
+                            options={[{ value: '', label: 'All Root Categories' }, ...rootCategories.map(cat => ({ value: cat.id, label: cat.name }))]}
+                            value={selectedRootCatId}
+                            onChange={handleRootCategoryChange}
+                        />
+                        <Select
+                            options={[{ value: '', label: 'All Sub-Categories' }, ...subCategories.map(cat => ({ value: cat.id, label: cat.name }))]}
+                            value={selectedSubCatId}
+                            onChange={(value) => {setSelectedSubCatId(Number(value) || ''); resetPage();}}
+                            disabled={!selectedRootCatId}
+                        />
+                        <Select
+                            options={[{ value: '', label: 'All Statuses' }, ...mockStatus.map(s => ({ value: s.name, label: s.name }))]}
+                            value={selectedStatus}
+                            onChange={(value) => {setSelectedStatus(String(value)); resetPage();}}
+                        />
 
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className={`inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium ${product.status === 'ACTIVE' ? 'bg-success text-success' : 'bg-danger text-danger'}`}>
-                                            {product.status}
-                                        </p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <button onClick={() => handleEditProduct(product.id)} className="hover:text-primary">Edit</button>
-                                    </td>
+                        <div className="flex items-center gap-2">
+                            <Input type="number" placeholder="Min Price" value={tempMinPrice} onChange={e => setTempMinPrice(e.target.value)} />
+                            <span className="text-black dark:text-white">-</span>
+                            <Input type="number" placeholder="Max Price" value={tempMaxPrice} onChange={e => setTempMaxPrice(e.target.value)} />
+                            <Button onClick={handleApplyPriceFilter} variant="primary" size="sm">Go</Button>
+                        </div>
+
+                        <Select
+                            options={sortOptions}
+                            value={sortOption}
+                            onChange={(value) => {setSortOption(String(value)); resetPage();}}
+                        />
+                    </div>
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <FilterDropdown title="Brands" options={brands} selectedIds={selectedBrandIds} onSelectionChange={handleBrandChange} />
+                        <FilterDropdown title="Colors" options={colors} selectedIds={selectedColorIds} onSelectionChange={handleColorChange} />
+                        <FilterDropdown title="Sizes" options={sizes} selectedIds={selectedSizeIds} onSelectionChange={handleSizeChange} />
+                    </div>
+                </ComponentCard>
+
+                <ComponentCard title="Product List">
+                    <div className="max-w-full overflow-x-auto">
+                        <table className="w-full table-auto">
+                            <thead>
+                                <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                                    <th className="min-w-[250px] py-4 px-4 font-medium text-black dark:text-white">Product</th>
+                                    <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">Brand</th>
+                                    <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">Category</th>
+                                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Base Price</th>
+                                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Discounted Price</th>
+                                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Discount Percent</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Status</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
                                 </tr>
-                            )))}
-                        </tbody>
-                    </table>
-                </div>
-                {/* Pagination */}
-                <div className="flex justify-center mt-8 mb-4">
-                    {Array.from({ length: totalPages }, (_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setPage(i)}
-                            className={`mx-1 px-3 py-1 rounded ${page === i ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-meta-4'}`}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                </div>
+                            </thead>
+                            <tbody>
+                                {isLoading ? (
+                                    <tr><td colSpan={8} className="text-center py-10 text-black dark:text-white">Loading products...</td></tr>
+                                ) : products.length === 0 ? (
+                                    <tr><td colSpan={8} className="text-center py-10 text-black dark:text-white">No products found.</td></tr>
+                                ) : (products.map(product => (
+                                    <tr key={product.id}>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className="text-black dark:text-white font-medium">{product.name}</p>
+                                        </td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className="text-black dark:text-white">{product.brand.name}</p>
+                                        </td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className="text-black dark:text-white">{product.category.name}</p>
+                                        </td>
+                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className="text-black dark:text-white">{product.basePrice.toLocaleString()}đ</p>
+                                        </td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className="text-black dark:text-white">
+                                                {product.discountedPrice != null
+                                                    ? `${product.discountedPrice.toLocaleString()}đ`
+                                                    : `${product.basePrice.toLocaleString()}đ`}
+                                            </p>
+                                        </td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className="text-black dark:text-white">
+                                                {product.currentDiscountPercent
+                                                    ? `${product.currentDiscountPercent.toLocaleString()}%`
+                                                    : '0%'}
+                                            </p>
+                                        </td>
+
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className={`inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium ${product.status === 'ACTIVE' ? 'bg-success text-success' : 'bg-danger text-danger'}`}>
+                                                {product.status}
+                                            </p>
+                                        </td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <Button variant="outline" size="sm" onClick={() => handleEditProduct(product.id)}>Edit</Button>
+                                        </td>
+                                    </tr>
+                                )))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="flex justify-center mt-8 mb-4">
+                        {Array.from({ length: totalPages }, (_, i) => (
+                            <Button
+                                key={i}
+                                onClick={() => setPage(i)}
+                                variant={page === i ? 'primary' : 'outline'}
+                                size="sm"
+                                className="mx-1"
+                            >
+                                {i + 1}
+                            </Button>
+                        ))}
+                    </div>
+                </ComponentCard>
             </div>
         </div>
     );

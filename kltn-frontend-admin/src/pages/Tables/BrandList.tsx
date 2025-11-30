@@ -4,6 +4,9 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { toast } from 'sonner';
 import { Brand } from '@/types/brand';
 import { getBrandsPaginated, createBrand, updateBrand, deleteBrand } from '@/services/brandService';
+import ComponentCard from '@/components/common/ComponentCard';
+import Button from '@/components/ui/button/Button';
+import { Modal } from '@/components/ui/modal';
 
 const getErrorMessage = (error: unknown) => {
     if (!error) return 'Unknown error';
@@ -19,7 +22,6 @@ const BrandListPage: React.FC = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Create/Edit form state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
     const [name, setName] = useState('');
@@ -103,88 +105,84 @@ const BrandListPage: React.FC = () => {
             <PageMeta title="Brand Management | Admin" description="Manage product brands" />
             <PageBreadcrumb pageTitle="Brand Management" />
 
-            <div className="mb-6 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-                <div className="flex justify-between items-center">
-                    <h3 className="font-medium">Brands</h3>
-                    <div>
-                        <button onClick={openCreateModal} className="rounded bg-primary px-4 py-2 text-white">Create Brand</button>
-                    </div>
-                </div>
+            <div className="space-y-6">
+                <ComponentCard title="Brand Controls">
+                    <Button onClick={openCreateModal} variant="primary">Create Brand</Button>
+                </ComponentCard>
 
-                <div className="mt-4">
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                                <th className="py-3 px-4">ID</th>
-                                <th className="py-3 px-4">Logo</th>
-                                <th className="py-3 px-4">Name</th>
-                                <th className="py-3 px-4">Description</th>
-                                <th className="py-3 px-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoading ? (
-                                <tr><td colSpan={5} className="text-center py-6">Loading...</td></tr>
-                            ) : brands.length === 0 ? (
-                                <tr><td colSpan={5} className="text-center py-6">No brands found.</td></tr>
-                            ) : brands.map(b => (
-                                <tr key={b.id}>
-                                    <td className="py-3 px-4">{b.id}</td>
-                                    <td className="py-3 px-4">
-                                        {b.logoUrl ? <img src={b.logoUrl} alt={b.name} className="w-12 h-12 object-cover rounded" /> : <div className="w-12 h-12 bg-gray-200" />}
-                                    </td>
-                                    <td className="py-3 px-4">{b.name}</td>
-                                    <td className="py-3 px-4">{b.description}</td>
-                                    <td className="py-3 px-4">
-                                        <div className="flex gap-2">
-                                            <button onClick={() => openEditModal(b)} className="text-blue-500">Edit</button>
-                                            <button onClick={() => handleDelete(b.id)} className="text-red-500">Delete</button>
-                                        </div>
-                                    </td>
+                <ComponentCard title="All Brands">
+                    <div className="max-w-full overflow-x-auto">
+                        <table className="w-full table-auto">
+                            <thead>
+                                <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Logo</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Name</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Description</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {isLoading ? (
+                                    <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Loading...</td></tr>
+                                ) : brands.length === 0 ? (
+                                    <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">No brands found.</td></tr>
+                                ) : brands.map(b => (
+                                    <tr key={b.id}>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{b.id}</td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            {b.logoUrl ? <img src={b.logoUrl} alt={b.name} className="w-12 h-12 object-cover rounded" /> : <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded" />}
+                                        </td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{b.name}</td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{b.description}</td>
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <div className="flex items-center space-x-3.5">
+                                                <Button variant="outline" size="sm" onClick={() => openEditModal(b)}>Edit</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDelete(b.id)}>Delete</Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
-                    <div className="flex justify-center mt-4">
+                    <div className="flex justify-center mt-6">
                         {Array.from({ length: totalPages }, (_, i) => (
-                            <button key={i} onClick={() => fetchBrands(i)} className={`mx-1 px-3 py-1 rounded ${page === i ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-meta-4'}`}>
+                            <Button key={i} onClick={() => fetchBrands(i)} variant={page === i ? 'primary' : 'outline'} size="sm" className="mx-1">
                                 {i + 1}
-                            </button>
+                            </Button>
                         ))}
                     </div>
-                </div>
+                </ComponentCard>
             </div>
 
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="w-full max-w-lg rounded bg-white p-6 dark:bg-boxdark">
-                        <h3 className="font-medium mb-4">{editingBrand ? 'Edit Brand' : 'Create Brand'}</h3>
-                        <div className="grid grid-cols-1 gap-3">
-                            <div>
-                                <label className="block mb-1">Name</label>
-                                <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border p-2 dark:bg-form-input" />
-                            </div>
-                            <div>
-                                <label className="block mb-1">Description</label>
-                                <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border p-2 dark:bg-form-input" />
-                            </div>
-                            <div>
-                                <label className="block mb-1">Logo</label>
-                                <input type="file" accept="image/*" onChange={handleFileChange} />
-                            </div>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <div className="p-6">
+                    <h3 className="font-medium text-black dark:text-white mb-4">{editingBrand ? 'Edit Brand' : 'Create Brand'}</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-black dark:text-white mb-1">Name</label>
+                            <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
-
-                        <div className="flex justify-end gap-2 mt-4">
-                            <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded border">Cancel</button>
-                            <button onClick={handleSubmit} className="px-4 py-2 rounded bg-primary text-white">Save</button>
+                        <div>
+                            <label className="block text-black dark:text-white mb-1">Description</label>
+                            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
+                        </div>
+                        <div>
+                            <label className="block text-black dark:text-white mb-1">Logo</label>
+                            <input type="file" accept="image/*" onChange={handleFileChange} className="text-black dark:text-white" />
                         </div>
                     </div>
+
+                    <div className="flex justify-end gap-3 mt-6">
+                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Cancel</Button>
+                        <Button onClick={handleSubmit} variant="primary">Save</Button>
+                    </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 };
 
 export default BrandListPage;
-

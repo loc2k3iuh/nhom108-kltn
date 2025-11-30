@@ -9,6 +9,12 @@ import { getProductDiscounts, applyDiscountToProducts, removeDiscountFromProduct
 
 import PageMeta from '@/components/common/PageMeta';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import ComponentCard from '@/components/common/ComponentCard';
+import Label from '@/components/form/Label';
+import Input from '@/components/form/input/InputField';
+import Select from '@/components/form/Select';
+import TextArea from '@/components/form/input/TextArea';
+import Button from '@/components/ui/button/Button';
 
 const ProductListPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -18,14 +24,12 @@ const ProductListPage: React.FC = () => {
     const [product, setProduct] = useState<ProductDetailResponse | null>(null);
     const [variants, setVariants] = useState<ProductVariant[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    
+
     const [formData, setFormData] = useState({ name: '', description: '', basePrice: '', status: '' });
 
-    // Discount state
     const [currentDiscountPercent, setCurrentDiscountPercent] = useState(0);
     const [newDiscountPercent, setNewDiscountPercent] = useState('');
 
-    // Image state management
     const [productImages, setProductImages] = useState<ProductImage[]>([]);
     const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
     const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
@@ -59,7 +63,7 @@ const ProductListPage: React.FC = () => {
                 setCurrentDiscountPercent(0);
                 setNewDiscountPercent('0');
             }
-            
+
             setImagesToDelete([]);
             setNewImageFiles([]);
 
@@ -78,13 +82,21 @@ const ProductListPage: React.FC = () => {
     const handleEditVariantProduct = (productVariantId: number) => {
         if (!product) return;
         navigate(`/tables/edit-variant/${productVariantId}`, {
-            state: { productReference: product } // Pass parent product info
+            state: { productReference: product }
         });
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleAddVariant = () => {
+        navigate(`/forms/add-product-variant/${productId}`);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleStatusChange = (value: string | number) => {
+        setFormData(prev => ({ ...prev, status: String(value) }));
     };
 
     const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +120,6 @@ const ProductListPage: React.FC = () => {
         const newBasePrice = parseFloat(formData.basePrice);
         const priceHasChanged = newBasePrice !== product.basePrice;
 
-        // 1. Update product base info
         const form = new FormData();
         form.append('name', formData.name);
         form.append('description', formData.description);
@@ -124,16 +135,15 @@ const ProductListPage: React.FC = () => {
             toast.success('Product information updated successfully!');
         } catch (error: any) {
             toast.error(`Failed to update product info: ${error.message}`);
-            return; 
+            return;
         }
 
-        // 2. Synchronize variant prices if base price changed
         if (priceHasChanged) {
             toast.info('Base price changed. Synchronizing variant prices...');
             const updatePromises = variants.map(variant => {
                 const variantFormData = new FormData();
                 variantFormData.append('sku', variant.sku);
-                variantFormData.append('price', formData.basePrice); // Use the new base price
+                variantFormData.append('price', formData.basePrice);
                 variantFormData.append('stockQuantity', String(variant.stockQuantity));
                 variantFormData.append('material', variant.material);
                 variantFormData.append('sizeId', String(variant.size.id));
@@ -149,7 +159,6 @@ const ProductListPage: React.FC = () => {
             }
         }
 
-        // 3. Handle discount changes
         const newDiscountValue = newDiscountPercent === '' ? 0 : Number(newDiscountPercent);
         if (newDiscountValue !== currentDiscountPercent) {
             if (currentDiscountPercent > 0) {
@@ -169,8 +178,6 @@ const ProductListPage: React.FC = () => {
                 }
             }
         }
-
-        // 4. Refresh all data
         fetchProductData();
     };
 
@@ -187,56 +194,61 @@ const ProductListPage: React.FC = () => {
     };
 
     if (isLoading) {
-        return <div className="flex justify-center items-center h-screen"><p>Loading Product...</p></div>;
+        return <div className="flex justify-center items-center h-screen"><p className="text-black dark:text-white">Loading Product...</p></div>;
     }
 
     if (!product) {
-        return <div className="flex justify-center items-center h-screen"><p>Product not found.</p></div>;
+        return <div className="flex justify-center items-center h-screen"><p className="text-black dark:text-white">Product not found.</p></div>;
     }
 
     return (
         <>
             <PageMeta title={`Edit Product | ${product.name}`} />
-            <PageBreadcrumb pageTitle="Edit Product" />
+            <div className="flex justify-between items-center mb-4">
+                <PageBreadcrumb pageTitle="Edit Product" />
+                <Button variant="outline" onClick={() => navigate('/tables/category-product-list')}>
+                    Back to Product List
+                </Button>
+            </div>
 
-            <div className="flex flex-col gap-9">
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                    <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-                        <h3 className="font-medium text-black dark:text-white">Product Information</h3>
-                    </div>
-                    <div className="p-6.5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            <div className="space-y-6">
+                <ComponentCard title="Product Information">
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-black dark:text-white mb-1">Product Name</label>
-                                <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full rounded border p-2 dark:bg-form-input" />
+                                <Label htmlFor="name">Product Name</Label>
+                                <Input id="name" name="name" type="text" value={formData.name} onChange={handleInputChange} />
                             </div>
                             <div>
-                                <label className="block text-black dark:text-white mb-1">Base Price</label>
-                                <input type="number" name="basePrice" value={formData.basePrice} onChange={handleInputChange} className="w-full rounded border p-2 dark:bg-form-input" />
+                                <Label htmlFor="basePrice">Base Price</Label>
+                                <Input id="basePrice" name="basePrice" type="number" value={formData.basePrice} onChange={handleInputChange} />
                             </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-black dark:text-white mb-1">Description</label>
-                                <textarea name="description" value={formData.description} onChange={handleInputChange} rows={4} className="w-full rounded border p-2 dark:bg-form-input"></textarea>
+                        </div>
+                        <div>
+                            <Label htmlFor="description">Description</Label>
+                            <TextArea id="description" name="description" value={formData.description} onChange={handleInputChange} rows={4} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <Label>Category</Label>
+                                <p className="w-full rounded border p-3 bg-gray-100 dark:bg-gray-800 text-black dark:text-white">{product.category.name}</p>
                             </div>
                             <div>
-                                <label className="block text-black dark:text-white mb-1">Category</label>
-                                <p className="w-full rounded border p-2 bg-gray-100 dark:bg-gray-800">{product.category.name}</p>
+                                <Label>Brand</Label>
+                                <p className="w-full rounded border p-3 bg-gray-100 dark:bg-gray-800 text-black dark:text-white">{product.brand.name}</p>
                             </div>
                             <div>
-                                <label className="block text-black dark:text-white mb-1">Brand</label>
-                                <p className="w-full rounded border p-2 bg-gray-100 dark:bg-gray-800">{product.brand.name}</p>
-                            </div>
-                            <div>
-                                <label className="block text-black dark:text-white mb-1">Status</label>
-                                <select name="status" value={formData.status} onChange={handleInputChange} className="w-full rounded border p-2 dark:bg-form-input">
-                                    <option value="ACTIVE">ACTIVE</option>
-                                    <option value="INACTIVE">INACTIVE</option>
-                                    <option value="OUT_OF_STOCK">OUT_OF_STOCK</option>
-                                </select>
+                                <Label>Status</Label>
+                                <Select
+                                    options={[{value: 'ACTIVE', label: 'ACTIVE'}, {value: 'INACTIVE', label: 'INACTIVE'}, {value: 'OUT_OF_STOCK', label: 'OUT_OF_STOCK'}]}
+                                    value={formData.status}
+                                    onChange={handleStatusChange}
+                                />
                             </div>
                              <div>
-                                <label className="block text-black dark:text-white mb-1">Discount Percent (%)</label>
-                                <input 
+                                <Label htmlFor="discount">Discount Percent (%)</Label>
+                                <Input
+                                    id="discount"
                                     type="number"
                                     value={newDiscountPercent}
                                     onChange={e => {
@@ -246,25 +258,24 @@ const ProductListPage: React.FC = () => {
                                         }
                                     }}
                                     placeholder="0-100"
-                                    className="w-full rounded border p-2 dark:bg-form-input"
                                 />
                             </div>
                         </div>
 
-                        <div className="mt-6 space-y-4">
+                        <div className="space-y-4">
                             <h4 className="font-medium text-black dark:text-white">Product Images</h4>
-                            <ul className="flex flex-wrap gap-4 p-2 border rounded-md min-h-[120px]">
+                            <ul className="flex flex-wrap gap-4 p-2 border rounded-md min-h-[120px] dark:border-strokedark">
                                 {productImages.map(img => (
                                     <li key={img.id} className="relative group">
                                         <img src={img.imageUrl} alt={`Product image ${img.id}`} style={{ maxWidth: 200, borderRadius: 8 }} />
-                                        <button
-                                            type="button"
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
                                             onClick={() => handleDeleteImage(img.id)}
-                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-80 hover:opacity-100"
-                                            title="Xóa ảnh"
+                                            className="absolute top-1 right-1 !p-1 !h-6 !w-6"
                                         >
                                             ×
-                                        </button>
+                                        </Button>
                                     </li>
                                 ))}
                                 {newImageFiles.map((file, idx) => {
@@ -272,34 +283,38 @@ const ProductListPage: React.FC = () => {
                                     return (
                                         <li key={url} className="relative group">
                                             <img src={url} alt="New upload" style={{ maxWidth: 200, borderRadius: 8, opacity: 0.7 }} />
-                                            <button
-                                                type="button"
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
                                                 onClick={() => handleDeleteNewImageFile(idx)}
-                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-80 hover:opacity-100"
-                                                title="Xóa ảnh mới"
+                                                className="absolute top-1 right-1 !p-1 !h-6 !w-6"
                                             >
                                                 ×
-                                            </button>
+                                            </Button>
                                         </li>
                                     );
                                 })}
                             </ul>
-                            <input type="file" multiple accept="image/*" onChange={handleImageFileChange} />
+                            <input type="file" multiple accept="image/*" onChange={handleImageFileChange} className="text-black dark:text-white"/>
                         </div>
 
                         <div className="flex justify-end mt-6">
-                            <button onClick={handleSaveProduct} className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90">
+                            <Button onClick={handleSaveProduct} variant="primary">
                                 Save Product
-                            </button>
+                            </Button>
                         </div>
                     </div>
+                </ComponentCard>
+
+                <div className="flex justify-between items-center mb-4">
+                    <Button onClick={handleAddVariant} variant="primary">
+                        Add Variant
+                    </Button>
                 </div>
 
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                    <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark flex justify-between items-center">
-                        <h3 className="font-medium text-black dark:text-white">Product Variants</h3>
-                    </div>
-                    <div className="p-6.5">
+                <ComponentCard title="Product Variants">
+
+                    <div className="space-y-4">
                         {variants.map(variant => (
                             <div key={variant.id} className="flex items-center justify-between p-2 border-b dark:border-strokedark last:border-b-0">
                                 <div className="flex items-center gap-3">
@@ -312,18 +327,18 @@ const ProductListPage: React.FC = () => {
                                     )}
                                     <div>
                                         <p className="font-medium text-black dark:text-white">{variant.color.name} / {variant.size.name}</p>
-                                        <p className="text-sm">Price: {variant.price.toLocaleString()}đ - Stock: {variant.stockQuantity}</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">Price: {variant.price.toLocaleString()}đ - Stock: {variant.stockQuantity}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <button onClick={() => handleEditVariantProduct(variant.id)} className="text-blue-500 hover:text-blue-700">Edit</button>
-                                    <button onClick={() => handleDeleteVariant(variant.id)} className="text-red-500 hover:text-red-700">Delete</button>
+                                    <Button variant="outline" size="sm" onClick={() => handleEditVariantProduct(variant.id)}>Edit</Button>
+                                    <Button variant="danger" size="sm" onClick={() => handleDeleteVariant(variant.id)}>Delete</Button>
                                 </div>
                             </div>
                         ))}
-                        {variants.length === 0 && <p className="text-center py-4">No variants for this product.</p>}
+                        {variants.length === 0 && <p className="text-center py-4 text-black dark:text-white">No variants for this product.</p>}
                     </div>
-                </div>
+                </ComponentCard>
             </div>
         </>
     );

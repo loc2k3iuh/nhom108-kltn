@@ -129,23 +129,16 @@ export default function App() {
               path="/form-elements"
               element={authUser ? <FormElements /> : <Navigate to="/signin" />}
             />
-
-            {/* Tables */}
+              <Route
+                  path="/basic-tables"
+                  element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
+              />
             <Route
-              path="/basic-tables"
-              element={authUser ? <BasicTables /> : <Navigate to="/signin" />}
-               />
-          
-            <Route
-              path="/forms/form-elements"
-              element={authUser ? <FormElements /> : <Navigate to="/signin" />}
-            />
-            <Route
-                path="/forms/products"
+                path="/forms/add-product"
                 element={authUser ? <Products /> : <Navigate to="/signin" />}
             />
             <Route
-                path="/forms/products-variants"
+                path="/forms/add-product-variant/:productId"
                 element={authUser ? <ProductVariants /> : <Navigate to="/signin" />}
             />
 

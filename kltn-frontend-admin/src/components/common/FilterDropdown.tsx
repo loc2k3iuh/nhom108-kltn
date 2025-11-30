@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import Checkbox from '../form/input/Checkbox';
+import React, { useState } from 'react';
+import { Dropdown } from '../ui/dropdown/Dropdown';
+import { LocalDropdownItem } from './LocalDropdownItem';
 
 interface Option {
   id: number;
@@ -15,33 +16,21 @@ interface FilterDropdownProps {
 
 const FilterDropdown: React.FC<FilterDropdownProps> = ({ title, options, selectedIds, onSelectionChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  const closeDropdown = () => setIsOpen(false);
 
   const selectedCount = selectedIds.length;
 
   return (
-    <div className="relative border-b" ref={dropdownRef}>
+    <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="w-full flex justify-between items-center py-3 px-1 text-left"
+        className="w-full flex justify-between items-center py-3 px-1 text-left font-semibold text-black dark:text-white border-b border-gray-200 dark:border-gray-700"
       >
-        <h3 className="font-semibold">
+        <span>
           {title} {selectedCount > 0 && `(${selectedCount})`}
-        </h3>
+        </span>
         <svg
           className={`w-5 h-5 transform transition-transform ${isOpen ? '-rotate-180' : ''}`}
           fill="none"
@@ -52,21 +41,26 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ title, options, selecte
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
-      {isOpen && (
-        <div className="mt-1 w-full bg-white rounded-md shadow-lg z-10 p-4 max-h-60 overflow-y-auto">
-          <div className="space-y-2">
+
+      <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-full max-h-60 overflow-y-auto">
+        <div className="p-2">
             {options.map(option => (
-              <Checkbox
-                key={option.id}
-                id={`${title}-${option.id}`}
-                label={option.name}
-                checked={selectedIds.includes(option.id)}
-                onChange={(isChecked) => onSelectionChange(option.id, isChecked)}
-              />
+                <LocalDropdownItem
+                    key={option.id}
+                    onItemClick={() => onSelectionChange(option.id, !selectedIds.includes(option.id))}
+                    className="flex items-center justify-between"
+                >
+                    <span>{option.name}</span>
+                    <input
+                        type="checkbox"
+                        checked={selectedIds.includes(option.id)}
+                        readOnly
+                        className="form-checkbox h-5 w-5 text-primary-600"
+                    />
+                </LocalDropdownItem>
             ))}
-          </div>
         </div>
-      )}
+      </Dropdown>
     </div>
   );
 };
