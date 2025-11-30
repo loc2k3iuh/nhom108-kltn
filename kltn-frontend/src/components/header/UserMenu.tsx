@@ -3,6 +3,7 @@ import { UserResponse } from "@/types/responses/userResponse";
 import { useNavigate } from "react-router-dom"; 
 import { useAuthStore } from "@/stores/useAuthStore";
 import { toast } from "sonner";
+import smallLogo from "../../assets/img/small.png";
 
 interface UserMenuProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, authUser, onToggle }) => {
         {authUser ? (
           <div className="w-[24px] h-[24px] rounded-full overflow-hidden border border-gray-200">
             <img
-              src={authUser.avatar_url ?? undefined}
+              src={authUser.avatar_url ?? smallLogo}
               alt={authUser.full_name || authUser.username}
               className="w-full h-full object-cover"
             />
@@ -52,9 +53,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, authUser, onToggle }) => {
                 <span  onClick={() => {navigate("/profile")}} className="flex items-center p-4 border-b border-gray-100">
                   <div className="w-[40px] h-[40px] relative rounded-full bg-[#FFE8E2] mr-3 flex items-center justify-center">
                     <span className="text-[#E57905]">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20.8 9.64L18.36 7.2L19.04 3.76L15.6 4.44L13.16 2L10.72 4.44L7.28 3.76L7.96 7.2L5.52 9.64L7.96 12.08L7.28 15.52L10.72 14.84L13.16 17.28L15.6 14.84L19.04 15.52L18.36 12.08L20.8 9.64Z" fill="#E57905"/>
-                      </svg>
+
+                        <img
+                         src={authUser.avatar_url ?? smallLogo}
+                         alt={authUser.full_name || authUser.username}
+                         className="w-full h-full object-cover"
+                        />
+
                     </span>
                     {authUser.avatar_url && (
                       <img src={authUser.avatar_url} alt={authUser.full_name || authUser.username} className="absolute inset-0 w-full h-full object-cover rounded-full" />

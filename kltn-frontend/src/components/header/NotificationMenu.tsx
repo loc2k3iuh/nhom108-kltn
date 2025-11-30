@@ -285,13 +285,13 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ authUser }) => {
               </p>
               <div className="flex justify-center gap-2">
                 <a
-                  href="/signin"
+                  href="/login"
                   className="bg-[#C92127] text-white px-4 py-2 rounded-md text-sm hover:bg-[#a71b20] transition-colors"
                 >
                   Đăng nhập
                 </a>
                 <a
-                  href="/signup"
+                  href="/register"
                   className="border border-[#C92127] text-[#C92127] px-4 py-2 rounded-md text-sm hover:bg-[#f8d7da] transition-colors"
                 >
                   Đăng ký

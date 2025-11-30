@@ -197,32 +197,32 @@ export default function App() {
           <Route path="/search/products" element={<Layout><SearchResultPage /></Layout>} />
 
           {/* User Profile Pages - Require Authentication */}
-          <Route path="/profile" element={authUser ? <Layout> <UserPage /> </Layout>: <Navigate to="/signin" />} />
+          <Route path="/profile" element={authUser ? <Layout> <UserPage /> </Layout>: <Navigate to="/login" />} />
        
-          <Route path="/user/edit" element={authUser ? <Layout><EditUser /></Layout> : <Navigate to="/signin" />} />
-          <Route path="/change-password" element={authUser ? <Layout>  <ChangePassword />  </Layout> : <Navigate to="/signin" />} />
+          <Route path="/user/edit" element={authUser ? <Layout><EditUser /></Layout> : <Navigate to="/login" />} />
+          <Route path="/change-password" element={authUser ? <Layout>  <ChangePassword />  </Layout> : <Navigate to="/login" />} />
           
           {/* Address Management */}
-          <Route path="/user/addresses" element={authUser ? <Layout><AddressesPage /></Layout> : <Navigate to="/signin" />} />
-          <Route path="/user/addresses/new" element={authUser ? <Layout><NewAddress /></Layout> : <Navigate to="/signin" />} />
-          <Route path="/user/addresses/edit/:id" element={authUser ? <Layout><EditAddress /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/user/addresses" element={authUser ? <Layout><AddressesPage /></Layout> : <Navigate to="/login" />} />
+          <Route path="/user/addresses/new" element={authUser ? <Layout><NewAddress /></Layout> : <Navigate to="/login" />} />
+          <Route path="/user/addresses/edit/:id" element={authUser ? <Layout><EditAddress /></Layout> : <Navigate to="/login" />} />
 
           {/* Shopping Pages */}  
           <Route path="/cart" element={ <Layout><Cart /></Layout>} />
-          <Route path="/orders" element={authUser ? <Layout><OrderList /></Layout> : <Navigate to="/signin" />} />
-           <Route path="/order-success" element={authUser ? <Layout><OrderSuccess /></Layout> : <Navigate to="/signin" />} />
-          <Route path="/favorites" element={authUser ? <Layout><FavoritesPage /></Layout> : <Navigate to="/signin" />} />
-          <Route path="/reviews" element={authUser ? <Layout><UserReviews /></Layout> : <Navigate to="/signin" />} />
-          <Route path="/voucher" element={authUser ? <Layout><VoucherPage /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/orders" element={authUser ? <Layout><OrderList /></Layout> : <Navigate to="/login" />} />
+           <Route path="/order-success" element={authUser ? <Layout><OrderSuccess /></Layout> : <Navigate to="/login" />} />
+          <Route path="/favorites" element={authUser ? <Layout><FavoritesPage /></Layout> : <Navigate to="/login" />} />
+          <Route path="/reviews" element={authUser ? <Layout><UserReviews /></Layout> : <Navigate to="/login" />} />
+          <Route path="/voucher" element={authUser ? <Layout><VoucherPage /></Layout> : <Navigate to="/login" />} />
 
           {/* Payment Pages */}
-          <Route path="/payment" element={authUser ? <Layout> <Payment /> </Layout> : <Navigate to="/signin" />} />
+          <Route path="/payment" element={authUser ? <Layout> <Payment /> </Layout> : <Navigate to="/login" />} />
           <Route path="/payment/vnpay-return" element={<Layout> <VnpayReturn /> </Layout>} />
           <Route path="/payment/success" element={<Layout> <OrderSuccess /> </Layout>} />
 
 
           {/* Review Pages */}
-          <Route path="/user/reviews" element={authUser ? <Layout><UserReviews /></Layout> : <Navigate to="/signin" />} />
+          <Route path="/user/reviews" element={authUser ? <Layout><UserReviews /></Layout> : <Navigate to="/login" />} />
 
 
           {/* Information Pages */}

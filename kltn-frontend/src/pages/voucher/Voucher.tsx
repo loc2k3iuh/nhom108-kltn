@@ -145,7 +145,7 @@ const VoucherPage: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4">Vui lòng đăng nhập</h2>
           <p className="text-gray-600 mb-6">Bạn cần đăng nhập để xem danh sách voucher</p>
           <Link 
-            to="/signin" 
+            to="/login"
             className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors inline-block"
           >
             Đăng nhập ngay
