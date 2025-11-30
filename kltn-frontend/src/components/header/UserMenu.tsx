@@ -120,7 +120,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, authUser, onToggle }) => {
                 <span className="text-gray-600">Đánh giá của tôi</span>
               </span>
 
-              <span onClick={() => {navigate("/voucher")}} className="flex items-center p-3 hover:bg-gray-50">
+              <span onClick={() => {navigate("/voucher/my-vouchers")}} className="flex items-center p-3 hover:bg-gray-50">
                 <div className="w-8 h-8 flex items-center justify-center mr-3 text-gray-500">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 12V22H4V12" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

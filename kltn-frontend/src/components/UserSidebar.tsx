@@ -86,7 +86,7 @@ const UserSidebar: React.FC = () => {
                 </li>
                 <li className={`flex items-center space-x-2 py-2 mt-1 ${isActive('/voucher') ? 'text-red-500' : ''}`}>
                     <FontAwesomeIcon icon={faTicketAlt} className="text-lg" />
-                    <Link to="/voucher" className="hover:text-red-500 cursor-pointer">
+                    <Link to="/voucher/my-vouchers" className="hover:text-red-500 cursor-pointer">
                         Ví voucher
                     </Link>
                 </li>

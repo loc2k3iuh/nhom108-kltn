@@ -30,6 +30,11 @@ public interface IVoucherService {
 
   Long getTotalValidVouchersCountByUser(Long userId);
 
+  VoucherResponse claimVoucher(Long userId, String voucherCode);
+
+  Page<VoucherResponse> getClaimableVouchersForUser(
+      Long userId, String keyword, int page, int size);
+
   // CRUD operations
   VoucherResponse createVoucher(CreateVoucherRequest request);
 

@@ -135,6 +135,10 @@ public enum ErrorCode {
       1091,
       "Invalid discount value! Percentage must be 0.01-100, fixed amount must be greater than 0",
       HttpStatus.BAD_REQUEST),
+  VOUCHER_ALREADY_CLAIMED(1095, "You have already claimed this voucher!", HttpStatus.BAD_REQUEST),
+  VOUCHER_NOT_ACTIVE(1096, "Voucher is not active yet!", HttpStatus.BAD_REQUEST),
+  VOUCHER_CLAIM_LIMIT_REACHED(
+      1097, "Voucher claim limit has been reached!", HttpStatus.BAD_REQUEST),
 
   // Address related errors
   ADDRESS_NOT_FOUND(1092, "Address not found!", HttpStatus.NOT_FOUND),

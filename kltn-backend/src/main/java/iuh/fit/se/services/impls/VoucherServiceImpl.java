@@ -445,4 +445,92 @@ public class VoucherServiceImpl implements IVoucherService {
 
     return voucherRepository.countValidVouchersByUserId(userId);
   }
+
+  @Override
+  @Transactional
+  public VoucherResponse claimVoucher(Long userId, String voucherCode) {
+    // Validate inputs
+    if (userId == null) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "User ID is required");
+    }
+    if (voucherCode == null || voucherCode.trim().isEmpty()) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "Voucher code is required");
+    }
+
+    // Verify user exists
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    // Find voucher by code (case-insensitive)
+    Voucher voucher =
+        voucherRepository
+            .findByCodeIgnoreCaseAndActiveIsTrue(voucherCode.trim())
+            .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND));
+
+    // Check if voucher is active
+    if (Boolean.FALSE.equals(voucher.getActive())) {
+      throw new AppException(ErrorCode.VOUCHER_NOT_ACTIVE);
+    }
+
+    // Check if voucher has started
+    LocalDateTime now = LocalDateTime.now();
+    if (voucher.getStartDate() != null && now.isBefore(voucher.getStartDate())) {
+      throw new AppException(ErrorCode.VOUCHER_NOT_ACTIVE);
+    }
+
+    // Check if voucher has expired
+    if (voucher.getEndDate() != null && now.isAfter(voucher.getEndDate())) {
+      throw new AppException(ErrorCode.DISCOUNT_EXPIRED);
+    }
+
+    // Check if user has already claimed this voucher
+    boolean alreadyClaimed =
+        userVoucherRepository.findByUser_IdAndVoucher_Id(userId, voucher.getId()).isPresent();
+    if (alreadyClaimed) {
+      throw new AppException(ErrorCode.VOUCHER_ALREADY_CLAIMED);
+    }
+
+    // Check if voucher has reached total usage limit
+    if (voucher.getUsageLimit() != null) {
+      Integer totalUsed = voucherRepository.sumTotalUsage(voucher.getId());
+      if (totalUsed != null && totalUsed >= voucher.getUsageLimit()) {
+        throw new AppException(ErrorCode.VOUCHER_CLAIM_LIMIT_REACHED);
+      }
+    }
+
+    // Create UserVoucher entry
+    UserVoucher userVoucher =
+        UserVoucher.builder()
+            .user(user)
+            .voucher(voucher)
+            .usageCount(0)
+            .acquiredAt(LocalDateTime.now())
+            .build();
+
+    userVoucherRepository.save(userVoucher);
+
+    return voucherMapper.toVoucherResponse(voucher);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<VoucherResponse> getClaimableVouchersForUser(
+      Long userId, String keyword, int page, int size) {
+    if (userId == null) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "User ID is required");
+    }
+
+    // Verify user exists
+    if (!userRepository.existsById(userId)) {
+      throw new AppException(ErrorCode.USER_NOT_FOUND);
+    }
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
+    Page<Voucher> voucherPage =
+        voucherRepository.findClaimableVouchersForUser(userId, keyword, pageable);
+
+    return voucherPage.map(voucherMapper::toVoucherResponse);
+  }
 }

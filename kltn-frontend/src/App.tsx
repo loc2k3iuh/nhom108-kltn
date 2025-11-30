@@ -45,7 +45,8 @@ import Product from './pages/product/Product';
 import Cart from './pages/cart/Cart';
 import OrderList from './pages/cart/OrderList';
 import FavoritesPage from './pages/favorite/Favorite';
-import VoucherPage from './pages/voucher/Voucher';
+import ClaimableVoucherPage from './pages/voucher/ClaimableVoucher';
+import MyVouchersPage from './pages/voucher/MyVouchers';
 
 // Payment Pages
 import Payment from './pages/payment/payment';
@@ -213,7 +214,8 @@ export default function App() {
            <Route path="/order-success" element={authUser ? <Layout><OrderSuccess /></Layout> : <Navigate to="/login" />} />
           <Route path="/favorites" element={authUser ? <Layout><FavoritesPage /></Layout> : <Navigate to="/login" />} />
           <Route path="/reviews" element={authUser ? <Layout><UserReviews /></Layout> : <Navigate to="/login" />} />
-          <Route path="/voucher" element={authUser ? <Layout><VoucherPage /></Layout> : <Navigate to="/login" />} />
+          <Route path="/voucher/claimable" element={authUser ? <Layout><ClaimableVoucherPage /></Layout> : <Navigate to="/login" />} />
+          <Route path="/voucher/my-vouchers" element={authUser ? <Layout><MyVouchersPage /></Layout> : <Navigate to="/login" />} />
 
           {/* Payment Pages */}
           <Route path="/payment" element={authUser ? <Layout> <Payment /> </Layout> : <Navigate to="/login" />} />

@@ -234,21 +234,4 @@ public class OrderController {
         .code(HttpStatus.OK.value())
         .build();
   }
-
-  @GetMapping("/user/{userId}/total-orders-count")
-  @Operation(
-      summary = "Get total number of orders by user (excluding cancelled)",
-      description =
-          "Count the total number of orders for a user, excluding orders with CANCELLED status",
-      security = @SecurityRequirement(name = "bearerAuth"))
-  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
-  public APIResponse<Long> getTotalOrdersCountByUser(@PathVariable Long userId) throws Exception {
-    log.info("Getting total orders count for user: {}", userId);
-    Long totalOrders = orderService.getTotalOrdersCountByUser(userId);
-    return APIResponse.<Long>builder()
-        .result(totalOrders)
-        .message("Total orders count retrieved successfully")
-        .code(HttpStatus.OK.value())
-        .build();
-  }
 }

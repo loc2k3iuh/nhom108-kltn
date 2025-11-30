@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import svgFlashSale from "/label-flashsale.svg";
 import { Copy } from 'lucide-react';
 
@@ -27,6 +27,7 @@ console.log("Procuct: ",getFlashSaleProducts);
 console.log("Procuct: ",getNewestProducts);
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const { authUser } = useAuthStore();
 
@@ -262,7 +263,7 @@ const Home: React.FC = () => {
               <p className="mt-4 text-gray-700 leading-relaxed">
 DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục và phụ kiện chất lượng cao. Tọa lạc trung tâm, DAVINCI mang đến không gian mua sắm hiện đại, thoải mái, giúp bạn thể hiện cá tính và gu thẩm mỹ riêng.
               </p>
-              <button className="mt-3 px-6 py-2.5 bg-[#C92127] text-white rounded-lg hover:bg-[#a71b20] transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-md flex items-center gap-2">
+              <button onClick={() => navigate("/about")} className="mt-3 px-6 py-2.5 bg-[#C92127] text-white rounded-lg hover:bg-[#a71b20] transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-md flex items-center gap-2">
                 Xem thêm
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14"></path>
@@ -499,16 +500,16 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
           <div className="container xl:max-w-7xl relative z-1 w-full h-full md:mx-auto bg-white rounded-[8px]">
             <div className="py-[12px] pr-[8px] pl-[16px] mb-[16px] mx-2 flex flex-row items-center justify-between">
               <div className="relative flex flex-row items-center justify-start">
-                <a className="text-lg font-bold text-gray-800 flex items-center" href="/voucher">
+                <span  className="text-lg font-bold text-gray-800 flex items-center" onClick={() => {navigate("/voucher/my-vouchers")}}>
                   Mã giảm giá
                   <span className="ml-2 inline-flex items-center justify-center bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">
                     Hot
                   </span>
-                </a>
+                </span>
               </div>
-              <a
+              <span
                 className="fhs_center_right padding_left_big"
-                href="/voucher"
+                 onClick={() => {navigate("/voucher/my-vouchers")}}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -525,7 +526,7 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                     transform="translate(-1.945 -2.973)"
                   />
                 </svg>
-              </a>
+              </span>
             </div>
 
             {isLoadingVouchers ? (
@@ -596,7 +597,7 @@ DAVINCI là shop thời trang độc đáo, nơi bạn khám phá trang phục v
                 })}
                 
                 <Link 
-                  to="/voucher"
+                  to="/voucher/my-vouchers"
                   className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-200 flex flex-col items-center justify-center p-4 cursor-pointer"
                 >
                   <div className="text-5xl text-red-500 mb-2">+</div>

@@ -77,6 +77,8 @@ export default function VoucherFormModal({
     const data: CreateVoucherRequest | UpdateVoucherRequest = {
       ...formData,
       eligibleUserIds: userSelection === 'all' ? null : selectedUserIds.length > 0 ? selectedUserIds : null,
+      // Nếu chọn tất cả khách hàng, set usageLimitPerUser = 1
+      usageLimitPerUser: userSelection === 'all' ? 1 : formData.usageLimitPerUser,
     };
 
     // Convert datetime-local to ISO string
@@ -226,39 +228,43 @@ export default function VoucherFormModal({
               />
             </div>
 
-            {/* Usage Limit */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Số lượng sử dụng (để trống = không giới hạn)
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.usageLimit || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, usageLimit: e.target.value ? Number(e.target.value) : null })
-                }
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="VD: 100"
-              />
-            </div>
+            {/* Usage Limit - Chỉ hiện khi chọn tất cả khách hàng hoặc ở chế độ edit */}
+            {(isEditMode || userSelection === 'all') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Số lượng sử dụng (để trống = không giới hạn)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.usageLimit || ''}
+                  onChange={(e) =>
+                    setFormData({ ...formData, usageLimit: e.target.value ? Number(e.target.value) : null })
+                  }
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  placeholder="VD: 100"
+                />
+              </div>
+            )}
 
             {/* Usage Per User */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Số lần dùng mỗi người (để trống = không giới hạn)
+                Số lần dùng mỗi người {!isEditMode && userSelection === 'all' && <span className="text-xs text-gray-500">(tự động = 1)</span>}
+                {(isEditMode || userSelection === 'specific') && <span className="text-xs text-gray-500">(để trống = không giới hạn)</span>}
               </label>
               <input
                 type="number"
                 min="0"
-                value={formData.usageLimitPerUser || ''}
+                value={!isEditMode && userSelection === 'all' ? 1 : formData.usageLimitPerUser || ''}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     usageLimitPerUser: e.target.value ? Number(e.target.value) : null,
                   })
                 }
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                disabled={!isEditMode && userSelection === 'all'}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 dark:disabled:bg-gray-900 dark:disabled:text-gray-500"
                 placeholder="VD: 1"
               />
             </div>

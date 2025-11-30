@@ -138,3 +138,62 @@ export const getTotalValidVouchersCount = async (userId: number): Promise<number
         throw error;
     }
 };
+
+/**
+ * Get claimable vouchers for user
+ * @param userId - User ID
+ * @param keyword - Search keyword (optional)
+ * @param page - Page number (default: 0)
+ * @param size - Page size (default: 10)
+ * @returns Paginated list of vouchers that user can claim (not yet claimed, has usage limit, active, and not expired)
+ */
+export const getClaimableVouchers = async (
+    userId: number,
+    keyword?: string,
+    page: number = 0,
+    size: number = 10
+): Promise<VoucherPage> => {
+    try {
+        const params: any = {
+            page,
+            size
+        };
+        
+        if (keyword && keyword.trim()) {
+            params.keyword = keyword.trim();
+        }
+
+        const response = await axiosInstance.get<APIResponse<VoucherPage>>(
+            `/vouchers/user/${userId}/claimable`,
+            { params }
+        );
+
+        return response.data.result;
+    } catch (error: any) {
+        console.error('Error fetching claimable vouchers:', error);
+        throw error;
+    }
+};
+
+/**
+ * Claim a voucher for user
+ * @param userId - User ID
+ * @param code - Voucher code to claim
+ * @returns Claimed voucher details
+ */
+export const claimVoucher = async (
+    userId: number,
+    code: string
+): Promise<VoucherResponse> => {
+    try {
+        const response = await axiosInstance.post<APIResponse<VoucherResponse>>(
+            `/vouchers/user/${userId}/claim`,
+            { code }
+        );
+
+        return response.data.result;
+    } catch (error: any) {
+        console.error('Error claiming voucher:', error);
+        throw error;
+    }
+};

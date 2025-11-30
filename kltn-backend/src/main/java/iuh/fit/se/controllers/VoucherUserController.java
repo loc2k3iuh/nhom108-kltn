@@ -2,17 +2,22 @@ package iuh.fit.se.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import iuh.fit.se.api_responses.APIResponse;
+import iuh.fit.se.dtos.requests.ClaimVoucherRequest;
 import iuh.fit.se.dtos.responses.VoucherResponse;
 import iuh.fit.se.services.interfaces.IVoucherService;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -83,6 +88,51 @@ public class VoucherUserController {
             .code(200)
             .message("Get total valid vouchers count successfully")
             .result(count)
+            .build());
+  }
+
+  @PostMapping("/{userId}/claim")
+  @Operation(
+      summary = "Claim a voucher for user",
+      description = "Allow user to claim a voucher by voucher code",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  @PreAuthorize(
+      "hasRole('CUSTOMER') and #userId == authentication.principal.claims['userId'] or hasRole('ADMIN')")
+  public ResponseEntity<APIResponse<VoucherResponse>> claimVoucher(
+      @Parameter(description = "User ID", required = true) @PathVariable Long userId,
+      @Valid @RequestBody ClaimVoucherRequest request) {
+    VoucherResponse voucher = voucherService.claimVoucher(userId, request.getCode());
+    return ResponseEntity.ok(
+        APIResponse.<VoucherResponse>builder()
+            .code(HttpStatus.OK.value())
+            .message("Voucher claimed successfully")
+            .result(voucher)
+            .build());
+  }
+
+  @GetMapping("/{userId}/claimable")
+  @Operation(
+      summary = "Get claimable vouchers for user",
+      description =
+          "Retrieve a paginated list of vouchers that user can claim (not yet claimed, has usage limit, active, and not expired)")
+  public ResponseEntity<APIResponse<Page<VoucherResponse>>> getClaimableVouchers(
+      @Parameter(description = "User ID", required = true) @PathVariable Long userId,
+      @Parameter(description = "Search keyword for voucher code or description")
+          @RequestParam(name = "keyword", required = false)
+          String keyword,
+      @Parameter(description = "Page number (0-indexed)")
+          @RequestParam(name = "page", defaultValue = "0")
+          int page,
+      @Parameter(description = "Number of items per page")
+          @RequestParam(name = "size", defaultValue = "10")
+          int size) {
+    Page<VoucherResponse> vouchers =
+        voucherService.getClaimableVouchersForUser(userId, keyword, page, size);
+    return ResponseEntity.ok(
+        APIResponse.<Page<VoucherResponse>>builder()
+            .code(200)
+            .message("Get claimable vouchers successfully")
+            .result(vouchers)
             .build());
   }
 }
