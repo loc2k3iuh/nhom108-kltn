@@ -289,10 +289,10 @@ const CartPage: React.FC = () => {
             toast.info("Vui lòng đăng nhập để tiếp tục thanh toán.", {
                 action: {
                     label: 'Đăng nhập',
-                    onClick: () => navigate('/signin'),
+                    onClick: () => navigate('/login'),
                 },
             });
-            navigate('/signin');
+            navigate('/login');
         }
     };
 

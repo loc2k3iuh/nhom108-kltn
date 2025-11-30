@@ -13,6 +13,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStore";
+import smallLogo from "../../src/assets/img/small.png";
 // Type imports removed - using any for flexibility
 
 
@@ -32,7 +33,7 @@ const UserSidebar: React.FC = () => {
             <div className="flex flex-col items-center">
                 <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                     <img 
-                        src={authUser?.avatar_url || "https://via.placeholder.com/150"} 
+                        src={authUser?.avatar_url || smallLogo}
                         alt="User Avatar" 
                         className="w-full h-full object-cover" 
                     />

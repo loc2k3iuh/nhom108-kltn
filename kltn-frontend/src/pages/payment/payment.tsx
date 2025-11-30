@@ -370,7 +370,7 @@ const Payment: React.FC = () => {
     const handleCheckout = async () => {
         if (!authUser) {
             toast.error('Vui lòng đăng nhập để tiếp tục');
-            navigate('/signin');
+            navigate('/login');
             return;
         }
 

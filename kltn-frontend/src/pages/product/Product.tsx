@@ -379,7 +379,7 @@ const ProductPage = () => {
         if (!product) return;
         if (!authUser) {
             toast.info('Vui lòng đăng nhập để gửi đánh giá');
-            window.location.href = '/signin';
+            window.location.href = '/login';
             return;
         }
 
@@ -717,7 +717,7 @@ const ProductPage = () => {
                 // Store item and redirect to login
                 localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
                 toast.info("Vui lòng đăng nhập để mua ngay.");
-                window.location.href = '/signin';
+                window.location.href = '/login';
                 return;
             }
 
@@ -847,7 +847,7 @@ const ProductPage = () => {
                 confirmButtonColor: '#C92127',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = '/signin';
+                    window.location.href = '/login';
                 }
             });
             return;
@@ -1718,9 +1718,9 @@ const ProductPage = () => {
                         ) : (
                             <div className="w-full text-sm text-center text-gray-700 md:w-1/3 md:text-left">
                                 Chỉ có thành viên mới có thể viết nhận xét. Vui lòng
-                                <a href="/signin" className="text-blue-500 cursor-pointer hover:underline"> đăng nhập </a>
+                                <a href="/login" className="text-blue-500 cursor-pointer hover:underline"> đăng nhập </a>
                                 hoặc
-                                <a href="/signup" className="text-blue-500 cursor-pointer hover:underline"> đăng ký.</a>
+                                <a href="/register" className="text-blue-500 cursor-pointer hover:underline"> đăng ký.</a>
                             </div>
                         )}
                     </div>
