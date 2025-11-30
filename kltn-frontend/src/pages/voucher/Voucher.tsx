@@ -328,14 +328,14 @@ const VoucherPage: React.FC = () => {
                         <span className="font-medium">{formatDate(voucher.endDate)}</span>
                       </div>
                       
-                      {voucher.minimumOrderAmount > 0 && (
+                      {voucher.minimumOrderAmount >= 0 && (
                         <div className="flex justify-between">
                           <span>Đơn tối thiểu:</span>
                           <span className="font-medium text-red-600">{formatPrice(voucher.minimumOrderAmount)}</span>
                         </div>
                       )}
                       
-                      {voucher.maximumDiscountAmount && voucher.discountType === 'PERCENT' && (
+                      {voucher.maximumDiscountAmount != null && voucher.maximumDiscountAmount > 0 && voucher.discountType === 'PERCENT' && (
                         <div className="flex justify-between">
                           <span>Giảm tối đa:</span>
                           <span className="font-medium text-red-600">{formatPrice(voucher.maximumDiscountAmount)}</span>
@@ -350,12 +350,14 @@ const VoucherPage: React.FC = () => {
                         </div>
                       )}
                       
-                      {voucher.usageLimit && (
+                  
                         <div className="flex justify-between">
-                          <span>Giới hạn:</span>
-                          <span className="font-medium">{voucher.usageLimit} lượt</span>
+                          <span>Đã dùng:</span>
+                          <span className="font-medium text-blue-600">
+                            {voucher.usedCount || 0}/{voucher.usageLimitPerUser}
+                          </span>
                         </div>
-                      )}
+                    
                     </div>
                   </div>
                 </div>

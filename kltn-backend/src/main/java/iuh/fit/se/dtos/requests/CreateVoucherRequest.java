@@ -47,8 +47,7 @@ public class CreateVoucherRequest {
     @Schema(description = "Maximum discount amount (for percentage type)", example = "200000")
     BigDecimal maximumDiscountAmount;
 
-    @NotNull(message = "Usage limit cannot be null")
-    @Schema(description = "Total usage limit for this voucher", example = "1000")
+
     Integer usageLimit;
 
     @Schema(description = "Usage limit per user", example = "1")
