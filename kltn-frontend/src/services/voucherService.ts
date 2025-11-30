@@ -120,3 +120,21 @@ export const getSuitableVouchersForOrder = async (
         throw error;
     }
 };
+
+/**
+ * Get total valid vouchers count for user
+ * @param userId - User ID
+ * @returns Total number of valid vouchers (active, not expired, still have usage remaining)
+ */
+export const getTotalValidVouchersCount = async (userId: number): Promise<number> => {
+    try {
+        const response = await axiosInstance.get<APIResponse<number>>(
+            `/vouchers/user/${userId}/count`
+        );
+
+        return response.data.result;
+    } catch (error: any) {
+        console.error('Error fetching total valid vouchers count:', error);
+        throw error;
+    }
+};

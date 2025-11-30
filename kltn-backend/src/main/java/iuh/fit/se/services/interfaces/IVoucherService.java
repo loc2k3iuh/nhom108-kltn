@@ -28,6 +28,8 @@ public interface IVoucherService {
 
   List<VoucherResponse> getSuitableVouchersListForOrderAmount(Long userId, BigDecimal orderAmount);
 
+  Long getTotalValidVouchersCountByUser(Long userId);
+
   // CRUD operations
   VoucherResponse createVoucher(CreateVoucherRequest request);
 

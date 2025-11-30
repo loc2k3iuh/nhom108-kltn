@@ -114,3 +114,21 @@ export const cancelOrder = async (orderId: number): Promise<OrderResponse> => {
   }
   return response.data.result[0] as OrderResponse;
 };
+
+// Get total amount spent by user for completed orders
+export const getTotalSpentByUser = async (userId: number): Promise<number> => {
+  const response = await axiosInstance.get<ApiResponse<number>>(`/orders/user/${userId}/total-spent`);
+  if (response.data.code !== 200) {
+    throw new Error(response.data.message || 'Failed to get total spent');
+  }
+  return response.data.result;
+};
+
+// Get total number of orders by user (excluding cancelled)
+export const getTotalOrdersCountByUser = async (userId: number): Promise<number> => {
+  const response = await axiosInstance.get<ApiResponse<number>>(`/orders/user/${userId}/total-orders-count`);
+  if (response.data.code !== 200) {
+    throw new Error(response.data.message || 'Failed to get total orders count');
+  }
+  return response.data.result;
+};

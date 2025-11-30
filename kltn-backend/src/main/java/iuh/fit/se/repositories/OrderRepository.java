@@ -82,4 +82,18 @@ public interface OrderRepository
           + "ORDER BY YEAR(o.createdAt)")
   List<Object[]> getRevenueByYear(
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+  // Get total amount spent by user for completed orders
+  @Query(
+      "SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o "
+          + "WHERE o.user.id = :userId "
+          + "AND o.orderStatus = 'COMPLETED'")
+  BigDecimal getTotalAmountByUserIdAndCompletedStatus(@Param("userId") Long userId);
+
+  // Count total orders by user excluding cancelled orders
+  @Query(
+      "SELECT COUNT(o) FROM Order o "
+          + "WHERE o.user.id = :userId "
+          + "AND o.orderStatus != 'CANCELLED'")
+  Long countOrdersByUserIdExcludingCancelled(@Param("userId") Long userId);
 }

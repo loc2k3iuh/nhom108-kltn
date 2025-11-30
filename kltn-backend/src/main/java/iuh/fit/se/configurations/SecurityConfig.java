@@ -31,95 +31,95 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SecurityConfig {
 
-    CustomJwtDecoder customJwtDecoder;
+  CustomJwtDecoder customJwtDecoder;
 
-    @NonFinal
-    @Value("${vite.frontend.urls}")
-    String[] ALLOWED_ORIGINS;
+  @NonFinal
+  @Value("${vite.frontend.urls}")
+  String[] ALLOWED_ORIGINS;
 
-    String[] PUBLIC_POST_ENDPOINTS = {
-            "/api/v1/auth/login",
-            "/api/v1/auth/admin/login",
-            "/api/v1/auth/login-temporarily",
-            "/api/v1/users/register",
-            "/api/v1/auth/logout",
-            "/api/v1/auth/verify-otp",
-            "/api/v1/auth/resend-otp",
-            "/api/v1/auth/refresh-token/{userId}",
-            "/api/v1/auth/send-forgot-password",
-            "/api/v1/auth/verify-reset-token",
-            "/api/v1/products/filter",
-            "/api/v1/auth/admin/verify-otp",
-            "/api/v1/auth/admin/resend-otp",
-            "/api/v1/auth/login-oauth2",
-            "/api/v1/users/confirm_user"
-    };
+  String[] PUBLIC_POST_ENDPOINTS = {
+    "/api/v1/auth/login",
+    "/api/v1/auth/admin/login",
+    "/api/v1/auth/login-temporarily",
+    "/api/v1/users/register",
+    "/api/v1/auth/logout",
+    "/api/v1/auth/verify-otp",
+    "/api/v1/auth/resend-otp",
+    "/api/v1/auth/refresh-token/{userId}",
+    "/api/v1/auth/send-forgot-password",
+    "/api/v1/auth/verify-reset-token",
+    "/api/v1/products/filter",
+    "/api/v1/auth/admin/verify-otp",
+    "/api/v1/auth/admin/resend-otp",
+    "/api/v1/auth/login-oauth2",
+    "/api/v1/users/confirm_user"
+  };
 
-    String[] PUBLIC_GET_ENDPOINTS = {
-            "/api/v1/categories/root",
-            "/api/v1/categories/{parentId}/subcategories",
-            "/api/v1/products/filter/{id}",
-            "/api/v1/sizes",
-            "/api/v1/brands",
-            "/api/v1/colors",
-            "/swagger-ui/**",
-            "/v3/api-docs/**"
-    };
+  String[] PUBLIC_GET_ENDPOINTS = {
+    "/api/v1/categories/root",
+    "/api/v1/categories/{parentId}/subcategories",
+    "/api/v1/products/filter/{id}",
+    "/api/v1/sizes",
+    "/api/v1/brands",
+    "/api/v1/colors",
+    "/swagger-ui/**",
+    "/v3/api-docs/**"
+  };
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
-        httpSecurity.authorizeHttpRequests(
-                auth ->
-                        auth.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
-                                .permitAll()
-                                .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS)
-                                .permitAll()
-                                .requestMatchers("/ws/**", "/swagger-ui/**", "/v3/api-docs/**")
-                                .permitAll()
-                                .requestMatchers("/ws/**")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated());
+    httpSecurity.authorizeHttpRequests(
+        auth ->
+            auth.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS)
+                .permitAll()
+                .requestMatchers("/ws/**", "/swagger-ui/**", "/v3/api-docs/**")
+                .permitAll()
+                .requestMatchers("/ws/**")
+                .permitAll()
+                .anyRequest()
+                .authenticated());
 
-        httpSecurity.oauth2ResourceServer(
-                oauth2 ->
-                        oauth2
-                                .jwt(
-                                        jwt ->
-                                                jwt.decoder(customJwtDecoder)
-                                                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
+    httpSecurity.oauth2ResourceServer(
+        oauth2 ->
+            oauth2
+                .jwt(
+                    jwt ->
+                        jwt.decoder(customJwtDecoder)
+                            .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
 
-        httpSecurity.cors(
-                cors -> {
-                    CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowedOrigins(List.of(ALLOWED_ORIGINS));
-                    configuration.setAllowedMethods(
-                            Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-                    configuration.setAllowedHeaders(List.of("*"));
-                    configuration.setExposedHeaders(List.of("x-auth-token"));
-                    configuration.setAllowCredentials(true);
-                    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                    source.registerCorsConfiguration("/**", configuration);
-                    cors.configurationSource(source);
-                });
-        return httpSecurity.build();
-    }
+    httpSecurity.cors(
+        cors -> {
+          CorsConfiguration configuration = new CorsConfiguration();
+          configuration.setAllowedOrigins(List.of(ALLOWED_ORIGINS));
+          configuration.setAllowedMethods(
+              Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+          configuration.setAllowedHeaders(List.of("*"));
+          configuration.setExposedHeaders(List.of("x-auth-token"));
+          configuration.setAllowCredentials(true);
+          UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+          source.registerCorsConfiguration("/**", configuration);
+          cors.configurationSource(source);
+        });
+    return httpSecurity.build();
+  }
 
-    @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
-                new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
-        return jwtAuthenticationConverter;
-    }
+  @Bean
+  JwtAuthenticationConverter jwtAuthenticationConverter() {
+    JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
+        new JwtGrantedAuthoritiesConverter();
+    jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
+    JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+    return jwtAuthenticationConverter;
+  }
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
-    }
+  @Bean
+  PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(10);
+  }
 }

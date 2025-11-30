@@ -1,12 +1,11 @@
 package iuh.fit.se.entities;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -36,11 +35,11 @@ public class Review {
   @JoinColumn(name = "user_id")
   User user;
 
-    @Column(name = "created_date")
-    @CreationTimestamp
-    LocalDateTime createdDate;
+  @Column(name = "created_date")
+  @CreationTimestamp
+  LocalDateTime createdDate;
 
-    @Column(name = "updated_date")
-    @UpdateTimestamp
-    LocalDateTime updatedDate;
+  @Column(name = "updated_date")
+  @UpdateTimestamp
+  LocalDateTime updatedDate;
 }

@@ -11,6 +11,7 @@ interface ChangeStatusModalProps {
 const statusOptions = [
   { value: "PENDING", label: "Chờ xác nhận" },
   { value: "PROCESSING", label: "Đang đóng gói" },
+  { value: "SHIPPING", label: "Đang vận chuyển" },
   { value: "COMPLETED", label: "Hoàn thành" },
   { value: "CANCELLED", label: "Đã hủy" },
 ];

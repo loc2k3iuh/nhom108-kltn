@@ -22,4 +22,3 @@ public interface IAddressService {
 
   Page<AddressResponse> getMyAddresses(String city, Pageable pageable);
 }
-

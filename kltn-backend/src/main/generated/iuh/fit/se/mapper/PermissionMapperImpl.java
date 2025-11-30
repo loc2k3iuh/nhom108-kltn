@@ -11,50 +11,49 @@ import org.springframework.stereotype.Component;
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
     date = "2025-11-18T07:28:15+0700",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
-)
+    comments = "version: 1.6.3, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)")
 @Component
 public class PermissionMapperImpl implements PermissionMapper {
 
-    @Override
-    public Permission toPermissionEntity(PermissionRequest permissionRequest) {
-        if ( permissionRequest == null ) {
-            return null;
-        }
-
-        Permission.PermissionBuilder permission = Permission.builder();
-
-        permission.name( permissionRequest.getName() );
-        permission.description( permissionRequest.getDescription() );
-
-        return permission.build();
+  @Override
+  public Permission toPermissionEntity(PermissionRequest permissionRequest) {
+    if (permissionRequest == null) {
+      return null;
     }
 
-    @Override
-    public PermissionResponse toPermissionResponse(Permission permission) {
-        if ( permission == null ) {
-            return null;
-        }
+    Permission.PermissionBuilder permission = Permission.builder();
 
-        PermissionResponse permissionResponse = new PermissionResponse();
+    permission.name(permissionRequest.getName());
+    permission.description(permissionRequest.getDescription());
 
-        permissionResponse.setName( permission.getName() );
-        permissionResponse.setDescription( permission.getDescription() );
+    return permission.build();
+  }
 
-        return permissionResponse;
+  @Override
+  public PermissionResponse toPermissionResponse(Permission permission) {
+    if (permission == null) {
+      return null;
     }
 
-    @Override
-    public List<PermissionResponse> toResponseList(List<Permission> permissions) {
-        if ( permissions == null ) {
-            return null;
-        }
+    PermissionResponse permissionResponse = new PermissionResponse();
 
-        List<PermissionResponse> list = new ArrayList<PermissionResponse>( permissions.size() );
-        for ( Permission permission : permissions ) {
-            list.add( toPermissionResponse( permission ) );
-        }
+    permissionResponse.setName(permission.getName());
+    permissionResponse.setDescription(permission.getDescription());
 
-        return list;
+    return permissionResponse;
+  }
+
+  @Override
+  public List<PermissionResponse> toResponseList(List<Permission> permissions) {
+    if (permissions == null) {
+      return null;
     }
+
+    List<PermissionResponse> list = new ArrayList<PermissionResponse>(permissions.size());
+    for (Permission permission : permissions) {
+      list.add(toPermissionResponse(permission));
+    }
+
+    return list;
+  }
 }

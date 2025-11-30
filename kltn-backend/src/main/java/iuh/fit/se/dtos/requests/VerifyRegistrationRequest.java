@@ -12,9 +12,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class VerifyRegistrationRequest {
 
-    @NotBlank(message = "EMAIL_REQUIRED")
-    String email;
+  @NotBlank(message = "EMAIL_REQUIRED")
+  String email;
 
-    @NotBlank(message = "TOKEN_REQUIRED")
-    String token;
+  @NotBlank(message = "TOKEN_REQUIRED")
+  String token;
 }

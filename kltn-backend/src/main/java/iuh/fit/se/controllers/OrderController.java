@@ -216,4 +216,39 @@ public class OrderController {
 
     return new ResponseEntity<>(mergedPdf, headers, HttpStatus.OK);
   }
+
+  @GetMapping("/user/{userId}/total-spent")
+  @Operation(
+      summary = "Get total amount spent by user for completed orders",
+      description =
+          "Calculate the total amount (finalAmount) that a user has spent across all completed orders",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
+  public APIResponse<java.math.BigDecimal> getTotalSpentByUser(@PathVariable Long userId)
+      throws Exception {
+    log.info("Getting total spent amount for user: {}", userId);
+    java.math.BigDecimal totalSpent = orderService.getTotalSpentByUser(userId);
+    return APIResponse.<java.math.BigDecimal>builder()
+        .result(totalSpent)
+        .message("Total spent amount retrieved successfully")
+        .code(HttpStatus.OK.value())
+        .build();
+  }
+
+  @GetMapping("/user/{userId}/total-orders-count")
+  @Operation(
+      summary = "Get total number of orders by user (excluding cancelled)",
+      description =
+          "Count the total number of orders for a user, excluding orders with CANCELLED status",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN') or hasRole('STAFF')")
+  public APIResponse<Long> getTotalOrdersCountByUser(@PathVariable Long userId) throws Exception {
+    log.info("Getting total orders count for user: {}", userId);
+    Long totalOrders = orderService.getTotalOrdersCountByUser(userId);
+    return APIResponse.<Long>builder()
+        .result(totalOrders)
+        .message("Total orders count retrieved successfully")
+        .code(HttpStatus.OK.value())
+        .build();
+  }
 }

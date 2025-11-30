@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { use } from 'react';
 import { FaTshirt, FaHandshake, FaCheck, FaUserFriends, FaAward, FaBoxOpen } from 'react-icons/fa';
 import { RiCustomerService2Fill } from 'react-icons/ri';
 import vuvisaIco from '/ico.png';
+import { useNavigate } from 'react-router-dom';
 
 const AboutPage: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -279,18 +281,18 @@ const AboutPage: React.FC = () => {
             Khám phá thế giới thời trang và phụ kiện chất lượng cao cùng với những ưu đãi hấp dẫn
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a 
-              href="/user/register" 
-              className="bg-white text-red-600 hover:bg-gray-100 font-semibold px-8 py-3 rounded-lg transition duration-200"
+            <span
+              onClick={() => navigate("/register")}
+              className="cursor-pointer bg-white text-red-600 hover:bg-gray-100 font-semibold px-8 py-3 rounded-lg transition duration-200"
             >
               Đăng ký ngay
-            </a>
-            <a 
-              href="/category/1" 
-              className="bg-transparent hover:bg-red-700 border-2 border-white font-semibold px-8 py-3 rounded-lg transition duration-200"
+            </span>
+            <span
+              onClick={() => navigate("/category/1")}
+              className="cursor-pointer bg-transparent hover:bg-red-700 border-2 border-white font-semibold px-8 py-3 rounded-lg transition duration-200"
             >
               Khám phá thời trang
-            </a>
+            </span>
           </div>
         </div>
       </div>

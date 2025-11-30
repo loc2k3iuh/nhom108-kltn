@@ -4,6 +4,7 @@ import UserSidebar from "../components/UserSidebar";
 import UserProfile from "../components/user/UserProfile";
 import DashboardSummary from "@/components/user/DashboardSummary";
 import NewsletterSignup from "@/components/user/NewsletterSignup";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 interface ValidationErrors {
     fullName?: string;
@@ -13,6 +14,7 @@ interface ValidationErrors {
 }
 
 const UserPage = () => {
+    const { authUser } = useAuthStore();
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     // Static user data
@@ -63,7 +65,7 @@ const UserPage = () => {
 
                 {/* Main Content */}
                 <div className="w-full md:w-3/4 space-y-4 ml-0 mt-3 md:mt-0 md:ml-6">
-                    <DashboardSummary />
+                    <DashboardSummary userId={authUser?.id} />
                     
                     {/* User Profile Section */}
                     <UserProfile

@@ -177,13 +177,14 @@ public class EmailServiceImpl implements IEmailService {
   }
 
   @Override
+  @Async("emailTaskExecutor")
   public void resendOtp(ResenOtpRequest resenOtpRequest) throws MessagingException {
     User user =
         userRepository
             .findByEmail(resenOtpRequest.getEmail())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    String otpKey = "OTP: " + resenOtpRequest.getEmail();
-    String counterKey = "OTP_COUNTER: " + resenOtpRequest.getEmail();
+    String otpKey = "otp:email=" + resenOtpRequest.getEmail();
+    String counterKey = "otp_counter=" + resenOtpRequest.getEmail();
 
     String counterStr = stringRedisTemplate.opsForValue().get(counterKey);
     int counter = counterStr != null ? Integer.parseInt(counterStr) : 0;

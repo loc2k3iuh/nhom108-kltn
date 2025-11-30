@@ -8,23 +8,22 @@ import org.springframework.stereotype.Component;
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
     date = "2025-11-18T07:28:15+0700",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
-)
+    comments = "version: 1.6.3, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)")
 @Component
 public class ColorMapperImpl implements ColorMapper {
 
-    @Override
-    public ColorResponse toColorResponse(Color color) {
-        if ( color == null ) {
-            return null;
-        }
-
-        ColorResponse.ColorResponseBuilder colorResponse = ColorResponse.builder();
-
-        colorResponse.id( color.getId() );
-        colorResponse.name( color.getName() );
-        colorResponse.description( color.getDescription() );
-
-        return colorResponse.build();
+  @Override
+  public ColorResponse toColorResponse(Color color) {
+    if (color == null) {
+      return null;
     }
+
+    ColorResponse.ColorResponseBuilder colorResponse = ColorResponse.builder();
+
+    colorResponse.id(color.getId());
+    colorResponse.name(color.getName());
+    colorResponse.description(color.getDescription());
+
+    return colorResponse.build();
+  }
 }

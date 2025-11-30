@@ -557,4 +557,32 @@ public class OrderServiceImpl implements IOrderService {
     log.info("Order {} has been updated successfully", id);
     return toOrderResponse(savedOrder);
   }
+
+  @Override
+  public BigDecimal getTotalSpentByUser(Long userId) throws Exception {
+    // Verify user exists
+    if (!userRepository.existsById(userId)) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "User not found: " + userId);
+    }
+
+    log.info("Getting total spent amount for user: {}", userId);
+    BigDecimal totalSpent = orderRepository.getTotalAmountByUserIdAndCompletedStatus(userId);
+
+    log.info("Total spent by user {}: {}", userId, totalSpent);
+    return totalSpent;
+  }
+
+  @Override
+  public Long getTotalOrdersCountByUser(Long userId) throws Exception {
+    // Verify user exists
+    if (!userRepository.existsById(userId)) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "User not found: " + userId);
+    }
+
+    log.info("Getting total orders count for user: {}", userId);
+    Long totalOrders = orderRepository.countOrdersByUserIdExcludingCancelled(userId);
+
+    log.info("Total orders count by user {} (excluding cancelled): {}", userId, totalOrders);
+    return totalOrders;
+  }
 }

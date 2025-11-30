@@ -16,120 +16,119 @@ import org.springframework.stereotype.Component;
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
     date = "2025-11-18T07:28:15+0700",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
-)
+    comments = "version: 1.6.3, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)")
 @Component
 public class UserMapperImpl implements UserMapper {
 
-    @Override
-    public User toUserEntity(RegisterUserRequest dto) {
-        if ( dto == null ) {
-            return null;
-        }
-
-        User.UserBuilder user = User.builder();
-
-        user.username( dto.getUsername() );
-        user.email( dto.getEmail() );
-        user.password( dto.getPassword() );
-        user.fullName( dto.getFullName() );
-
-        return user.build();
+  @Override
+  public User toUserEntity(RegisterUserRequest dto) {
+    if (dto == null) {
+      return null;
     }
 
-    @Override
-    public UserResponse toUserResponse(User user) {
-        if ( user == null ) {
-            return null;
-        }
+    User.UserBuilder user = User.builder();
 
-        UserResponse userResponse = new UserResponse();
+    user.username(dto.getUsername());
+    user.email(dto.getEmail());
+    user.password(dto.getPassword());
+    user.fullName(dto.getFullName());
 
-        userResponse.setId( user.getId() );
-        userResponse.setUsername( user.getUsername() );
-        userResponse.setEmail( user.getEmail() );
-        userResponse.setFullName( user.getFullName() );
-        userResponse.setPhoneNumber( user.getPhoneNumber() );
-        userResponse.setAddress( user.getAddress() );
-        userResponse.setDateOfBirth( user.getDateOfBirth() );
-        userResponse.setIsActive( user.getIsActive() );
-        userResponse.setAvatarUrl( user.getAvatarUrl() );
-        userResponse.setCreatedDate( user.getCreatedDate() );
-        userResponse.setUpdatedDate( user.getUpdatedDate() );
-        userResponse.setRoles( roleSetToRoleResponseSet( user.getRoles() ) );
-        if ( user.getStatus() != null ) {
-            userResponse.setStatus( user.getStatus().name() );
-        }
+    return user.build();
+  }
 
-        return userResponse;
+  @Override
+  public UserResponse toUserResponse(User user) {
+    if (user == null) {
+      return null;
     }
 
-    @Override
-    public PreLoginResponse toPreLoginResponse(User user) {
-        if ( user == null ) {
-            return null;
-        }
+    UserResponse userResponse = new UserResponse();
 
-        PreLoginResponse.PreLoginResponseBuilder preLoginResponse = PreLoginResponse.builder();
-
-        preLoginResponse.email( user.getEmail() );
-        preLoginResponse.roles( roleSetToRoleResponseSet( user.getRoles() ) );
-
-        return preLoginResponse.build();
+    userResponse.setId(user.getId());
+    userResponse.setUsername(user.getUsername());
+    userResponse.setEmail(user.getEmail());
+    userResponse.setFullName(user.getFullName());
+    userResponse.setPhoneNumber(user.getPhoneNumber());
+    userResponse.setAddress(user.getAddress());
+    userResponse.setDateOfBirth(user.getDateOfBirth());
+    userResponse.setIsActive(user.getIsActive());
+    userResponse.setAvatarUrl(user.getAvatarUrl());
+    userResponse.setCreatedDate(user.getCreatedDate());
+    userResponse.setUpdatedDate(user.getUpdatedDate());
+    userResponse.setRoles(roleSetToRoleResponseSet(user.getRoles()));
+    if (user.getStatus() != null) {
+      userResponse.setStatus(user.getStatus().name());
     }
 
-    protected PermissionResponse permissionToPermissionResponse(Permission permission) {
-        if ( permission == null ) {
-            return null;
-        }
+    return userResponse;
+  }
 
-        PermissionResponse permissionResponse = new PermissionResponse();
-
-        permissionResponse.setName( permission.getName() );
-        permissionResponse.setDescription( permission.getDescription() );
-
-        return permissionResponse;
+  @Override
+  public PreLoginResponse toPreLoginResponse(User user) {
+    if (user == null) {
+      return null;
     }
 
-    protected Set<PermissionResponse> permissionSetToPermissionResponseSet(Set<Permission> set) {
-        if ( set == null ) {
-            return null;
-        }
+    PreLoginResponse.PreLoginResponseBuilder preLoginResponse = PreLoginResponse.builder();
 
-        Set<PermissionResponse> set1 = LinkedHashSet.newLinkedHashSet( set.size() );
-        for ( Permission permission : set ) {
-            set1.add( permissionToPermissionResponse( permission ) );
-        }
+    preLoginResponse.email(user.getEmail());
+    preLoginResponse.roles(roleSetToRoleResponseSet(user.getRoles()));
 
-        return set1;
+    return preLoginResponse.build();
+  }
+
+  protected PermissionResponse permissionToPermissionResponse(Permission permission) {
+    if (permission == null) {
+      return null;
     }
 
-    protected RoleResponse roleToRoleResponse(Role role) {
-        if ( role == null ) {
-            return null;
-        }
+    PermissionResponse permissionResponse = new PermissionResponse();
 
-        RoleResponse roleResponse = new RoleResponse();
+    permissionResponse.setName(permission.getName());
+    permissionResponse.setDescription(permission.getDescription());
 
-        if ( role.getName() != null ) {
-            roleResponse.setName( role.getName().name() );
-        }
-        roleResponse.setDescription( role.getDescription() );
-        roleResponse.setPermissions( permissionSetToPermissionResponseSet( role.getPermissions() ) );
+    return permissionResponse;
+  }
 
-        return roleResponse;
+  protected Set<PermissionResponse> permissionSetToPermissionResponseSet(Set<Permission> set) {
+    if (set == null) {
+      return null;
     }
 
-    protected Set<RoleResponse> roleSetToRoleResponseSet(Set<Role> set) {
-        if ( set == null ) {
-            return null;
-        }
-
-        Set<RoleResponse> set1 = LinkedHashSet.newLinkedHashSet( set.size() );
-        for ( Role role : set ) {
-            set1.add( roleToRoleResponse( role ) );
-        }
-
-        return set1;
+    Set<PermissionResponse> set1 = LinkedHashSet.newLinkedHashSet(set.size());
+    for (Permission permission : set) {
+      set1.add(permissionToPermissionResponse(permission));
     }
+
+    return set1;
+  }
+
+  protected RoleResponse roleToRoleResponse(Role role) {
+    if (role == null) {
+      return null;
+    }
+
+    RoleResponse roleResponse = new RoleResponse();
+
+    if (role.getName() != null) {
+      roleResponse.setName(role.getName().name());
+    }
+    roleResponse.setDescription(role.getDescription());
+    roleResponse.setPermissions(permissionSetToPermissionResponseSet(role.getPermissions()));
+
+    return roleResponse;
+  }
+
+  protected Set<RoleResponse> roleSetToRoleResponseSet(Set<Role> set) {
+    if (set == null) {
+      return null;
+    }
+
+    Set<RoleResponse> set1 = LinkedHashSet.newLinkedHashSet(set.size());
+    for (Role role : set) {
+      set1.add(roleToRoleResponse(role));
+    }
+
+    return set1;
+  }
 }

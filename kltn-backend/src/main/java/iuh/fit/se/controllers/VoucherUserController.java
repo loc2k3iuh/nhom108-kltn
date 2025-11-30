@@ -69,4 +69,20 @@ public class VoucherUserController {
             .result(vouchers)
             .build());
   }
+
+  @GetMapping("/{userId}/count")
+  @Operation(
+      summary = "Get total valid vouchers count for user",
+      description =
+          "Count the total number of valid vouchers available for a user (active, not expired, and still have usage remaining)")
+  public ResponseEntity<APIResponse<Long>> getTotalValidVouchersCount(
+      @Parameter(description = "User ID", required = true) @PathVariable Long userId) {
+    Long count = voucherService.getTotalValidVouchersCountByUser(userId);
+    return ResponseEntity.ok(
+        APIResponse.<Long>builder()
+            .code(200)
+            .message("Get total valid vouchers count successfully")
+            .result(count)
+            .build());
+  }
 }

@@ -430,4 +430,19 @@ public class VoucherServiceImpl implements IVoucherService {
       }
     }
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Long getTotalValidVouchersCountByUser(Long userId) {
+    if (userId == null) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "User ID is required");
+    }
+
+    // Verify user exists
+    if (!userRepository.existsById(userId)) {
+      throw new AppException(ErrorCode.INVALID_INPUT, "User not found: " + userId);
+    }
+
+    return voucherRepository.countValidVouchersByUserId(userId);
+  }
 }

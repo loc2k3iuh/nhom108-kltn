@@ -25,7 +25,8 @@ import { toast } from "sonner";
 const statusOptions = [
   { value: "ALL", label: "Tất cả trạng thái", icon: ArrowLeftRight },
   { value: "PENDING", label: "Chờ xác nhận", icon: NotebookPen },
-  { value: "PROCESSING", label: "Đang giao", icon: Truck },
+  { value: "PROCESSING", label: "Đang đóng gói", icon: Check },
+  { value: "SHIPPING", label: "Đang vận chuyển", icon: Truck },
   { value: "COMPLETED", label: "Hoàn thành", icon: Banknote },
   { value: "CANCELLED", label: "Đã hủy", icon: X },
 ];
@@ -153,6 +154,15 @@ export default function OrderList() {
   const handleDelete = async () => {
     if (selectedOrders.length === 0) {
       toast.warning("Vui lòng chọn đơn hàng cần xóa");
+      return;
+    }
+
+    // Kiểm tra tất cả đơn hàng được chọn phải có trạng thái CANCELLED
+    const selectedOrderObjects = orders.filter(o => selectedOrders.includes(o.id));
+    const hasNonCancelledOrders = selectedOrderObjects.some(o => o.status !== "CANCELLED");
+    
+    if (hasNonCancelledOrders) {
+      toast.error("Chỉ có thể xóa đơn hàng ở trạng thái 'Đã hủy'");
       return;
     }
 
@@ -447,13 +457,16 @@ export default function OrderList() {
               <FileDown className="w-4 h-4" />
               In PDF
             </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-md hover:shadow-lg active:scale-95"
-            >
-              <Trash2 className="w-4 h-4" />
-              Xóa
-            </button>
+            {/* Chỉ hiện nút xóa khi tất cả đơn hàng được chọn đều có trạng thái CANCELLED */}
+            {orders.filter(o => selectedOrders.includes(o.id)).every(o => o.status === "CANCELLED") && (
+              <button
+                onClick={handleDelete}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-md hover:shadow-lg active:scale-95"
+              >
+                <Trash2 className="w-4 h-4" />
+                Xóa
+              </button>
+            )}
           </div>
         )}
       </div>

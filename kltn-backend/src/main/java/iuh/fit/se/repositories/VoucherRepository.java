@@ -43,13 +43,26 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
 
   @Query(
       "SELECT v FROM Voucher v "
-          + "WHERE v.active = true "
+          + "INNER JOIN UserVoucher uv ON uv.voucher.id = v.id "
+          + "WHERE uv.user.id = :userId "
+          + "AND v.active = true "
           + "AND (v.startDate IS NULL OR v.startDate <= CURRENT_TIMESTAMP) "
           + "AND (v.endDate IS NULL OR v.endDate >= CURRENT_TIMESTAMP) "
           + "AND (v.minValueOrder IS NULL OR v.minValueOrder <= :orderAmount) "
           + "AND (v.usageLimit IS NULL OR v.usageLimit > (SELECT COALESCE(SUM(uv_inner.usageCount), 0) FROM UserVoucher uv_inner WHERE uv_inner.voucher.id = v.id)) "
-          + "AND (v.usagePerUser IS NULL OR v.usagePerUser > (SELECT COALESCE(SUM(uv_user.usageCount), 0) FROM UserVoucher uv_user WHERE uv_user.voucher.id = v.id AND uv_user.user.id = :userId)) "
+          + "AND (v.usagePerUser IS NULL OR v.usagePerUser > uv.usageCount) "
           + "ORDER BY v.createdDate DESC")
   List<Voucher> findSuitableVouchersListForOrderAmount(
       @Param("userId") Long userId, @Param("orderAmount") java.math.BigDecimal orderAmount);
+
+  // Count total valid vouchers for user
+  @Query(
+      "SELECT COUNT(v) FROM Voucher v "
+          + "INNER JOIN UserVoucher uv ON uv.voucher.id = v.id "
+          + "WHERE uv.user.id = :userId "
+          + "AND v.active = true "
+          + "AND (v.startDate IS NULL OR v.startDate <= CURRENT_TIMESTAMP) "
+          + "AND (v.endDate IS NULL OR v.endDate >= CURRENT_TIMESTAMP) "
+          + "AND (v.usagePerUser IS NULL OR v.usagePerUser > uv.usageCount)")
+  Long countValidVouchersByUserId(@Param("userId") Long userId);
 }

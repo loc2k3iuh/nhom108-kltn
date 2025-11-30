@@ -4,9 +4,11 @@ import { CheckCircle, XCircle, Loader, Home, ShoppingBag, Phone } from 'lucide-r
 import { Toaster, toast } from 'sonner';
 import { createOrder } from '@/services/orderService';
 import { clearCart } from '@/services/cartService';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const VnpayReturn = () => {
-    const location = useLocation();
+    const { authUser } = useAuthStore();
+     const location = useLocation();
     const navigate = useNavigate();
     const [status, setStatus] = useState('processing');
     const [orderId, setOrderId] = useState<number | null>(null);
@@ -15,19 +17,13 @@ const VnpayReturn = () => {
         const params = new URLSearchParams(location.search);
         const responseCode = params.get('vnp_ResponseCode');
         const transactionStatus = params.get('vnp_TransactionStatus');
-        const getUserData = () => {
-            try {
-                const userData = localStorage.getItem('vuvisa_user_data');
-                if (userData) {
-                    return JSON.parse(userData);
-                }
-                return { id: 1, full_name: 'Khách hàng' }; // Dữ liệu mặc định
-            } catch (error) {
-                console.error('Error getting user data:', error);
-                return { id: 1, full_name: 'Khách hàng' };
-            }
-        };
-        const user = getUserData();
+        const user = authUser;
+      
+        if  (!user) {
+            toast.error('Vui lòng đăng nhập để tiếp tục');
+            setStatus('fail');
+            return;
+        }
 
         const createOrderAfterPayment = async () => {
             try {

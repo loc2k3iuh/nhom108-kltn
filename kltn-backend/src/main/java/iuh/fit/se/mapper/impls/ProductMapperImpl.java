@@ -109,7 +109,10 @@ public class ProductMapperImpl implements ProductMapper {
             : null;
 
     List<String> imageUrls =
-        images.stream().map(ProductImage::getImageUrl).filter(Objects::nonNull).collect(Collectors.toList());
+        images.stream()
+            .map(ProductImage::getImageUrl)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
     String primaryImageUrl =
         images.stream()

@@ -15,11 +15,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResponse {
-    boolean authenticated;
+  boolean authenticated;
 
-    @JsonProperty("access_token")
-    String accessToken;
+  @JsonProperty("access_token")
+  String accessToken;
 
-    @JsonProperty("roles")
-    Set<RoleResponse> roles;
+  @JsonProperty("roles")
+  Set<RoleResponse> roles;
 }

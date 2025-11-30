@@ -18,49 +18,48 @@ import lombok.experimental.FieldDefaults;
 @Schema(description = "Request to create a voucher code for users")
 public class CreateVoucherRequest {
 
-    @NotNull(message = "Voucher code cannot be null")
-    @Size(min = 3, max = 20, message = "Voucher code must be between 3 and 20 characters")
-    @Schema(description = "Unique voucher code", example = "SUMMER2024")
-    String code;
+  @NotNull(message = "Voucher code cannot be null")
+  @Size(min = 3, max = 20, message = "Voucher code must be between 3 and 20 characters")
+  @Schema(description = "Unique voucher code", example = "SUMMER2024")
+  String code;
 
-    @NotNull(message = "Description cannot be null")
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
-    @Schema(description = "Voucher description", example = "Summer sale voucher with 20% discount")
-    String description;
+  @NotNull(message = "Description cannot be null")
+  @Size(max = 500, message = "Description cannot exceed 500 characters")
+  @Schema(description = "Voucher description", example = "Summer sale voucher with 20% discount")
+  String description;
 
-    @NotNull(message = "Discount type cannot be null")
-    @Schema(description = "Type of discount (PERCENTAGE or FIXED_AMOUNT)", example = "PERCENTAGE")
-    String discountType;
+  @NotNull(message = "Discount type cannot be null")
+  @Schema(description = "Type of discount (PERCENTAGE or FIXED_AMOUNT)", example = "PERCENTAGE")
+  String discountType;
 
-    @NotNull(message = "Discount value cannot be null")
-    @DecimalMin(value = "0.01", message = "Discount value must be greater than 0")
-    @Schema(
-            description = "Discount value (percentage: 0.01-100, fixed amount: any positive value)",
-            example = "20.0")
-    BigDecimal discountValue;
+  @NotNull(message = "Discount value cannot be null")
+  @DecimalMin(value = "0.01", message = "Discount value must be greater than 0")
+  @Schema(
+      description = "Discount value (percentage: 0.01-100, fixed amount: any positive value)",
+      example = "20.0")
+  BigDecimal discountValue;
 
-    @DecimalMin(value = "0", message = "Minimum order amount cannot be negative")
-    @Schema(description = "Minimum order amount to apply voucher", example = "100000")
-    BigDecimal minimumOrderAmount;
+  @DecimalMin(value = "0", message = "Minimum order amount cannot be negative")
+  @Schema(description = "Minimum order amount to apply voucher", example = "100000")
+  BigDecimal minimumOrderAmount;
 
-    @DecimalMin(value = "0", message = "Maximum discount amount cannot be negative")
-    @Schema(description = "Maximum discount amount (for percentage type)", example = "200000")
-    BigDecimal maximumDiscountAmount;
+  @DecimalMin(value = "0", message = "Maximum discount amount cannot be negative")
+  @Schema(description = "Maximum discount amount (for percentage type)", example = "200000")
+  BigDecimal maximumDiscountAmount;
 
+  Integer usageLimit;
 
-    Integer usageLimit;
+  @Schema(description = "Usage limit per user", example = "1")
+  Integer usageLimitPerUser;
 
-    @Schema(description = "Usage limit per user", example = "1")
-    Integer usageLimitPerUser;
+  @NotNull(message = "Start date cannot be null")
+  @Schema(description = "Voucher start date", example = "2024-06-01T00:00:00")
+  LocalDateTime startDate;
 
-    @NotNull(message = "Start date cannot be null")
-    @Schema(description = "Voucher start date", example = "2024-06-01T00:00:00")
-    LocalDateTime startDate;
+  @NotNull(message = "End date cannot be null")
+  @Schema(description = "Voucher end date", example = "2024-08-31T23:59:59")
+  LocalDateTime endDate;
 
-    @NotNull(message = "End date cannot be null")
-    @Schema(description = "Voucher end date", example = "2024-08-31T23:59:59")
-    LocalDateTime endDate;
-
-    @Schema(description = "List of user IDs who can use this voucher (empty for all users)")
-    List<Long> eligibleUserIds;
+  @Schema(description = "List of user IDs who can use this voucher (empty for all users)")
+  List<Long> eligibleUserIds;
 }

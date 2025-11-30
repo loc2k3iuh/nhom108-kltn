@@ -44,4 +44,10 @@ public interface IOrderService {
   OrderResponse createOrder(CreateOrderRequest request) throws Exception;
 
   OrderResponse updateOrder(Long id, OrderRequest orderDTO) throws Exception;
+
+  // Get total amount spent by user for completed orders
+  java.math.BigDecimal getTotalSpentByUser(Long userId) throws Exception;
+
+  // Get total number of orders by user excluding cancelled orders
+  Long getTotalOrdersCountByUser(Long userId) throws Exception;
 }
