@@ -1,23 +1,21 @@
 package iuh.fit.se.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import iuh.fit.se.dtos.requests.ProductFilterRequest;
 import iuh.fit.se.dtos.responses.ChatResponse;
 import iuh.fit.se.dtos.responses.ProductDetailResponse;
 import iuh.fit.se.services.interfaces.IProductFilterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -25,408 +23,195 @@ import java.util.regex.Pattern;
 public class ChatService {
 
     private final IProductFilterService productFilterService;
+    private final ChatClient.Builder chatClientBuilder;
+    private final ObjectMapper objectMapper;
 
-    // Hardcoded map for category keywords to IDs (to be replaced by LLM in a real scenario)
-    private static final Map<String, Long> CATEGORY_KEYWORDS_MAP = new HashMap<>();
-    private static final Map<Long, List<Long>> CATEGORY_HIERARCHY_MAP = new HashMap<>(); // New map for parent-child relationships
-    private static final Map<String, String[]> SORT_OPTIONS_MAP = new HashMap<>();
-    private static final Map<String, Long> SIZE_KEYWORDS_MAP = new HashMap<>();
-    private static final Map<String, Long> BRAND_KEYWORDS_MAP = new HashMap<>();
-    private static final Map<String, Long> COLOR_KEYWORDS_MAP = new HashMap<>();
+    private static final String SYSTEM_PROMPT = """
+            You are a helpful AI assistant for an e-commerce website named "DAVINCI".
+            Your primary role is to understand user queries in Vietnamese and convert them into a structured JSON format for product filtering.
+            You must only respond with a valid JSON object. Do not add any explanatory text, greetings, or any other text outside of the JSON structure.
 
+            The JSON output must conform to the following `ProductFilterRequest` structure:
+            {
+              "keyword": "string", "categoryIds": [long], "brandIds": [long], "colorIds": [long], "sizeIds": [long],
+              "minPrice": double, "maxPrice": double, "isNew": boolean, "isBestSeller": boolean,
+              "sortBy": "string", "sortDirection": "string", "page": int, "size": int
+            }
 
-    static {
-        // Main categories
-        CATEGORY_KEYWORDS_MAP.put("thời trang nam", 1L);
-        CATEGORY_KEYWORDS_MAP.put("nam", 1L);
-        CATEGORY_KEYWORDS_MAP.put("thời trang nữ", 2L);
-        CATEGORY_KEYWORDS_MAP.put("nữ", 2L);
-        CATEGORY_KEYWORDS_MAP.put("thời trang trẻ em", 3L);
-        CATEGORY_KEYWORDS_MAP.put("trẻ em", 3L);
-        CATEGORY_KEYWORDS_MAP.put("giày dép", 4L);
-        CATEGORY_KEYWORDS_MAP.put("giày", 4L);
-        CATEGORY_KEYWORDS_MAP.put("dép", 4L);
+            **IMPORTANT RULES:**
+            1.  **JSON ONLY:** Your entire response must be a single, valid JSON object, without markdown backticks (```).
+            2.  **ID MAPPING:** Use the provided maps to convert user keywords into their corresponding IDs.
+            3.  **KEYWORD HANDLING:**
+                - If the query mentions a specific product type (e.g., "áo thun", "quần jean"), extract the most important noun as a single word for the "keyword" field (e.g., "áo", "quần").
+                - If the query is ONLY about a general property (e.g., "sản phẩm bán chạy nhất") and does NOT mention a specific product type, the "keyword" field MUST be `null`.
+            4.  **IRRELEVANT QUERIES:** If the user's message is NOT a product search query (e.g., asking general knowledge questions), you MUST return a JSON where all filter-specific fields are `null`.
+            5.  **DEFAULT VALUES:**
+                - Pagination MUST always be present. If not specified by the user, default to `page: 0` and `size: 10`.
+                - Sorting MUST always be present. If not specified by the user, you MUST default to `sortBy: "basePrice"` and `sortDirection: "ASC"`.
+            6.  **NO ROOT CATEGORIES:** Never include category IDs 1, 2, 3, or 4 in the `categoryIds` array. Use their subcategory IDs instead.
 
-        // Subcategories for Thời trang nam (1)
-        CATEGORY_KEYWORDS_MAP.put("áo t-shirt nam", 9L);
-        CATEGORY_KEYWORDS_MAP.put("áo thun nam", 9L);
-        CATEGORY_KEYWORDS_MAP.put("áo polo nam", 10L);
-        CATEGORY_KEYWORDS_MAP.put("áo sơ mi nam", 11L);
-        CATEGORY_KEYWORDS_MAP.put("quần jeans nam", 12L);
-        CATEGORY_KEYWORDS_MAP.put("quần tây nam", 13L);
+            **--- AVAILABLE DATA FOR MAPPING ---**
 
-        // Subcategories for Thời trang nữ (2)
-        CATEGORY_KEYWORDS_MAP.put("áo t-shirt nữ", 14L);
-        CATEGORY_KEYWORDS_MAP.put("áo thun nữ", 14L);
-        CATEGORY_KEYWORDS_MAP.put("váy ngắn", 15L);
-        CATEGORY_KEYWORDS_MAP.put("váy dài", 16L);
-        CATEGORY_KEYWORDS_MAP.put("quần jeans nữ", 17L);
-        CATEGORY_KEYWORDS_MAP.put("quần short nữ", 18L);
+            **Category Hierarchy (Parent -> Subcategories):**
+            - 1 (Thời trang nam): [9, 10, 11, 12, 13]
+            - 2 (Thời trang nữ): [14, 15, 16, 17, 18]
+            - 3 (Thời trang trẻ em): [19, 20, 21, 22, 23]
+            - 4 (Giày dép): [39, 40, 41, 46, 47]
 
-        // Subcategories for Thời trang trẻ em (3)
-        CATEGORY_KEYWORDS_MAP.put("bé trai 0-2 tuổi", 19L);
-        CATEGORY_KEYWORDS_MAP.put("bé gái 0-2 tuổi", 20L);
-        CATEGORY_KEYWORDS_MAP.put("trẻ em trai 3-14 tuổi", 21L);
-        CATEGORY_KEYWORDS_MAP.put("trẻ em gái 3-14 tuổi", 22L);
-        CATEGORY_KEYWORDS_MAP.put("đồ ngủ trẻ em", 23L);
+            **Category Keywords to ID:**
+            - "thời trang nam", "nam": 1
+            - "thời trang nữ", "nữ": 2
+            - "thời trang trẻ em", "trẻ em": 3
+            - "giày dép", "giày", "dép": 4
+            - "áo t-shirt nam", "áo thun nam": 9
+            - "áo polo nam": 10
+            - "áo sơ mi nam": 11
+            - "quần jeans nam": 12
+            - "quần tây nam": 13
+            - "áo t-shirt nữ", "áo thun nữ": 14
+            - "váy ngắn": 15
+            - "váy dài": 16
+            - "quần jeans nữ": 17
+            - "quần short nữ": 18
+            - "bé trai 0-2 tuổi": 19
+            - "bé gái 0-2 tuổi": 20
+            - "trẻ em trai 3-14 tuổi": 21
+            - "trẻ em gái 3-14 tuổi": 22
+            - "đồ ngủ trẻ em": 23
+            - "giày sneaker": 39
+            - "giày chạy bộ": 40
+            - "giày tập gym": 41
+            - "giày boot": 46
+            - "dép các loại": 47
 
-        // Subcategories for Giày dép (4)
-        CATEGORY_KEYWORDS_MAP.put("giày sneaker", 39L);
-        CATEGORY_KEYWORDS_MAP.put("giày chạy bộ", 40L);
-        CATEGORY_KEYWORDS_MAP.put("giày tập gym", 41L);
-        CATEGORY_KEYWORDS_MAP.put("giày boot", 46L);
-        CATEGORY_KEYWORDS_MAP.put("dép các loại", 47L);
+            **Brand Keywords to ID:**
+            - "nike": 1, "adidas": 2, "puma": 3, "zara": 4, "h&m": 5, "uniqlo": 6, "coolmate": 7, "coolmatem": 7, "yame": 8, "calvin klein": 9, "tommy hilfiger": 10, "polo ralph lauren": 11, "lacoste": 12, "converse": 13, "vans": 14, "local brand": 15
 
-        // Initialize CATEGORY_HIERARCHY_MAP
-        CATEGORY_HIERARCHY_MAP.put(1L, Arrays.asList(9L, 10L, 11L, 12L, 13L)); // Thời trang nam
-        CATEGORY_HIERARCHY_MAP.put(2L, Arrays.asList(14L, 15L, 16L, 17L, 18L)); // Thời trang nữ
-        CATEGORY_HIERARCHY_MAP.put(3L, Arrays.asList(19L, 20L, 21L, 22L, 23L)); // Thời trang trẻ em
-        CATEGORY_HIERARCHY_MAP.put(4L, Arrays.asList(39L, 40L, 41L, 46L, 47L)); // Giày dép
+            **Color Keywords to ID:**
+            - "đỏ": 1, "xanh dương": 2, "xanh lá": 3, "đen": 4, "trắng": 5, "xám": 6, "hồng": 7, "vàng": 8, "nâu": 9, "tím": 10, "cam": 11, "be": 12, "xanh navy": 13, "xanh mint": 14, "hồng pastel": 15
 
+            **Size Keywords to ID:**
+            - "xs", "extra small", "rất nhỏ": 1
+            - "s", "small", "nhỏ": 2
+            - "m", "medium", "vừa": 3
+            - "l", "large", "lớn": 4
+            - "xl", "extra large", "rất lớn": 5
+            - "xxl", "double extra large", "cực lớn": 6
+            - "xxxl", "3xl", "cực kỳ lớn": 7
+            - "free size", "một size": 8
+            - "size 38", "38": 9
+            - "size 39", "39": 10
+            - "size 40", "40": 11
+            - "size 41", "41": 12
+            - "size 42", "42": 13
+            - "size 43", "43": 14
+            - "size 44", "44": 15
 
-        // Sorting options
-        SORT_OPTIONS_MAP.put("mới nhất", new String[]{"createdAt", "DESC"});
-        SORT_OPTIONS_MAP.put("cũ nhất", new String[]{"createdAt", "ASC"});
-        SORT_OPTIONS_MAP.put("bán chạy nhất", new String[]{"orderCount", "DESC"});
-        SORT_OPTIONS_MAP.put("bán ít nhất", new String[]{"orderCount", "ASC"});
-        SORT_OPTIONS_MAP.put("đánh giá cao nhất", new String[]{"averageRating", "DESC"});
-        SORT_OPTIONS_MAP.put("đánh giá thấp nhất", new String[]{"averageRating", "ASC"});
-        SORT_OPTIONS_MAP.put("giá thấp đến cao", new String[]{"discountedPrice", "ASC"});
-        SORT_OPTIONS_MAP.put("giá cao đến thấp", new String[]{"discountedPrice", "DESC"});
-        SORT_OPTIONS_MAP.put("lượt yêu thích", new String[]{"favoriteCount", "DESC"}); // Assuming DESC for "lượt yêu thích" implies highest
-        SORT_OPTIONS_MAP.put("lượt yêu thích ít nhất", new String[]{"favoriteCount", "ASC"});
-        SORT_OPTIONS_MAP.put("đánh giá nhiều nhất", new String[]{"reviewCount", "DESC"});
-        SORT_OPTIONS_MAP.put("đánh giá ít nhất", new String[]{"reviewCount", "ASC"});
-        SORT_OPTIONS_MAP.put("giảm giá nhiều nhất", new String[]{"currentDiscountPercent", "DESC"});
-        SORT_OPTIONS_MAP.put("giảm giá ít nhất", new String[]{"currentDiscountPercent", "ASC"});
-        // Add simpler keywords for price sorting, but ensure they don't override more specific ones
-        SORT_OPTIONS_MAP.put("rẻ nhất", new String[]{"discountedPrice", "ASC"});
-        SORT_OPTIONS_MAP.put("đắt nhất", new String[]{"discountedPrice", "DESC"});
+            **Sort Options (User Input -> [sortBy, sortDirection]):**
+            - "mới nhất": ["createdAt", "DESC"]
+            - "cũ nhất": ["createdAt", "ASC"]
+            - "bán chạy nhất": ["orderCount", "DESC"]
+            - "bán ít nhất": ["orderCount", "ASC"]
+            - "đánh giá cao nhất": ["averageRating", "DESC"]
+            - "đánh giá thấp nhất": ["averageRating", "ASC"]
+            - "giá thấp đến cao", "rẻ nhất": ["discountedPrice", "ASC"]
+            - "giá cao đến thấp", "đắt nhất": ["discountedPrice", "DESC"]
+            - "lượt yêu thích": ["favoriteCount", "DESC"]
+            - "lượt yêu thích ít nhất": ["favoriteCount", "ASC"]
+            - "đánh giá nhiều nhất": ["reviewCount", "DESC"]
+            - "đánh giá ít nhất": ["reviewCount", "ASC"]
+            - "giảm giá nhiều nhất": ["currentDiscountPercent", "DESC"]
+            - "giảm giá ít nhất": ["currentDiscountPercent", "ASC"]
 
-        // Size options
-        SIZE_KEYWORDS_MAP.put("xs", 1L);
-        SIZE_KEYWORDS_MAP.put("extra small", 1L);
-        SIZE_KEYWORDS_MAP.put("rất nhỏ", 1L);
-        SIZE_KEYWORDS_MAP.put("s", 2L);
-        SIZE_KEYWORDS_MAP.put("small", 2L);
-        SIZE_KEYWORDS_MAP.put("nhỏ", 2L);
-        SIZE_KEYWORDS_MAP.put("m", 3L);
-        SIZE_KEYWORDS_MAP.put("medium", 3L);
-        SIZE_KEYWORDS_MAP.put("vừa", 3L);
-        SIZE_KEYWORDS_MAP.put("l", 4L);
-        SIZE_KEYWORDS_MAP.put("large", 4L);
-        SIZE_KEYWORDS_MAP.put("lớn", 4L);
-        SIZE_KEYWORDS_MAP.put("xl", 5L);
-        SIZE_KEYWORDS_MAP.put("extra large", 5L);
-        SIZE_KEYWORDS_MAP.put("rất lớn", 5L);
-        SIZE_KEYWORDS_MAP.put("xxl", 6L);
-        SIZE_KEYWORDS_MAP.put("double extra large", 6L);
-        SIZE_KEYWORDS_MAP.put("cực lớn", 6L);
-        SIZE_KEYWORDS_MAP.put("xxxl", 7L);
-        SIZE_KEYWORDS_MAP.put("3xl", 7L);
-        SIZE_KEYWORDS_MAP.put("cực kỳ lớn", 7L);
-        SIZE_KEYWORDS_MAP.put("free size", 8L);
-        SIZE_KEYWORDS_MAP.put("một size", 8L);
-        SIZE_KEYWORDS_MAP.put("size 38", 9L);
-        SIZE_KEYWORDS_MAP.put("38", 9L);
-        SIZE_KEYWORDS_MAP.put("size 39", 10L);
-        SIZE_KEYWORDS_MAP.put("39", 10L);
-        SIZE_KEYWORDS_MAP.put("size 40", 11L);
-        SIZE_KEYWORDS_MAP.put("40", 11L);
-        SIZE_KEYWORDS_MAP.put("size 41", 12L);
-        SIZE_KEYWORDS_MAP.put("41", 12L);
-        SIZE_KEYWORDS_MAP.put("size 42", 13L);
-        SIZE_KEYWORDS_MAP.put("42", 13L);
-        SIZE_KEYWORDS_MAP.put("size 43", 14L);
-        SIZE_KEYWORDS_MAP.put("43", 14L);
-        SIZE_KEYWORDS_MAP.put("size 44", 15L);
-        SIZE_KEYWORDS_MAP.put("44", 15L);
+            **--- END OF DATA MAPPING ---**
 
-        // Brand options
-        BRAND_KEYWORDS_MAP.put("nike", 1L);
-        BRAND_KEYWORDS_MAP.put("adidas", 2L);
-        BRAND_KEYWORDS_MAP.put("puma", 3L);
-        BRAND_KEYWORDS_MAP.put("zara", 4L);
-        BRAND_KEYWORDS_MAP.put("h&m", 5L);
-        BRAND_KEYWORDS_MAP.put("uniqlo", 6L);
-        BRAND_KEYWORDS_MAP.put("coolmate", 7L);
-        BRAND_KEYWORDS_MAP.put("coolmatem", 7L); // Added for typo handling example
-        BRAND_KEYWORDS_MAP.put("yame", 8L);
-        BRAND_KEYWORDS_MAP.put("calvin klein", 9L);
-        BRAND_KEYWORDS_MAP.put("tommy hilfiger", 10L);
-        BRAND_KEYWORDS_MAP.put("polo ralph lauren", 11L);
-        BRAND_KEYWORDS_MAP.put("lacoste", 12L);
-        BRAND_KEYWORDS_MAP.put("converse", 13L);
-        BRAND_KEYWORDS_MAP.put("vans", 14L);
-        BRAND_KEYWORDS_MAP.put("local brand", 15L);
-
-        // Color options
-        COLOR_KEYWORDS_MAP.put("đỏ", 1L);
-        COLOR_KEYWORDS_MAP.put("xanh dương", 2L);
-        COLOR_KEYWORDS_MAP.put("xanh lá", 3L);
-        COLOR_KEYWORDS_MAP.put("đen", 4L);
-        COLOR_KEYWORDS_MAP.put("trắng", 5L);
-        COLOR_KEYWORDS_MAP.put("xám", 6L);
-        COLOR_KEYWORDS_MAP.put("hồng", 7L);
-        COLOR_KEYWORDS_MAP.put("vàng", 8L);
-        COLOR_KEYWORDS_MAP.put("nâu", 9L);
-        COLOR_KEYWORDS_MAP.put("tím", 10L);
-        COLOR_KEYWORDS_MAP.put("cam", 11L);
-        COLOR_KEYWORDS_MAP.put("be", 12L);
-        COLOR_KEYWORDS_MAP.put("xanh navy", 13L);
-        COLOR_KEYWORDS_MAP.put("xanh mint", 14L);
-        COLOR_KEYWORDS_MAP.put("hồng pastel", 15L);
-    }
+            **EXAMPLES:**
+            User Message 1: "tìm cho tôi áo thun nam màu đen" -> Expected JSON: { "keyword": "áo", "categoryIds": [9], "colorIds": [4], "sortBy": "basePrice", "sortDirection": "ASC", "page": 0, "size": 10 }
+            User Message 2: "sản phẩm bán chạy nhất" -> Expected JSON: { "keyword": null, "isBestSeller": true, "sortBy": "orderCount", "sortDirection": "DESC", "page": 0, "size": 10 }
+            User Message 3: "công nghệ AI là gì?" -> Expected JSON: { "keyword": null, "categoryIds": null, "brandIds": null, "colorIds": null, "sizeIds": null, "minPrice": null, "maxPrice": null, "isNew": null, "isBestSeller": null, "sortBy": "basePrice", "sortDirection": "ASC", "page": 0, "size": 10 }
+            """;
 
     public ChatResponse processMessage(String message) {
         String lowerCaseMessage = message.toLowerCase();
-        Set<String> messageWords = new HashSet<>(Arrays.asList(lowerCaseMessage.split("\\s+"))); // Split message into words for precise matching
-
-        // --- General Chat Interactions ---
-        if (lowerCaseMessage.contains("xin chào") || lowerCaseMessage.contains("hi") || lowerCaseMessage.contains("hello")) {
+        if (lowerCaseMessage.contains("xin chào") || lowerCaseMessage.contains("hi") || lowerCaseMessage.contains("hello") || lowerCaseMessage.contains("chào bạn") || lowerCaseMessage.contains("bạn có đó không") || lowerCaseMessage.contains("hãy giúp tôi")) {
             return ChatResponse.builder()
                     .responseMessage("Chào bạn! Tôi là trợ lý ảo của DAVINCI. Tôi có thể giúp gì cho bạn hôm nay?")
                     .build();
         }
-
         if (lowerCaseMessage.contains("bạn là ai") || lowerCaseMessage.contains("tên gì")) {
             return ChatResponse.builder()
                     .responseMessage("Tôi là trợ lý ảo của DAVINCI, được thiết kế để giúp bạn tìm kiếm sản phẩm dễ dàng hơn.")
                     .build();
         }
 
-        // --- Check for Product Search Keywords ---
-        boolean isProductSearch = lowerCaseMessage.contains("tìm")
-                || lowerCaseMessage.contains("sản phẩm")
-                || lowerCaseMessage.contains("mua")
-                || lowerCaseMessage.contains("muốn mua")
-                || lowerCaseMessage.contains("có")
-                || lowerCaseMessage.contains("show")
-                || lowerCaseMessage.contains("hiển thị");
-
-        if (!isProductSearch) {
+        if (lowerCaseMessage.contains("tạm biệt") || lowerCaseMessage.contains("bye") || lowerCaseMessage.contains("see you") || lowerCaseMessage.contains("cảm ơn") ) {
             return ChatResponse.builder()
-                    .responseMessage("Xin lỗi, tôi chưa hiểu yêu cầu của bạn. Bạn có thể thử tìm kiếm sản phẩm bằng cách nói 'tìm áo nam' hoặc 'sản phẩm mới' không?")
+                    .responseMessage("Tôi là trợ lý ảo của DAVINCI, rất hân hạnh được làm việc với bạn.")
                     .build();
         }
 
-        // --- Product Filtering Logic (only if isProductSearch is true) ---
-        ProductFilterRequest.ProductFilterRequestBuilder filterBuilder = ProductFilterRequest.builder();
+        try {
+            SystemMessage systemMessage = new SystemMessage(SYSTEM_PROMPT);
+            UserMessage userMessage = new UserMessage(message);
+            Prompt prompt = new Prompt(systemMessage, userMessage);
+            ChatClient chatClient = chatClientBuilder.build();
 
-        // --- Category Parsing ---
-        Set<Long> foundCategoryIds = new HashSet<>();
+            String rawResponse = chatClient.prompt(prompt).call().content();
+            log.info("AI Raw Response: {}", rawResponse);
 
-        // Collect all directly mentioned category IDs (both root and sub)
-        for (Map.Entry<String, Long> entry : CATEGORY_KEYWORDS_MAP.entrySet()) {
-            boolean matched = false;
-            if (entry.getKey().contains(" ")) { // Multi-word keyword
-                if (lowerCaseMessage.contains(entry.getKey())) {
-                    matched = true;
-                }
-            } else { // Single-word keyword
-                if (messageWords.contains(entry.getKey())) {
-                    matched = true;
-                }
-            }
-            if (matched) {
-                foundCategoryIds.add(entry.getValue());
-            }
-        }
+            String cleanedJson = rawResponse.trim().replace("```json", "").replace("```", "").trim();
+            ProductFilterRequest filterRequest = objectMapper.readValue(cleanedJson, ProductFilterRequest.class);
+            log.info("Deserialized ProductFilterRequest: {}", filterRequest);
 
-        // Special handling for "áo nam" to ensure subcategories of 1L are included
-        // If "áo nam" is found, it implies "Thời trang nam" (ID 1) and its subcategories.
-        // We add 1L here temporarily, it will be expanded and removed later if it's a root.
-        if (lowerCaseMessage.contains("áo nam")) {
-            foundCategoryIds.add(1L);
-        }
-
-
-        // Now, process foundCategoryIds to expand roots and remove root IDs themselves from the final list
-        Set<Long> finalCategoryIds = new HashSet<>();
-        for (Long categoryId : foundCategoryIds) {
-            if (CATEGORY_HIERARCHY_MAP.containsKey(categoryId)) { // This is a root category (1, 2, 3, 4)
-                // Add all its subcategories
-                finalCategoryIds.addAll(CATEGORY_HIERARCHY_MAP.get(categoryId));
-                // Do NOT add the root category ID itself, as per user's request "không truyền vào id từ 1 đến 4"
-            } else { // This is a specific subcategory
-                finalCategoryIds.add(categoryId);
-            }
-        }
-
-        if (!finalCategoryIds.isEmpty()) {
-            filterBuilder.categoryIds(new ArrayList<>(finalCategoryIds));
-        }
-
-
-        // --- Size Parsing ---
-        List<Long> foundSizeIds = new ArrayList<>();
-        for (Map.Entry<String, Long> entry : SIZE_KEYWORDS_MAP.entrySet()) {
-            boolean matched = false;
-            if (entry.getKey().contains(" ")) { // Multi-word keyword
-                if (lowerCaseMessage.contains(entry.getKey())) {
-                    matched = true;
-                }
-            } else { // Single-word keyword
-                if (messageWords.contains(entry.getKey())) {
-                    matched = true;
-                }
-            }
-            if (matched) {
-                foundSizeIds.add(entry.getValue());
-            }
-        }
-        if (!foundSizeIds.isEmpty()) {
-            filterBuilder.sizeIds(foundSizeIds);
-        }
-
-        // --- Brand Parsing ---
-        List<Long> foundBrandIds = new ArrayList<>();
-        for (Map.Entry<String, Long> entry : BRAND_KEYWORDS_MAP.entrySet()) {
-            boolean matched = false;
-            if (entry.getKey().contains(" ")) { // Multi-word keyword
-                if (lowerCaseMessage.contains(entry.getKey())) {
-                    matched = true;
-                }
-            } else { // Single-word keyword
-                if (messageWords.contains(entry.getKey())) {
-                    matched = true;
-                }
-            }
-            if (matched) {
-                foundBrandIds.add(entry.getValue());
-            }
-        }
-        if (!foundBrandIds.isEmpty()) {
-            filterBuilder.brandIds(foundBrandIds);
-        }
-
-        // --- Color Parsing ---
-        List<Long> foundColorIds = new ArrayList<>();
-        for (Map.Entry<String, Long> entry : COLOR_KEYWORDS_MAP.entrySet()) {
-            boolean matched = false;
-            if (entry.getKey().contains(" ")) { // Multi-word keyword
-                if (lowerCaseMessage.contains(entry.getKey())) {
-                    matched = true;
-                }
-            } else { // Single-word keyword
-                if (messageWords.contains(entry.getKey())) {
-                    matched = true;
-                }
-            }
-            if (matched) {
-                foundColorIds.add(entry.getValue());
-            }
-        }
-        if (!foundColorIds.isEmpty()) {
-            filterBuilder.colorIds(foundColorIds);
-        }
-
-        // --- Boolean Filters ---
-        // Check for "mới nhất" to set isNew
-        if (lowerCaseMessage.contains("mới nhất") || lowerCaseMessage.contains("sản phẩm mới") || lowerCaseMessage.contains("hàng mới") || lowerCaseMessage.contains("mới về")) {
-            filterBuilder.isNew(true);
-        }
-        // Check for "bán chạy nhất" to set isBestSeller
-        if (lowerCaseMessage.contains("bán chạy nhất") || lowerCaseMessage.contains("sản phẩm hot") || lowerCaseMessage.contains("best seller") || lowerCaseMessage.contains("bán chạy")) {
-            filterBuilder.isBestSeller(true);
-        }
-
-
-        // --- Sorting ---
-        // Find the sort option that appears latest in the message
-        String finalSortBy = null;
-        String finalSortDirection = null;
-        int lastSortKeywordIndex = -1;
-
-        for (Map.Entry<String, String[]> entry : SORT_OPTIONS_MAP.entrySet()) {
-            int currentIndex = lowerCaseMessage.indexOf(entry.getKey());
-            if (currentIndex != -1 && currentIndex > lastSortKeywordIndex) {
-                finalSortBy = entry.getValue()[0];
-                finalSortDirection = entry.getValue()[1];
-                lastSortKeywordIndex = currentIndex;
-            }
-        }
-
-        // Fallback for simple price sorting if no specific sort option was found
-        if (finalSortBy == null) {
-            if (lowerCaseMessage.contains("rẻ") || lowerCaseMessage.contains("giá thấp")) {
-                finalSortBy = "discountedPrice";
-                finalSortDirection = "ASC";
-            } else if (lowerCaseMessage.contains("đắt") || lowerCaseMessage.contains("giá cao")) {
-                finalSortBy = "discountedPrice";
-                finalSortDirection = "DESC";
-            }
-        }
-
-        // Default sorting if no sorting preference was found at all
-        if (finalSortBy == null) {
-            finalSortBy = "basePrice"; // Default sortBy
-            finalSortDirection = "ASC"; // Default sortDirection
-        }
-
-        filterBuilder.sortBy(finalSortBy).sortDirection(finalSortDirection);
-
-
-        // --- Price range (more robust parsing using regex) ---
-        Pattern priceRangePattern = Pattern.compile("(dưới|trên)\\s*(\\d+(\\.\\d+)?)([kkm]?)");
-        Matcher priceRangeMatcher = priceRangePattern.matcher(lowerCaseMessage);
-
-        while (priceRangeMatcher.find()) {
-            String type = priceRangeMatcher.group(1); // "dưới" or "trên"
-            double value = Double.parseDouble(priceRangeMatcher.group(2));
-            String unit = priceRangeMatcher.group(4); // "k", "kk", "m" or empty
-
-            // Convert to actual price
-            if ("k".equals(unit)) {
-                value *= 1_000;
-            } else if ("kk".equals(unit) || "m".equals(unit)) { // Assuming 'm' also means million
-                value *= 1_000_000;
+            // Check if the AI returned an empty/irrelevant filter
+            if (isFilterRequestEmpty(filterRequest)) {
+                log.info("Irrelevant query detected. Responding with guidance.");
+                return ChatResponse.builder()
+                        .responseMessage("Xin lỗi, tôi chưa hiểu yêu cầu của bạn. Tôi có thể giúp bạn tìm kiếm các sản phẩm như áo, quần, hay giày dép. Bạn muốn tìm gì?")
+                        .build();
             }
 
-            if ("dưới".equals(type)) {
-                filterBuilder.maxPrice(value);
-            } else if ("trên".equals(type)) {
-                filterBuilder.minPrice(value);
+            // Fallback for pagination and sorting, just in case the AI misses them
+            if (filterRequest.getPage() == null) filterRequest.setPage(0);
+            if (filterRequest.getSize() == null) filterRequest.setSize(10);
+            if (filterRequest.getSortBy() == null || filterRequest.getSortBy().trim().isEmpty()) {
+                filterRequest.setSortBy("basePrice");
+                filterRequest.setSortDirection("ASC");
             }
+
+            Page<ProductDetailResponse> products = productFilterService.filterProducts(filterRequest);
+            String responseMessage = products.isEmpty()
+                    ? "Xin lỗi, tôi không tìm thấy sản phẩm nào phù hợp với yêu cầu của bạn."
+                    : "Đây là những sản phẩm tôi tìm được:";
+
+            return ChatResponse.builder()
+                    .responseMessage(responseMessage)
+                    .products(products)
+                    .build();
+
+        } catch (JsonProcessingException e) {
+            log.error("Error processing AI response: Invalid JSON format. Cleaned JSON: {}", e.getMessage());
+            return ChatResponse.builder().responseMessage("Xin lỗi, đã có lỗi xảy ra khi xử lý yêu cầu của bạn. Vui lòng thử lại.").build();
+        } catch (Exception e) {
+            log.error("An unexpected error occurred in ChatService", e);
+            return ChatResponse.builder().responseMessage("Xin lỗi, hệ thống đang gặp sự cố. Vui lòng thử lại sau.").build();
         }
+    }
 
-        // --- Pagination ---
-        Pattern pagePattern = Pattern.compile("trang\\s*(\\d+)");
-        Matcher pageMatcher = pagePattern.matcher(lowerCaseMessage);
-        if (pageMatcher.find()) {
-            filterBuilder.page(Integer.parseInt(pageMatcher.group(1)) - 1); // Page is 0-indexed
-        }
-
-        Pattern sizePattern = Pattern.compile("(\\d+)\\s*(sản phẩm|kết quả)");
-        Matcher sizeMatcher = sizePattern.matcher(lowerCaseMessage);
-        if (sizeMatcher.find()) {
-            filterBuilder.size(Integer.parseInt(sizeMatcher.group(1)));
-        }
-
-
-        // Always include the original message as a keyword search for broader results
-        // This should be done carefully if LLM is used, to avoid double filtering
-        filterBuilder.keyword(message);
-
-        // Default pagination if not specified
-        if (filterBuilder.build().getPage() == null) {
-            filterBuilder.page(0);
-        }
-        if (filterBuilder.build().getSize() == null) {
-            filterBuilder.size(10);
-        }
-
-        ProductFilterRequest filterRequest = filterBuilder.build();
-
-        // --- Log the generated ProductFilterRequest ---
-        log.info("Generated ProductFilterRequest from message '{}': {}", message, filterRequest);
-
-        // Now, use the ProductFilterService to get the products
-        Page<ProductDetailResponse> products = productFilterService.filterProducts(filterRequest);
-
-        return ChatResponse.builder()
-                .responseMessage("Đây là những sản phẩm tôi tìm được:")
-                .products(products)
-                .build();
+    /**
+     * Checks if the filter request is effectively empty, meaning it contains no specific search criteria.
+     * This is used to detect irrelevant user queries.
+     */
+    private boolean isFilterRequestEmpty(ProductFilterRequest request) {
+        if (request == null) return true;
+        return (request.getKeyword() == null || request.getKeyword().trim().isEmpty()) &&
+               (request.getCategoryIds() == null || request.getCategoryIds().isEmpty()) &&
+               (request.getBrandIds() == null || request.getBrandIds().isEmpty()) &&
+               (request.getColorIds() == null || request.getColorIds().isEmpty()) &&
+               (request.getSizeIds() == null || request.getSizeIds().isEmpty()) &&
+               request.getMinPrice() == null &&
+               request.getMaxPrice() == null &&
+               !Objects.equals(Boolean.TRUE, request.getIsNew()) &&
+               !Objects.equals(Boolean.TRUE, request.getIsBestSeller());
     }
 }
