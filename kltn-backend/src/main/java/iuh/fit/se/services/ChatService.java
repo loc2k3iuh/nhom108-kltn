@@ -187,6 +187,7 @@ public class ChatService {
             return ChatResponse.builder()
                     .responseMessage(responseMessage)
                     .products(products)
+                    .filterPayload(filterRequest) // Thêm payload vào response
                     .build();
 
         } catch (JsonProcessingException e) {
