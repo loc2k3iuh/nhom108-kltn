@@ -18,7 +18,7 @@ public class APIResponse<T> {
 
   T result;
 
-  private String path;
-  private String requestId;
-  private String timestamp;
+  String path;
+  String requestId;
+  String timestamp;
 }
