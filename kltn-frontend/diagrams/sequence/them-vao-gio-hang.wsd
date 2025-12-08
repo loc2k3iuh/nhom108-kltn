@@ -1,42 +1,51 @@
 @startuml
-actor "Khách Hàng" as Customer
-actor "Nhân viên bán hàng" as Staff
+title Sơ đồ sequence "Thêm sản phẩm vào giỏ hàng"
+
+actor "Người dùng" as User
 participant "Giao diện (UI)" as UI
-participant "Cart Service" as Cart
-participant "Inventory Service" as Inventory
-participant "Database" as DB
+participant "Cart Service" as CartService
+participant "Inventory Service" as InventoryService
+database "Database" as DB
 
-alt Khách tự thêm
-  Customer -> UI: Chọn productId, qty -> Thêm vào giỏ
-else Nhân viên thêm thay
-  Staff -> UI: Chọn khách hàng, productId, qty -> Thêm vào giỏ
-end
-UI -> Cart: POST /cart/add (productId, qty, customerId?)
-Cart -> Inventory: GET /inventory (productId)
-alt Inventory lỗi
-  Inventory --> Cart: Lỗi/timeout
-  Cart -> UI: Trả lỗi "Không thể kiểm tra tồn kho"
-  UI -> Customer: Hiển thị lỗi
-else
-  Inventory --> Cart: Trả availableQty
-  alt availableQty >= qty
-    Cart -> DB: Insert/Update cart item
-    DB --> Cart: Xác nhận
-    Cart -> UI: Trả thành công
-    UI -> Customer: Hiển thị "Sản phẩm đã được thêm vào giỏ hàng"
-  else availableQty == 0
-    Cart -> UI: Trả lỗi "Sản phẩm đã hết hàng"
-    UI -> Customer: Hiển thị "Sản phẩm đã hết hàng"
-  else availableQty < qty
-    Cart -> UI: Trả cảnh báo "Tồn kho chỉ còn X, vui lòng điều chỉnh"
-    UI -> Customer: Hiển thị cảnh báo
-  end
+activate User
+activate UI
+
+User -> UI: 1. Chọn sản phẩm, thuộc tính (size, màu)
+UI --> User: 2. Hiển thị form chọn số lượng và nút "Thêm vào giỏ"
+User -> UI: 3. Nhập số lượng và nhấn "Thêm vào giỏ"
+
+activate CartService
+UI -> CartService: POST /cart/add (productId, quantity, attributes)
+
+activate InventoryService
+CartService -> InventoryService: 4. GET /inventory/check (productId, quantity)
+InventoryService --> CartService: Trả về tình trạng tồn kho (available, out_of_stock, insufficient)
+deactivate InventoryService
+
+alt Tồn kho đủ (available)
+    activate DB
+    CartService -> DB: 5. Thêm mới hoặc cập nhật số lượng sản phẩm trong giỏ hàng
+    DB --> CartService: Xác nhận cập nhật
+    deactivate DB
+    CartService --> UI: 6. Trả kết quả thành công
+    UI --> User: Hiển thị thông báo: "Sản phẩm đã được thêm vào giỏ hàng"
+
+else Số lượng yêu cầu > tồn kho (insufficient)
+    CartService --> UI: 4.2. Trả lỗi với số lượng tồn kho tối đa
+    UI --> User: Hiển thị cảnh báo: "Số lượng vượt quá tồn kho. Chỉ còn X sản phẩm."
+
+else Hết hàng (out_of_stock)
+    CartService --> UI: 5.3. Trả lỗi "Sản phẩm đã hết hàng"
+    UI --> User: Hiển thị thông báo: "Sản phẩm đã hết hàng!"
+
+else Người dùng chưa đăng nhập (Guest)
+    CartService -> UI: 4.4. Yêu cầu xử lý giỏ hàng tạm
+    UI -> UI: Lưu giỏ hàng vào Local Storage/Session
+    UI --> User: Hiển thị thông báo và tùy chọn đăng nhập để đồng bộ
 end
 
-alt Staff override (has permission)
-  Staff -> Cart: POST /cart/add (override=true)
-  Cart -> DB: Lưu với flag reserve/override
-  Cart -> UI: Trả thành công (ghi chú override)
-  UI -> Staff: Hiển thị "Đã thêm (override)"
-end
+deactivate CartService
+deactivate UI
+deactivate User
+
 @enduml
