@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -44,7 +44,7 @@ public class ProductFilterServiceImpl implements IProductFilterService {
   SizeRepository sizeRepository;
   ColorRepository colorRepository;
   ProductMapper productMapper;
-  RedisTemplate<String, String> redisTemplate;
+  StringRedisTemplate stringRedisTemplate;
   ObjectMapper objectMapper;
 
   @Override
@@ -53,7 +53,7 @@ public class ProductFilterServiceImpl implements IProductFilterService {
 
     String cacheKey = generateCacheKey(filterRequest);
     try {
-      String cachedResult = redisTemplate.opsForValue().get(cacheKey);
+      String cachedResult = stringRedisTemplate.opsForValue().get(cacheKey);
       if (cachedResult != null) {
         log.info("Cache hit for key: {}", cacheKey);
         // Custom deserialization for Page object
@@ -184,7 +184,7 @@ public class ProductFilterServiceImpl implements IProductFilterService {
 
     try {
       String jsonResult = objectMapper.writeValueAsString(responsePage);
-      redisTemplate.opsForValue().set(cacheKey, jsonResult, 10, TimeUnit.MINUTES); // 10-minute TTL
+      stringRedisTemplate.opsForValue().set(cacheKey, jsonResult, 10, TimeUnit.MINUTES); // 10-minute TTL
       log.info("Result for key {} cached successfully.", cacheKey);
     } catch (JsonProcessingException e) {
       log.error("Error serializing product filter result for caching", e);
