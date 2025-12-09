@@ -1,10 +1,11 @@
-package iuh.fit.se.services;
+package iuh.fit.se.services.impls;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import iuh.fit.se.dtos.requests.ProductFilterRequest;
 import iuh.fit.se.dtos.responses.ChatResponse;
 import iuh.fit.se.dtos.responses.ProductDetailResponse;
+import iuh.fit.se.services.interfaces.IChatService;
 import iuh.fit.se.services.interfaces.IProductFilterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChatService {
+public class ChatServiceImpl implements IChatService {
 
     private final IProductFilterService productFilterService;
     private final ChatClient.Builder chatClientBuilder;
@@ -131,6 +132,7 @@ public class ChatService {
             User Message 3: "công nghệ AI là gì?" -> Expected JSON: { "keyword": null, "categoryIds": null, "brandIds": null, "colorIds": null, "sizeIds": null, "minPrice": null, "maxPrice": null, "isNew": null, "isBestSeller": null, "sortBy": "basePrice", "sortDirection": "ASC", "page": 0, "size": 10 }
             """;
 
+    @Override
     public ChatResponse processMessage(String message) {
         String lowerCaseMessage = message.toLowerCase();
         if (lowerCaseMessage.contains("xin chào") || lowerCaseMessage.contains("hi") || lowerCaseMessage.contains("hello") || lowerCaseMessage.contains("chào bạn") || lowerCaseMessage.contains("bạn có đó không") || lowerCaseMessage.contains("hãy giúp tôi")) {
