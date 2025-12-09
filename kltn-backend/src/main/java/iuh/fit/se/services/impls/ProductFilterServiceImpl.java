@@ -1,5 +1,8 @@
 package iuh.fit.se.services.impls;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import iuh.fit.se.dtos.requests.ProductFilterRequest;
 import iuh.fit.se.dtos.responses.ProductDetailResponse;
 import iuh.fit.se.dtos.responses.ProductStatisticsResponse;
@@ -10,19 +13,22 @@ import iuh.fit.se.exceptions.ErrorCode;
 import iuh.fit.se.mapper.ProductMapper;
 import iuh.fit.se.repositories.*;
 import iuh.fit.se.services.interfaces.IProductFilterService;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -38,14 +44,29 @@ public class ProductFilterServiceImpl implements IProductFilterService {
   SizeRepository sizeRepository;
   ColorRepository colorRepository;
   ProductMapper productMapper;
+  RedisTemplate<String, String> redisTemplate;
+  ObjectMapper objectMapper;
 
   @Override
   public Page<ProductDetailResponse> filterProducts(ProductFilterRequest filterRequest) {
     log.info("Filtering products with complex criteria");
 
+    String cacheKey = generateCacheKey(filterRequest);
+    try {
+      String cachedResult = redisTemplate.opsForValue().get(cacheKey);
+      if (cachedResult != null) {
+        log.info("Cache hit for key: {}", cacheKey);
+        // Custom deserialization for Page object
+        return objectMapper.readValue(
+            cachedResult, new TypeReference<RestPage<ProductDetailResponse>>() {});
+      }
+    } catch (JsonProcessingException e) {
+      log.error("Error deserializing cached product filter result", e);
+    }
+
+    log.info("Cache miss for key: {}. Fetching from database.", cacheKey);
     Pageable pageable = createPageable(filterRequest);
 
-    // Convert filter request to parameters
     List<Long> categoryIds = filterRequest.getCategoryIds();
     List<Long> brandIds = filterRequest.getBrandIds();
     List<Long> sizeIds = filterRequest.getSizeIds();
@@ -56,7 +77,6 @@ public class ProductFilterServiceImpl implements IProductFilterService {
             ? ProductStatus.valueOf(filterRequest.getStatus().toUpperCase())
             : null;
 
-    // Prepare additional params
     LocalDateTime newSinceDate = LocalDateTime.now().minusDays(30);
     Integer minFavoriteCount = filterRequest.getMinFavoriteCount();
     Integer minReviewCount = filterRequest.getMinReviewCount();
@@ -83,7 +103,6 @@ public class ProductFilterServiceImpl implements IProductFilterService {
             || "totalStock".equalsIgnoreCase(sortBy);
 
     if (isAggregateSort) {
-      // Use custom ORDER BY with aggregates
       if ("ASC".equalsIgnoreCase(sortDir)) {
         products =
             productRepository.findProductsWithComplexFilterOrderByAggAsc(
@@ -161,10 +180,61 @@ public class ProductFilterServiceImpl implements IProductFilterService {
               pageable);
     }
 
-    System.out.println("Filtered products count: " + products.getTotalElements());
-    System.out.println("Filtered products count: " + products);
+    Page<ProductDetailResponse> responsePage = products.map(productMapper::toProductDetailResponse);
 
-    return products.map(productMapper::toProductDetailResponse);
+    try {
+      String jsonResult = objectMapper.writeValueAsString(responsePage);
+      redisTemplate.opsForValue().set(cacheKey, jsonResult, 10, TimeUnit.MINUTES); // 10-minute TTL
+      log.info("Result for key {} cached successfully.", cacheKey);
+    } catch (JsonProcessingException e) {
+      log.error("Error serializing product filter result for caching", e);
+    }
+
+    return responsePage;
+  }
+
+  private String generateCacheKey(ProductFilterRequest request) {
+    try {
+      // Create a mutable copy to sort collections
+      ProductFilterRequest sortedRequest = new ProductFilterRequest();
+      objectMapper.updateValue(sortedRequest, request);
+
+      if (sortedRequest.getCategoryIds() != null) Collections.sort(sortedRequest.getCategoryIds());
+      if (sortedRequest.getBrandIds() != null) Collections.sort(sortedRequest.getBrandIds());
+      if (sortedRequest.getSizeIds() != null) Collections.sort(sortedRequest.getSizeIds());
+      if (sortedRequest.getColorIds() != null) Collections.sort(sortedRequest.getColorIds());
+
+      String jsonString = objectMapper.writeValueAsString(sortedRequest);
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hash = digest.digest(jsonString.getBytes(StandardCharsets.UTF_8));
+      StringBuilder hexString = new StringBuilder();
+      for (byte b : hash) {
+        String hex = Integer.toHexString(0xff & b);
+        if (hex.length() == 1) hexString.append('0');
+        hexString.append(hex);
+      }
+      return "products:filter:" + hexString;
+    } catch (JsonProcessingException | NoSuchAlgorithmException e) {
+      log.error("Error generating cache key", e);
+      // Fallback to a simple, less reliable key
+      return "products:filter:" + request.hashCode();
+    }
+  }
+
+  // A helper class to handle Page deserialization
+  static class RestPage<T> extends PageImpl<T> {
+    public RestPage(
+        List<T> content, Pageable pageable, long total) {
+      super(content, pageable, total);
+    }
+
+    public RestPage(List<T> content) {
+      super(content);
+    }
+
+    public RestPage() {
+      super(Collections.emptyList());
+    }
   }
 
   @Override
