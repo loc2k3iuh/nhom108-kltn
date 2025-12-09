@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import Chatbot from './chatbot/Chatbot';
 
 const Layout: React.FC<{ children: React.ReactNode; pageName?: string }> = ({ children }) => {
   return (
@@ -12,6 +13,7 @@ const Layout: React.FC<{ children: React.ReactNode; pageName?: string }> = ({ ch
         </div>
       </main>
       <Footer />
+      <Chatbot />
     </>
   );
 };

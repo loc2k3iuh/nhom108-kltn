@@ -55,60 +55,54 @@ public class CartService implements ICartService {
   public CartItemResponse addToCart(AddToCartRequest request) {
     log.info("Adding product to cart for user ID: {}", request.getUserId());
 
-    // Validate user
     User user =
         userRepository
             .findById(request.getUserId())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    // Validate product
     Product product =
         productRepository
             .findById(request.getProductId())
             .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-    // Validate product variant if provided
+    Cart cart =
+        cartRepository.findByUserId(request.getUserId()).orElseGet(() -> createNewCart(user));
+
     ProductVariant productVariant = null;
     if (request.getProductVariantId() != null) {
       productVariant =
           productVariantRepository
               .findById(request.getProductVariantId())
               .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
-
-      // Check stock availability
-      if (productVariant.getStockQuantity() < request.getQuantity()) {
-        throw new AppException(ErrorCode.PRODUCT_VARIANT_OUT_OF_STOCK);
-      }
-    } else {
-      // Check base product stock if no variant specified
-      if (product.getBasePrice() == null) {
-        throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
-      }
     }
 
-    // Get or create cart
-    Cart cart =
-        cartRepository.findByUserId(request.getUserId()).orElseGet(() -> createNewCart(user));
-
-    // Check if item already exists in cart
-    Optional<CartItem> existingItem;
-    if (request.getProductVariantId() != null) {
-      existingItem =
+    Optional<CartItem> existingItemOpt;
+    if (productVariant != null) {
+      existingItemOpt =
           cartItemRepository.findByCartIdAndProductIdAndProductVariantId(
-              cart.getId(), request.getProductId(), request.getProductVariantId());
+              cart.getId(), product.getId(), productVariant.getId());
     } else {
-      existingItem =
+      existingItemOpt =
           cartItemRepository.findByCartIdAndProductIdAndProductVariantIsNull(
-              cart.getId(), request.getProductId());
+              cart.getId(), product.getId());
+    }
+
+    long newQuantity = request.getQuantity();
+    if (existingItemOpt.isPresent()) {
+      newQuantity += existingItemOpt.get().getQuantity();
+    }
+
+    if (productVariant != null) {
+      if (productVariant.getStockQuantity() < newQuantity) {
+        throw new AppException(ErrorCode.PRODUCT_VARIANT_OUT_OF_STOCK);
+      }
     }
 
     CartItem cartItem;
-    if (existingItem.isPresent()) {
-      // Update quantity
-      cartItem = existingItem.get();
-      cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
+    if (existingItemOpt.isPresent()) {
+      cartItem = existingItemOpt.get();
+      cartItem.setQuantity(newQuantity);
     } else {
-      // Create new cart item
       cartItem =
           CartItem.builder()
               .quantity(request.getQuantity())
