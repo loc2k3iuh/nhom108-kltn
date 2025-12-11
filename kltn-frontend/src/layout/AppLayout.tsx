@@ -1,6 +1,7 @@
 import { Outlet } from "react-router";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 const AppLayout: React.FC = () => {
   return (
@@ -12,6 +13,7 @@ const AppLayout: React.FC = () => {
         </div>
       </main>
       <Footer />
+      <Chatbot />
     </div>
   );
 };
