@@ -68,7 +68,7 @@ const BrandListPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!name.trim()) return toast.error('Name is required');
+        if (!name.trim()) return toast.error('Tên thương hiệu là bắt buộc');
         const form = new FormData();
         form.append('name', name);
         form.append('description', description);
@@ -77,56 +77,56 @@ const BrandListPage: React.FC = () => {
         try {
             if (editingBrand) {
                 await updateBrand(editingBrand.id, form);
-                toast.success('Brand updated');
+                toast.success('Cập nhật thương hiệu thành công');
             } else {
                 await createBrand(form);
-                toast.success('Brand created');
+                toast.success('Tạo thương hiệu thành công');
             }
             setIsModalOpen(false);
             fetchBrands(page);
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Operation failed');
+            toast.error(getErrorMessage(error) || 'Thao tác thất bại');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this brand?')) return;
+        if (!window.confirm('Bạn có chắc chắn muốn xóa thương hiệu này?')) return;
         try {
             await deleteBrand(id);
-            toast.success('Brand deleted');
+            toast.success('Xóa thương hiệu thành công');
             fetchBrands(page);
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Delete failed');
+            toast.error(getErrorMessage(error) || 'Xóa thất bại');
         }
     };
 
     return (
         <div>
-            <PageMeta title="Brand Management | Admin" description="Manage product brands" />
-            <PageBreadcrumb pageTitle="Brand Management" />
+            <PageMeta title="Quản lý thương hiệu | Admin" description="Quản lý thương hiệu sản phẩm" />
+            <PageBreadcrumb pageTitle="Quản lý thương hiệu" />
 
             <div className="space-y-6">
-                <ComponentCard title="Brand Controls">
-                    <Button onClick={openCreateModal} variant="primary">Create Brand</Button>
+                <ComponentCard title="Bảng điều khiển thương hiệu">
+                    <Button onClick={openCreateModal} variant="primary">Tạo thương hiệu</Button>
                 </ComponentCard>
 
-                <ComponentCard title="All Brands">
+                <ComponentCard title="Tất cả thương hiệu">
                     <div className="max-w-full overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead>
                                 <tr className="bg-gray-2 text-left dark:bg-meta-4">
                                     <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
                                     <th className="py-4 px-4 font-medium text-black dark:text-white">Logo</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Name</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Description</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Tên</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Mô tả</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {isLoading ? (
-                                    <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Loading...</td></tr>
+                                    <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Đang tải...</td></tr>
                                 ) : brands.length === 0 ? (
-                                    <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">No brands found.</td></tr>
+                                    <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Không tìm thấy thương hiệu nào.</td></tr>
                                 ) : brands.map(b => (
                                     <tr key={b.id}>
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{b.id}</td>
@@ -137,8 +137,8 @@ const BrandListPage: React.FC = () => {
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{b.description}</td>
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                             <div className="flex items-center space-x-3.5">
-                                                <Button variant="outline" size="sm" onClick={() => openEditModal(b)}>Edit</Button>
-                                                <Button variant="danger" size="sm" onClick={() => handleDelete(b.id)}>Delete</Button>
+                                                <Button variant="outline" size="sm" onClick={() => openEditModal(b)}>Sửa</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDelete(b.id)}>Xóa</Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -159,14 +159,14 @@ const BrandListPage: React.FC = () => {
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <div className="p-6">
-                    <h3 className="font-medium text-black dark:text-white mb-4">{editingBrand ? 'Edit Brand' : 'Create Brand'}</h3>
+                    <h3 className="font-medium text-black dark:text-white mb-4">{editingBrand ? 'Chỉnh sửa thương hiệu' : 'Tạo thương hiệu'}</h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Name</label>
+                            <label className="block text-black dark:text-white mb-1">Tên</label>
                             <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Description</label>
+                            <label className="block text-black dark:text-white mb-1">Mô tả</label>
                             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                         <div>
@@ -176,8 +176,8 @@ const BrandListPage: React.FC = () => {
                     </div>
 
                     <div className="flex justify-end gap-3 mt-6">
-                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Cancel</Button>
-                        <Button onClick={handleSubmit} variant="primary">Save</Button>
+                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Hủy</Button>
+                        <Button onClick={handleSubmit} variant="primary">Lưu</Button>
                     </div>
                 </div>
             </Modal>

@@ -61,61 +61,61 @@ const ColorListPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!name.trim()) return toast.error('Name is required');
+        if (!name.trim()) return toast.error('Tên màu sắc là bắt buộc');
         const payload = { name: name.trim(), description: description.trim() };
 
         try {
             if (editingColor) {
                 await updateColor(editingColor.id, payload);
-                toast.success('Color updated');
+                toast.success('Cập nhật màu sắc thành công');
             } else {
                 await createColor(payload);
-                toast.success('Color created');
+                toast.success('Tạo màu sắc thành công');
             }
             setIsModalOpen(false);
             fetchColors(page);
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Operation failed');
+            toast.error(getErrorMessage(error) || 'Thao tác thất bại');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this color?')) return;
+        if (!window.confirm('Bạn có chắc chắn muốn xóa màu sắc này?')) return;
         try {
             await deleteColor(id);
-            toast.success('Color deleted');
+            toast.success('Xóa màu sắc thành công');
             fetchColors(page);
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Delete failed');
+            toast.error(getErrorMessage(error) || 'Xóa thất bại');
         }
     };
 
     return (
         <div>
-            <PageMeta title="Color Management | Admin" description="Manage product colors" />
-            <PageBreadcrumb pageTitle="Color Management" />
+            <PageMeta title="Quản lý màu sắc | Admin" description="Quản lý màu sắc sản phẩm" />
+            <PageBreadcrumb pageTitle="Quản lý màu sắc" />
 
             <div className="space-y-6">
-                <ComponentCard title="Color Controls">
-                    <Button onClick={openCreateModal} variant="primary">Create Color</Button>
+                <ComponentCard title="Bảng điều khiển màu sắc">
+                    <Button onClick={openCreateModal} variant="primary">Tạo màu sắc</Button>
                 </ComponentCard>
 
-                <ComponentCard title="All Colors">
+                <ComponentCard title="Tất cả màu sắc">
                     <div className="max-w-full overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead>
                                 <tr className="bg-gray-2 text-left dark:bg-meta-4">
                                     <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Name</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Description</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Tên</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Mô tả</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {isLoading ? (
-                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">Loading...</td></tr>
+                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">Đang tải...</td></tr>
                                 ) : colors.length === 0 ? (
-                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">No colors found.</td></tr>
+                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">Không tìm thấy màu sắc nào.</td></tr>
                                 ) : colors.map(c => (
                                     <tr key={c.id}>
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.id}</td>
@@ -123,8 +123,8 @@ const ColorListPage: React.FC = () => {
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.description}</td>
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                             <div className="flex items-center space-x-3.5">
-                                                <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>Edit</Button>
-                                                <Button variant="danger" size="sm" onClick={() => handleDelete(c.id)}>Delete</Button>
+                                                <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>Sửa</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDelete(c.id)}>Xóa</Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -145,21 +145,21 @@ const ColorListPage: React.FC = () => {
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <div className="p-6">
-                    <h3 className="font-medium text-black dark:text-white mb-4">{editingColor ? 'Edit Color' : 'Create Color'}</h3>
+                    <h3 className="font-medium text-black dark:text-white mb-4">{editingColor ? 'Chỉnh sửa màu sắc' : 'Tạo màu sắc'}</h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Name</label>
+                            <label className="block text-black dark:text-white mb-1">Tên</label>
                             <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Description</label>
+                            <label className="block text-black dark:text-white mb-1">Mô tả</label>
                             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-3 mt-6">
-                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Cancel</Button>
-                        <Button onClick={handleSubmit} variant="primary">Save</Button>
+                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Hủy</Button>
+                        <Button onClick={handleSubmit} variant="primary">Lưu</Button>
                     </div>
                 </div>
             </Modal>

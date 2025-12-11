@@ -120,17 +120,17 @@ const CategoryListPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!name.trim()) return toast.error('Name is required');
+        if (!name.trim()) return toast.error('Tên danh mục là bắt buộc');
 
         try {
             if (editingCategory) {
                 const pid = createType === 'root' ? undefined : parentId;
                 await updateCategory(editingCategory.id, name, description, pid);
-                toast.success('Category updated');
+                toast.success('Cập nhật danh mục thành công');
             } else {
                 const pid = createType === 'root' ? undefined : parentId;
                 await createCategory(name, description, pid);
-                toast.success('Category created');
+                toast.success('Tạo danh mục thành công');
             }
             setIsModalOpen(false);
             if (viewMode === 'tree') {
@@ -139,20 +139,20 @@ const CategoryListPage: React.FC = () => {
             fetchCategories(page);
             fetchRootCategories();
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Operation failed');
+            toast.error(getErrorMessage(error) || 'Thao tác thất bại');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this category?')) return;
+        if (!window.confirm('Bạn có chắc chắn muốn xóa danh mục này?')) return;
         try {
             await deleteCategory(id);
-            toast.success('Category deleted');
+            toast.success('Xóa danh mục thành công');
             if (viewMode === 'tree') fetchTree();
             fetchCategories(page);
             fetchRootCategories();
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Delete failed');
+            toast.error(getErrorMessage(error) || 'Xóa thất bại');
         }
     };
 
@@ -164,20 +164,20 @@ const CategoryListPage: React.FC = () => {
 
     return (
         <div>
-            <PageMeta title="Category Management | Admin" description="Manage product categories" />
-            <PageBreadcrumb pageTitle="Category Management" />
+            <PageMeta title="Quản lý danh mục | Admin" description="Quản lý danh mục sản phẩm" />
+            <PageBreadcrumb pageTitle="Quản lý danh mục" />
 
             <div className="space-y-6">
-                <ComponentCard title="Category Controls">
+                <ComponentCard title="Bảng điều khiển danh mục">
                     <div className="flex items-center gap-3">
-                        <Button onClick={() => setViewMode('paginated')} variant={viewMode === 'paginated' ? 'primary' : 'outline'} size="sm">Paginated</Button>
-                        <Button onClick={() => setViewMode('tree')} variant={viewMode === 'tree' ? 'primary' : 'outline'} size="sm">Roots Tree</Button>
-                        <Button onClick={() => openCreateModal('root')} variant="secondary" size="sm">Create Root</Button>
-                        <Button onClick={() => openCreateModal('sub')} variant="secondary" size="sm">Create Sub</Button>
+                        <Button onClick={() => setViewMode('paginated')} variant={viewMode === 'paginated' ? 'primary' : 'outline'} size="sm">Phân trang</Button>
+                        <Button onClick={() => setViewMode('tree')} variant={viewMode === 'tree' ? 'primary' : 'outline'} size="sm">Cây danh mục</Button>
+                        <Button onClick={() => openCreateModal('root')} variant="secondary" size="sm">Tạo danh mục gốc</Button>
+                        <Button onClick={() => openCreateModal('sub')} variant="secondary" size="sm">Tạo danh mục con</Button>
                     </div>
                 </ComponentCard>
 
-                <ComponentCard title="All Categories">
+                <ComponentCard title="Tất cả danh mục">
                     {viewMode === 'paginated' ? (
                         <>
                             <div className="max-w-full overflow-x-auto">
@@ -185,17 +185,17 @@ const CategoryListPage: React.FC = () => {
                                     <thead>
                                         <tr className="bg-gray-2 text-left dark:bg-meta-4">
                                             <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
-                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Name</th>
-                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Description</th>
-                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Parent</th>
-                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Tên</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Mô tả</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Danh mục cha</th>
+                                            <th className="py-4 px-4 font-medium text-black dark:text-white">Thao tác</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {isLoading ? (
-                                            <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Loading...</td></tr>
+                                            <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Đang tải...</td></tr>
                                         ) : categories.length === 0 ? (
-                                            <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">No categories found.</td></tr>
+                                            <tr><td colSpan={5} className="text-center py-10 text-black dark:text-white">Không tìm thấy danh mục nào.</td></tr>
                                         ) : categories.map(c => (
                                             <tr key={c.id}>
                                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.id}</td>
@@ -204,8 +204,8 @@ const CategoryListPage: React.FC = () => {
                                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{c.parentCategory ? c.parentCategory.name : '-'}</td>
                                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                     <div className="flex items-center space-x-3.5">
-                                                        <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>Edit</Button>
-                                                        <Button variant="danger" size="sm" onClick={() => handleDelete(c.id)}>Delete</Button>
+                                                        <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>Sửa</Button>
+                                                        <Button variant="danger" size="sm" onClick={() => handleDelete(c.id)}>Xóa</Button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -225,9 +225,9 @@ const CategoryListPage: React.FC = () => {
                     ) : (
                         <div className="space-y-3">
                             {isTreeLoading ? (
-                                <div className="text-center py-10 text-black dark:text-white">Loading tree...</div>
+                                <div className="text-center py-10 text-black dark:text-white">Đang tải cây danh mục...</div>
                             ) : treeData.length === 0 ? (
-                                <div className="text-center py-10 text-black dark:text-white">No root categories found.</div>
+                                <div className="text-center py-10 text-black dark:text-white">Không tìm thấy danh mục gốc nào.</div>
                             ) : (
                                 treeData.map(({ category, subCategories }) => (
                                     <div key={category.id} className="border rounded p-3 dark:border-strokedark">
@@ -240,15 +240,15 @@ const CategoryListPage: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-3.5">
-                                                <Button variant="outline" size="sm" onClick={() => openEditModal(category)}>Edit</Button>
-                                                <Button variant="danger" size="sm" onClick={() => handleDelete(category.id)}>Delete</Button>
+                                                <Button variant="outline" size="sm" onClick={() => openEditModal(category)}>Sửa</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDelete(category.id)}>Xóa</Button>
                                             </div>
                                         </div>
 
                                         {expandedRootIds.includes(category.id) && (
                                             <div className="mt-4 pl-10">
                                                 {subCategories.length === 0 ? (
-                                                    <div className="text-sm text-gray-600 dark:text-gray-400">No subcategories.</div>
+                                                    <div className="text-sm text-gray-600 dark:text-gray-400">Không có danh mục con.</div>
                                                 ) : (
                                                     <ul className="space-y-2">
                                                         {subCategories.map(s => (
@@ -258,8 +258,8 @@ const CategoryListPage: React.FC = () => {
                                                                     <div className="text-sm text-gray-600 dark:text-gray-400">{s.description}</div>
                                                                 </div>
                                                                 <div className="flex items-center space-x-3.5">
-                                                                    <Button variant="outline" size="sm" onClick={() => openEditModal(s)}>Edit</Button>
-                                                                    <Button variant="danger" size="sm" onClick={() => handleDelete(s.id)}>Delete</Button>
+                                                                    <Button variant="outline" size="sm" onClick={() => openEditModal(s)}>Sửa</Button>
+                                                                    <Button variant="danger" size="sm" onClick={() => handleDelete(s.id)}>Xóa</Button>
                                                                 </div>
                                                             </li>
                                                         ))}
@@ -277,33 +277,33 @@ const CategoryListPage: React.FC = () => {
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <div className="p-6">
-                    <h3 className="font-medium text-black dark:text-white mb-4">{editingCategory ? 'Edit Category' : 'Create Category'}</h3>
+                    <h3 className="font-medium text-black dark:text-white mb-4">{editingCategory ? 'Chỉnh sửa danh mục' : 'Tạo danh mục'}</h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Type</label>
+                            <label className="block text-black dark:text-white mb-1">Loại</label>
                             <div className="flex gap-4">
                                 <label className="flex items-center gap-2 text-black dark:text-white">
                                     <input type="radio" name="type" checked={createType === 'root'} onChange={() => setCreateType('root')} />
-                                    Root
+                                    Danh mục gốc
                                 </label>
                                 <label className="flex items-center gap-2 text-black dark:text-white">
                                     <input type="radio" name="type" checked={createType === 'sub'} onChange={() => setCreateType('sub')} />
-                                    Subcategory
+                                    Danh mục con
                                 </label>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Name</label>
+                            <label className="block text-black dark:text-white mb-1">Tên</label>
                             <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Description</label>
+                            <label className="block text-black dark:text-white mb-1">Mô tả</label>
                             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Parent (for Subcategory)</label>
+                            <label className="block text-black dark:text-white mb-1">Danh mục cha (cho danh mục con)</label>
                             <Select
-                                options={[{ value: '', label: '-- Select parent root --' }, ...rootCategories.map(r => ({ value: r.id, label: r.name }))]}
+                                options={[{ value: '', label: '-- Chọn danh mục cha --' }, ...rootCategories.map(r => ({ value: r.id, label: r.name }))]}
                                 value={parentId}
                                 onChange={(value) => setParentId(value ? Number(value) : undefined)}
                                 disabled={createType === 'root'}
@@ -312,8 +312,8 @@ const CategoryListPage: React.FC = () => {
                     </div>
 
                     <div className="flex justify-end gap-3 mt-6">
-                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Cancel</Button>
-                        <Button onClick={handleSubmit} variant="primary">Save</Button>
+                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Hủy</Button>
+                        <Button onClick={handleSubmit} variant="primary">Lưu</Button>
                     </div>
                 </div>
             </Modal>

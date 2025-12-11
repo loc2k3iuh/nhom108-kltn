@@ -61,61 +61,61 @@ const SizeListPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!name.trim()) return toast.error('Name is required');
+        if (!name.trim()) return toast.error('Tên kích thước là bắt buộc');
         const payload = { name: name.trim(), description: description.trim() };
 
         try {
             if (editingSize) {
                 await updateSize(editingSize.id, payload);
-                toast.success('Size updated');
+                toast.success('Cập nhật kích thước thành công');
             } else {
                 await createSize(payload);
-                toast.success('Size created');
+                toast.success('Tạo kích thước thành công');
             }
             setIsModalOpen(false);
             fetchSizes(page);
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Operation failed');
+            toast.error(getErrorMessage(error) || 'Thao tác thất bại');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this size?')) return;
+        if (!window.confirm('Bạn có chắc chắn muốn xóa kích thước này?')) return;
         try {
             await deleteSize(id);
-            toast.success('Size deleted');
+            toast.success('Xóa kích thước thành công');
             fetchSizes(page);
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error) || 'Delete failed');
+            toast.error(getErrorMessage(error) || 'Xóa thất bại');
         }
     };
 
     return (
         <div>
-            <PageMeta title="Size Management | Admin" description="Manage product sizes" />
-            <PageBreadcrumb pageTitle="Size Management" />
+            <PageMeta title="Quản lý kích thước | Admin" description="Quản lý kích thước sản phẩm" />
+            <PageBreadcrumb pageTitle="Quản lý kích thước" />
 
             <div className="space-y-6">
-                <ComponentCard title="Size Controls">
-                    <Button onClick={openCreateModal} variant="primary">Create Size</Button>
+                <ComponentCard title="Bảng điều khiển kích thước">
+                    <Button onClick={openCreateModal} variant="primary">Tạo kích thước</Button>
                 </ComponentCard>
 
-                <ComponentCard title="All Sizes">
+                <ComponentCard title="Tất cả kích thước">
                     <div className="max-w-full overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead>
                                 <tr className="bg-gray-2 text-left dark:bg-meta-4">
                                     <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Name</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Description</th>
-                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Tên</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Mô tả</th>
+                                    <th className="py-4 px-4 font-medium text-black dark:text-white">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {isLoading ? (
-                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">Loading...</td></tr>
+                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">Đang tải...</td></tr>
                                 ) : sizes.length === 0 ? (
-                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">No sizes found.</td></tr>
+                                    <tr><td colSpan={4} className="text-center py-10 text-black dark:text-white">Không tìm thấy kích thước nào.</td></tr>
                                 ) : sizes.map(s => (
                                     <tr key={s.id}>
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{s.id}</td>
@@ -123,8 +123,8 @@ const SizeListPage: React.FC = () => {
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark text-black dark:text-white">{s.description}</td>
                                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                             <div className="flex items-center space-x-3.5">
-                                                <Button variant="outline" size="sm" onClick={() => openEditModal(s)}>Edit</Button>
-                                                <Button variant="danger" size="sm" onClick={() => handleDelete(s.id)}>Delete</Button>
+                                                <Button variant="outline" size="sm" onClick={() => openEditModal(s)}>Sửa</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDelete(s.id)}>Xóa</Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -145,21 +145,21 @@ const SizeListPage: React.FC = () => {
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <div className="p-6">
-                    <h3 className="font-medium text-black dark:text-white mb-4">{editingSize ? 'Edit Size' : 'Create Size'}</h3>
+                    <h3 className="font-medium text-black dark:text-white mb-4">{editingSize ? 'Chỉnh sửa kích thước' : 'Tạo kích thước'}</h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Name</label>
+                            <label className="block text-black dark:text-white mb-1">Tên</label>
                             <input value={name} onChange={e => setName(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                         <div>
-                            <label className="block text-black dark:text-white mb-1">Description</label>
+                            <label className="block text-black dark:text-white mb-1">Mô tả</label>
                             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-3 mt-6">
-                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Cancel</Button>
-                        <Button onClick={handleSubmit} variant="primary">Save</Button>
+                        <Button onClick={() => setIsModalOpen(false)} variant="outline">Hủy</Button>
+                        <Button onClick={handleSubmit} variant="primary">Lưu</Button>
                     </div>
                 </div>
             </Modal>

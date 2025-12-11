@@ -57,10 +57,10 @@ const navItems: NavItem[] = [
     subItems: [
         { name: "Danh sách khách hàng", path: "/tables/customers", pro: false }, 
         { name: "Danh sách sản phẩm", path: "/tables/category-product-list", pro: false },
-        { name: "Category List", path: "/tables/category-list", pro: false },
-        { name: "Brands", path: "/tables/brand-list", pro: false },
-        { name: "Sizes", path: "/tables/size-list", pro: false },
-        { name: "Colors", path: "/tables/color-list", pro: false }
+        { name: "Danh sách danh mục", path: "/tables/category-list", pro: false },
+        { name: "Danh sách thương hiệu", path: "/tables/brand-list", pro: false },
+        { name: "Danh sách kích thước", path: "/tables/size-list", pro: false },
+        { name: "Danh sách màu sắc", path: "/tables/color-list", pro: false }
 
     ],
   },
