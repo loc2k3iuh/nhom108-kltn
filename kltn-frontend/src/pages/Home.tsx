@@ -661,7 +661,7 @@ const itemsCategories = [
         name: "Xu hướng",
     },
     {
-        href: "/voucher",
+        href: "/voucher/my-vouchers",
         imgSrc: voucher,
         name: "Mã Giảm Giá",
     },

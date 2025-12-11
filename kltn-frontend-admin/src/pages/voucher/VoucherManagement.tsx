@@ -52,6 +52,7 @@ export default function VoucherManagement() {
         pageSize
       );
       setVouchers(data.content);
+      console.log("vouchers: ", data.content);
       setTotalPages(data.totalPages);
       setTotalElements(data.totalElements);
     } catch (error: any) {

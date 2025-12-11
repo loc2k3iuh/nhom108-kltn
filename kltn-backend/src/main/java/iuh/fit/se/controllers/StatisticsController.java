@@ -6,6 +6,7 @@ import iuh.fit.se.api_responses.APIResponse;
 import iuh.fit.se.dtos.requests.StatsPeriodRequest;
 import iuh.fit.se.dtos.responses.DashboardStatsResponse;
 import iuh.fit.se.dtos.responses.RevenueStatsResponse;
+import iuh.fit.se.dtos.responses.TopProductResponse;
 import iuh.fit.se.services.interfaces.IStatisticsService;
 import java.util.List;
 import lombok.AccessLevel;
@@ -116,6 +117,19 @@ public class StatisticsController {
         .code(HttpStatus.OK.value())
         .message("This year's statistics retrieved successfully")
         .result(stats)
+        .build();
+  }
+
+  @GetMapping("/top-products")
+  @Operation(
+      summary = "Get top 10 best-selling products",
+      description = "Get the top 10 products with the highest sales quantity based on completed orders")
+  public APIResponse<List<TopProductResponse>> getTop10BestSellingProducts() {
+    List<TopProductResponse> products = statisticsService.getTop10BestSellingProducts();
+    return APIResponse.<List<TopProductResponse>>builder()
+        .code(HttpStatus.OK.value())
+        .message("Top 10 best-selling products retrieved successfully")
+        .result(products)
         .build();
   }
 }

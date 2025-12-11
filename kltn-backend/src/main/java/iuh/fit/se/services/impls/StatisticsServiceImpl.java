@@ -3,7 +3,9 @@ package iuh.fit.se.services.impls;
 import iuh.fit.se.dtos.requests.StatsPeriodRequest;
 import iuh.fit.se.dtos.responses.DashboardStatsResponse;
 import iuh.fit.se.dtos.responses.RevenueStatsResponse;
+import iuh.fit.se.dtos.responses.TopProductResponse;
 import iuh.fit.se.enums.OrderStatus;
+import iuh.fit.se.repositories.OrderDetailRepository;
 import iuh.fit.se.repositories.OrderRepository;
 import iuh.fit.se.repositories.UserRepository;
 import iuh.fit.se.services.interfaces.IStatisticsService;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 public class StatisticsServiceImpl implements IStatisticsService {
 
   OrderRepository orderRepository;
+  OrderDetailRepository orderDetailRepository;
   UserRepository userRepository;
 
   @Override
@@ -256,5 +259,34 @@ public class StatisticsServiceImpl implements IStatisticsService {
 
   private Date convertToDate(LocalDateTime localDateTime) {
     return java.sql.Timestamp.valueOf(localDateTime);
+  }
+
+  @Override
+  public List<TopProductResponse> getTop10BestSellingProducts() {
+    List<Object[]> results = orderDetailRepository.findTop10BestSellingProducts();
+    List<TopProductResponse> responses = new ArrayList<>();
+
+    for (Object[] result : results) {
+      Long productId = ((Number) result[0]).longValue();
+      String productName = (String) result[1];
+      String imageUrl = (String) result[2];
+      Long totalQuantitySold = ((Number) result[3]).longValue();
+      Double basePrice = result[4] != null ? ((Number) result[4]).doubleValue() : null;
+      String categoryName = (String) result[5];
+      String brandName = (String) result[6];
+
+      responses.add(
+          TopProductResponse.builder()
+              .productId(productId)
+              .productName(productName)
+              .imageUrl(imageUrl)
+              .totalQuantitySold(totalQuantitySold)
+              .basePrice(basePrice)
+              .categoryName(categoryName)
+              .brandName(brandName)
+              .build());
+    }
+
+    return responses;
   }
 }

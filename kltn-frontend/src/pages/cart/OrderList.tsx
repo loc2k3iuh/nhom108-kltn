@@ -834,7 +834,7 @@ const OrderList: React.FC = () => {
                           : "text-orange-600"
                       }`}
                     >
-                      {order.payment_method === "VNPAY"
+                      {order.payment_method === "VNPAY" || order.status === "COMPLETED"
                         ? "Đã thanh toán"
                         : "Chưa thanh toán"}
                     </p>

@@ -36,6 +36,15 @@ export default function VoucherFormModal({
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [searchCustomer, setSearchCustomer] = useState('');
 
+  // Helper function to convert UTC to local datetime-local format
+  const formatDateTimeLocal = (isoString: string | null): string => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
   useEffect(() => {
     if (voucher && isEditMode) {
       setFormData({
@@ -47,8 +56,8 @@ export default function VoucherFormModal({
         maximumDiscountAmount: voucher.maximumDiscountAmount,
         usageLimit: voucher.usageLimit,
         usageLimitPerUser: voucher.usageLimitPerUser,
-        startDate: voucher.startDate ? voucher.startDate.slice(0, 16) : '',
-        endDate: voucher.endDate ? voucher.endDate.slice(0, 16) : '',
+        startDate: formatDateTimeLocal(voucher.startDate),
+        endDate: formatDateTimeLocal(voucher.endDate),
         active: voucher.isActive,
       });
     } else {
@@ -81,12 +90,16 @@ export default function VoucherFormModal({
       usageLimitPerUser: userSelection === 'all' ? 1 : formData.usageLimitPerUser,
     };
 
-    // Convert datetime-local to ISO string
+    // Convert datetime-local to ISO string (treating input as local time)
     if (data.startDate) {
-      data.startDate = new Date(data.startDate).toISOString();
+      // Parse datetime-local string as local time and convert to UTC
+      const localDate = new Date(data.startDate);
+      data.startDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString();
     }
     if (data.endDate) {
-      data.endDate = new Date(data.endDate).toISOString();
+      // Parse datetime-local string as local time and convert to UTC
+      const localDate = new Date(data.endDate);
+      data.endDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString();
     }
 
     onSubmit(data);

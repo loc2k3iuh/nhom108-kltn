@@ -41,6 +41,16 @@ export interface StatsPeriodRequest {
   day?: number;
 }
 
+export interface TopProductResponse {
+  productId: number;
+  productName: string;
+  imageUrl: string;
+  totalQuantitySold: number;
+  basePrice: number;
+  categoryName: string;
+  brandName: string;
+}
+
 // Get dashboard statistics with custom period
 export const getDashboardStats = async (params?: StatsPeriodRequest): Promise<DashboardStatsResponse> => {
   const response = await axiosInstance.get<APIResponse<DashboardStatsResponse>>('/statistics/dashboard', {
@@ -86,6 +96,15 @@ export const getThisYearStats = async (): Promise<DashboardStatsResponse> => {
   const response = await axiosInstance.get<APIResponse<DashboardStatsResponse>>('/statistics/this-year');
   if (response.data.code !== 200) {
     throw new Error(response.data.message || 'Failed to get this year stats');
+  }
+  return response.data.result;
+};
+
+// Get top 10 best-selling products
+export const getTop10BestSellingProducts = async (): Promise<TopProductResponse[]> => {
+  const response = await axiosInstance.get<APIResponse<TopProductResponse[]>>('/statistics/top-products');
+  if (response.data.code !== 200) {
+    throw new Error(response.data.message || 'Failed to get top products');
   }
   return response.data.result;
 };

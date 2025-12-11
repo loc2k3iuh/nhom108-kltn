@@ -126,7 +126,7 @@ export const getTotalSpentByUser = async (userId: number): Promise<number> => {
 
 // Get total number of orders by user (excluding cancelled)
 export const getTotalOrdersCountByUser = async (userId: number): Promise<number> => {
-  const response = await axiosInstance.get<ApiResponse<number>>(`/orders/user/${userId}/total-orders-count`);
+  const response = await axiosInstance.get<ApiResponse<number>>(`/orders/user/${userId}/total-orders`);
   if (response.data.code !== 200) {
     throw new Error(response.data.message || 'Failed to get total orders count');
   }

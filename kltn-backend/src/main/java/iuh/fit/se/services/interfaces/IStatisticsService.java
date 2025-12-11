@@ -3,6 +3,7 @@ package iuh.fit.se.services.interfaces;
 import iuh.fit.se.dtos.requests.StatsPeriodRequest;
 import iuh.fit.se.dtos.responses.DashboardStatsResponse;
 import iuh.fit.se.dtos.responses.RevenueStatsResponse;
+import iuh.fit.se.dtos.responses.TopProductResponse;
 import java.util.List;
 
 public interface IStatisticsService {
@@ -43,4 +44,11 @@ public interface IStatisticsService {
    * @return Dashboard statistics for this year
    */
   DashboardStatsResponse getThisYearStats();
+
+  /**
+   * Get top 10 best-selling products
+   *
+   * @return List of top 10 products with highest sales
+   */
+  List<TopProductResponse> getTop10BestSellingProducts();
 }
