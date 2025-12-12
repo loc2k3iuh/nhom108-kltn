@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Heart, Loader2, Trash2, ShoppingCart, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Trash2, ShoppingCart, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 import { useAuthStore } from '@/stores/useAuthStore';

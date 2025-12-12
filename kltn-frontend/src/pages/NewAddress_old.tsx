@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faUser, faBell,
-    faClipboardList,
-    faTicketAlt,
-    faHeart,
-    faBook,
-    faStar,
-    faChevronDown,
-    faChevronUp,
     faMailBulk,
     faArrowLeft
 } from "@fortawesome/free-solid-svg-icons";
@@ -103,8 +95,6 @@ interface UserResponse {
 
 const NewAddress = () => {
     const navigate = useNavigate();
-    const [isAccountOpen, setIsAccountOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userData, setUserData] = useState<UserResponse | null>(null);
 
     // Mock functions để thay thế useUserService và useAddressService
@@ -182,8 +172,6 @@ const NewAddress = () => {
     // Function to fetch user data
     const fetchUserData = async () => {
         try {
-            setIsLoading(true);
-            
             // Get user data from local storage first
             const user = getUserResponseFromLocalStorage();
             setUserData(user);
@@ -200,8 +188,6 @@ const NewAddress = () => {
             console.error('Error in fetchUserData:', error);
             // Fallback to static data
             setUserData(staticUserData);
-        } finally {
-            setIsLoading(false);
         }
     };
     
@@ -321,7 +307,7 @@ const NewAddress = () => {
         <div>
             <div className="max-w-6xl mx-auto p-4 flex flex-col md:flex-row">
                 {/* Sidebar */}
-                <UserSidebar userData={userData} />
+                <UserSidebar />
 
                 {/* Main Content */}
                 <div className="w-full md:w-3/4 mt-3 md:mt-0 space-y-4 ml-0 md:ml-6">

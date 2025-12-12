@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Star, Trash2, ShoppingCart, AlertTriangle, ChevronLeft, ChevronRight, MessageSquare, Edit } from 'lucide-react';
+import { Star, Trash2, ShoppingCart, AlertTriangle, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 import { useAuthStore } from '@/stores/useAuthStore';
-import { getReviewsByUser, deleteReview, ReviewResponse, updateReview } from '@/services/reviewService';
+import { getReviewsByUser, deleteReview, ReviewResponse } from '@/services/reviewService';
 import { mapProductToViewModel } from '@/mappers/productMapper';
 
 interface PaginatedReviews {
@@ -53,64 +53,6 @@ const MyReviewsPage: React.FC = () => {
             setLoading(false);
         }
     }, [authUser, page, sortOption]);
-
-    const handleEditReview = async (review: ReviewResponse) => {
-        const { value: formValues } = await Swal.fire({
-            title: 'Chỉnh sửa đánh giá',
-            html: `
-                <div class="flex items-center justify-center space-x-2 mb-4">
-                    ${[1, 2, 3, 4, 5].map(star => `
-                        <svg data-rating-value="${star}" class="w-8 h-8 cursor-pointer text-gray-300 peer peer-hover:text-yellow-400 hover:text-yellow-400 ${review.rating >= star ? 'text-yellow-400' : ''}" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                    `).join('')}
-                </div>
-                <textarea id="swal-input-comment" class="swal2-textarea" placeholder="Chia sẻ cảm nhận của bạn...">${review.comment}</textarea>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Lưu thay đổi',
-            cancelButtonText: 'Hủy',
-            confirmButtonColor: '#C92127',
-            preConfirm: () => {
-                const ratingElement = document.querySelector('.swal2-popup .text-yellow-400:last-of-type');
-                const rating = ratingElement ? parseInt(ratingElement.getAttribute('data-rating-value') || '0') : review.rating;
-                const comment = (document.getElementById('swal-input-comment') as HTMLTextAreaElement).value;
-                if (!comment) {
-                    Swal.showValidationMessage('Vui lòng nhập nội dung đánh giá');
-                    return false;
-                }
-                return { rating, comment };
-            },
-            didOpen: () => {
-                const stars = document.querySelectorAll('.swal2-popup svg');
-                stars.forEach(star => {
-                    star.addEventListener('click', () => {
-                        const ratingValue = parseInt(star.getAttribute('data-rating-value') || '0');
-                        stars.forEach(s => {
-                            const sValue = parseInt(s.getAttribute('data-rating-value') || '0');
-                            s.classList.toggle('text-yellow-400', sValue <= ratingValue);
-                            s.classList.toggle('text-gray-300', sValue > ratingValue);
-                        });
-                    });
-                });
-            }
-        });
-
-        if (formValues) {
-            const { rating, comment } = formValues;
-            const toastId = toast.loading("Đang cập nhật đánh giá...");
-            try {
-                const payload = { rating, comment, userId: authUser!.id, productId: review.product.id };
-                const updatedReview = await updateReview(review.id, payload);
-                toast.success("Đã cập nhật đánh giá thành công.", { id: toastId });
-                setReviews(prev => prev.map(r => r.id === review.id ? { ...r, ...updatedReview } : r));
-            } catch (error) {
-                console.error("Failed to update review:", error);
-                toast.error("Không thể cập nhật đánh giá. Vui lòng thử lại.", { id: toastId });
-            }
-        }
-    };
 
     const handleDeleteReview = async (reviewId: number) => {
         const result = await Swal.fire({
@@ -273,9 +215,6 @@ const MyReviewsPage: React.FC = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            {/*<button onClick={() => handleEditReview(review)} className="p-2 text-gray-400 hover:text-blue-600" title="Chỉnh sửa đánh giá">*/}
-                                            {/*    <Edit size={18} />*/}
-                                            {/*</button>*/}
                                             <button onClick={() => handleDeleteReview(review.id)} className="p-2 text-gray-400 hover:text-red-600" title="Xóa đánh giá">
                                                 <Trash2 size={18} />
                                             </button>

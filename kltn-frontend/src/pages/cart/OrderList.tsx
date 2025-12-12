@@ -4,8 +4,6 @@ import { toast } from "sonner";
 import Swal from "sweetalert2";
 import {
   ClockIcon,
-  CheckBadgeIcon,
-  CubeIcon,
   TruckIcon,
   CheckCircleIcon,
   XCircleIcon,

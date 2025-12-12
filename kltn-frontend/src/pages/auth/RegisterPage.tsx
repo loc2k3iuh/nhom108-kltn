@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Toaster, toast } from "sonner";
 import { FaTshirt } from "react-icons/fa";
 import { FaUser, FaLock, FaEnvelope, FaIdCard, FaImage } from "react-icons/fa6";

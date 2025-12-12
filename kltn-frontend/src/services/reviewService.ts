@@ -1,6 +1,6 @@
 import axiosInstance from "@/lib/axios";
 import { Product } from "@/types/product";
-import { UserResponse } from "@/types/responses/authResponse";
+import { UserResponse } from "@/types/responses/userResponse";
 
 interface ApiResponse<T> {
     code: number;

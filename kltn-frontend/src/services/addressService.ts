@@ -25,12 +25,6 @@ export interface Ward {
     district_code: string;
 }
 
-// Add these interfaces for location names
-interface LocationName {
-    code: string;
-    name: string;
-}
-
 // Add these functions to get location names
 export const getLocationNames = async (cityCode: string, districtCode: string, wardCode: string): Promise<{
     cityName: string;

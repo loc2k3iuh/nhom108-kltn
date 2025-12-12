@@ -1,4 +1,4 @@
-import React, { use } from 'react';
+import React from 'react';
 import { FaTshirt, FaHandshake, FaCheck, FaUserFriends, FaAward, FaBoxOpen } from 'react-icons/fa';
 import { RiCustomerService2Fill } from 'react-icons/ri';
 import vuvisaIco from '/ico.png';

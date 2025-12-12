@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaQuestionCircle, FaPlus, FaMinus, FaShippingFast, FaCreditCard, FaExchangeAlt, FaUserCircle, FaBook } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaShippingFast, FaCreditCard, FaExchangeAlt, FaUserCircle, FaBook } from 'react-icons/fa';
 
 const FAQ: React.FC = () => {
   const [openFaqs, setOpenFaqs] = useState<{ [key: string]: boolean }>({

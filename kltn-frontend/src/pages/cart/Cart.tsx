@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import Swal from 'sweetalert2';
 
 import { getCartByUserId, updateCartItem, removeCartItem, clearCart } from "@/services/cartService";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { Cart, CartItem } from "@/types/cart";
+import { Cart, CartItem, User } from "@/types/cart";
+import { Product, Variant } from "@/types/product";
 
 const CartPage: React.FC = () => {
     const navigate = useNavigate();
     const { authUser } = useAuthStore();
     const [cart, setCart] = useState<Cart | null>(null);
-    const [shippingFee] = useState<number>(30000); // Giả sử phí ship cố định
     const [selectAll, setSelectAll] = useState(true);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -53,29 +53,60 @@ const CartPage: React.FC = () => {
                             id: item.productId,
                             name: item.name,
                             primaryImageUrl: item.imageUrl,
-                            description: '', basePrice: item.price, totalStock: item.stockQuantity, averageRating: 0, reviewCount: 0, orderCount: 0, favoriteCount: 0, status: 'ACTIVE', imageUrls: [], videoUrls: [], availableMaterials: [],
+                            description: '',
+                            basePrice: item.price,
+                            totalStock: item.stockQuantity,
+                            averageRating: 0,
+                            reviewCount: 0,
+                            orderCount: 0,
+                            favoriteCount: 0,
+                            status: 'ACTIVE',
+                            imageUrls: [],
+                            videoUrls: [],
+                            availableMaterials: [],
                             brand: { id: 0, name: item.brandName, description: '' },
                             category: { id: 0, name: '', description: '' },
                             rootCategory: { id: 0, name: '', description: '' },
-                            currentDiscountPercent: 0, variants: [],
-                        },
+                            currentDiscountPercent: 0,
+                            variants: [],
+                            categoryPath: [],
+                            availableSizes: [],
+                            availableColors: [],
+                            minPrice: 0,
+                            maxPrice: 0,
+                            discountedPrice: null,
+                            inStock: true,
+                            createdAt: [],
+                            updatedAt: [],
+                            isNew: false,
+                            slug: ''
+                        } as Product,
                         productVariant: {
-                            id: item.productVariantId, price: item.price, stockQuantity: item.stockQuantity, imageUrl: item.imageUrl, sku: item.sku, material: '',
-                            size: { id: 0, name: item.size },
-                            color: { id: 0, name: item.color },
-                        },
+                            id: item.productVariantId,
+                            price: item.price,
+                            stockQuantity: item.stockQuantity,
+                            imageUrl: item.imageUrl,
+                            sku: item.sku,
+                            material: '',
+                            size: { id: 0, name: item.size, description: '' },
+                            color: { id: 0, name: item.color, hexCode: '' },
+                            inStock: true,
+                        } as Variant,
                         quantity: item.quantity,
                         itemTotal: item.price * item.quantity,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
                     }));
 
                     const totalAmount = cartItems.reduce((sum, item) => sum + item.itemTotal, 0);
                     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
                     setCart({
-                        id: 0, user: null, cartItems, totalAmount, totalItems,
-                        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+                        id: 0,
+                        user: null as unknown as User,
+                        cartItems,
+                        totalAmount,
+                        totalItems,
+                        createdDate: [],
+                        updatedDate: [],
                     });
                     setSelectedItems(cartItems.map(item => item.id));
                 } else {

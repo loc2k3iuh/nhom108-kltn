@@ -93,7 +93,6 @@ const UserProfile = () => {
     register,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<UpdateUserForm>({
     resolver: yupResolver(updateSchema) as any,

@@ -11,7 +11,7 @@ import {
   googleProvider,
 } from "@/config/firebaseConfig";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaLock, FaUser } from "react-icons/fa6";
+import { FaLock, FaUser, FaEye, FaEyeSlash } from "react-icons/fa6";
 import { login } from "@/services/useAuthService";
 import {
   setAccessTokenToLocalStorage,
@@ -30,7 +30,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { checkAuth } = useAuthStore();
-  const [showPassword, setShowPassord] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -289,7 +289,7 @@ const LoginPage: React.FC = () => {
                     {...register("password", {
                       required: "Vui lòng nhập mật khẩu!",
                     })}
-                    className={`w-full py-3 pl-10 pr-4 rounded-lg border ${
+                    className={`w-full py-3 pl-10 pr-12 rounded-lg border ${
                       errors.password ? "border-red-500" : "border-gray-300"
                     } ${
                       activeInput === "password"
@@ -300,6 +300,13 @@ const LoginPage: React.FC = () => {
                     onFocus={() => setActiveInput("password")}
                     onBlur={() => setActiveInput(null)}
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-red-500 text-sm mt-1">

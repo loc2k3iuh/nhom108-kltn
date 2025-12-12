@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Truck, RefreshCcw, Gift, Plus, Minus, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { Truck, RefreshCcw, Gift, Plus, Minus, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import Swal from 'sweetalert2';
 import { Trash2, Edit, Loader, Heart } from 'lucide-react';
@@ -13,7 +13,6 @@ import { ProductDetail, Variant as ProductVariant, Size, Color } from "@/types/p
 import {
     createReview,
     getReviewsByProduct,
-    updateReview,
     deleteReview,
     getAverageRating,
     getTotalReviews,
@@ -21,30 +20,11 @@ import {
     ReviewResponse,
 } from "@/services/reviewService";
 import {
-    getUserFavorites,
-    getUserFavoritesList,
     addFavorite,
     removeFavorite,
     checkFavorite,
-    getFavoriteCount,
 } from "@/services/favoriteService";
 import { mapProductToViewModel, ProductViewModel } from "@/mappers/productMapper";
-
-import { formatCurrency } from "@/utils/formatters";
-
-interface Brand {
-    id: number;
-    name: string;
-    description: string;
-    logoUrl?: string;
-}
-
-interface Category {
-    id: number;
-    name: string;
-    description: string;
-    category?: Category; // parent category
-}
 
 interface Review {
     id: number;
@@ -56,7 +36,7 @@ interface Review {
         id: number;
         username: string;
         full_name: string;
-        avatar_url: string;
+        avatar_url: string | null;
     };
 }
 
@@ -98,7 +78,7 @@ const ProductPage = () => {
     const [reviewText, setReviewText] = useState('');
     const [reviews, setReviews] = useState<Review[]>([]);
     const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [, setIsSubmittingReview] = useState(false);
 
     // Address
     const [userAddress, setUserAddress] = useState("Phường Bến Nghé, Quận 1, Hồ Chí Minh");
@@ -124,16 +104,6 @@ const ProductPage = () => {
     const [lightboxType, setLightboxType] = useState<"image" | "video">("image");
     const [currentLightboxIndex, setCurrentLightboxIndex] = useState<number>(0);
     const [allMedia, setAllMedia] = useState<{ url: string, type: "image" | "video" }[]>([]);
-
-    const [scrollX, setScrollX] = useState(0);
-
-    const scrollLeft = () => {
-        setScrollX(scrollX + 300);
-    };
-
-    const scrollRight = () => {
-        setScrollX(scrollX - 300);
-    };
 
     useEffect(() => {
         const fetchProduct = async (productId: number) => {
@@ -248,7 +218,7 @@ const ProductPage = () => {
                     id: r.user?.id,
                     username: r.user?.username,
                     full_name: r.user?.full_name ?? r.user?.username,
-                    avatar_url: r.user?.avatar_url,
+                    avatar_url: r.user?.avatar_url || null,
                 }
             })));
         } catch (error) {
@@ -404,7 +374,7 @@ const ProductPage = () => {
                     id: created.user?.id,
                     username: created.user?.username,
                     full_name: created.user?.full_name ?? created.user?.username,
-                    avatar_url: created.user?.avatar_url,
+                    avatar_url: created.user?.avatar_url || null,
                 }
             };
 
