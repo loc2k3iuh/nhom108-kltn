@@ -17,7 +17,7 @@ import {
 
 const EditAddress = () => {
     const navigate = useNavigate();
-    const { addressId } = useParams<{ addressId: string }>();
+        const { id: addressId } = useParams<{ id: string }>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     
     const [cities, setCities] = useState<Province[]>([]);
@@ -100,7 +100,7 @@ const EditAddress = () => {
         if (cities.length > 0 && addressId) {
             fetchAddressData();
         }
-    }, [addressId]); // Only depend on addressId, not cities
+    }, [addressId, cities]); // Must depend on both addressId and cities
 
     const handleChange = (e: React.ChangeEvent<HTMLElement>) => {
         const target = e.target as HTMLInputElement | HTMLSelectElement;
