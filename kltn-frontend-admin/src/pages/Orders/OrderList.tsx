@@ -9,7 +9,6 @@ import {
   X,
   Banknote,
   Check,
-  FileUp,
   NotebookPen,
   Truck,
   Loader2,

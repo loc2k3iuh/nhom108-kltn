@@ -2,7 +2,6 @@ import axios from "axios";
 import {
   getTokenFromLocalStorage,
   getTokenFromSessionStorage,
-  getUserIdFromToken,
   removeToken,
   setAccessTokenToLocalStorage,
   setAccessTokenToSessionStorage,

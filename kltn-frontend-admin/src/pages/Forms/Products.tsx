@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
@@ -22,14 +22,14 @@ export default function ProductForm() {
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
   const [basePrice, setBasePrice] = useState('');
-  const [brandId, setBrandId] = useState<number | ''>('');
+  const [brandId, setBrandId] = useState<string>('');
   const [images, setImages] = useState<File[]>([]);
   const [discountPercent, setDiscountPercent] = useState('');
 
   const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
   const [subCategories, setSubCategories] = useState<CategoryResponse[]>([]);
-  const [selectedRootCategoryId, setSelectedRootCategoryId] = useState<number | ''>('');
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number | ''>('');
+  const [selectedRootCategoryId, setSelectedRootCategoryId] = useState<string>('');
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>('');
 
   const [brands, setBrands] = useState<Brand[]>([]);
 
@@ -58,7 +58,7 @@ export default function ProductForm() {
       if (selectedRootCategoryId) {
         try {
           setLoading(true);
-          const subs = await getSubCategories(selectedRootCategoryId);
+          const subs = await getSubCategories(Number(selectedRootCategoryId));
           setSubCategories(subs);
           setSelectedSubCategoryId('');
         } catch (err) {
@@ -122,7 +122,7 @@ export default function ProductForm() {
 
   return (
     <div>
-      <PageMeta title="Add Product" />
+      <PageMeta title="Add Product" description="Add a new product to the catalog" />
       <div className="flex justify-between items-center mb-4">
         <PageBreadcrumb pageTitle="Add New Product" />
         <Button variant="outline" onClick={() => navigate(-1)}>
@@ -140,7 +140,7 @@ export default function ProductForm() {
               id="productName"
               type="text"
               value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
               placeholder="Enter product name"
               required
             />
@@ -152,7 +152,7 @@ export default function ProductForm() {
               id="basePrice"
               type="number"
               value={basePrice}
-              onChange={(e) => setBasePrice(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setBasePrice(e.target.value)}
               placeholder="Enter base price"
               required
             />
@@ -164,7 +164,7 @@ export default function ProductForm() {
               id="discountPercent"
               type="number"
               value={discountPercent}
-              onChange={(e) => {
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 const value = e.target.value;
                 if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
                   setDiscountPercent(value);
@@ -180,8 +180,8 @@ export default function ProductForm() {
             <div>
               <Label>Root Category <span className="text-meta-1">*</span></Label>
               <Select
-                options={rootCategories.map(c => ({ value: c.id, label: c.name }))}
-                onChange={(value) => setSelectedRootCategoryId(Number(value))}
+                options={rootCategories.map(c => ({ value: String(c.id), label: c.name }))}
+                onChange={(value) => setSelectedRootCategoryId(value)}
                 placeholder="Select Root Category"
                 value={selectedRootCategoryId}
               />
@@ -190,8 +190,8 @@ export default function ProductForm() {
             <div>
               <Label>Sub Category <span className="text-meta-1">*</span></Label>
               <Select
-                options={subCategories.map(c => ({ value: c.id, label: c.name }))}
-                onChange={(value) => setSelectedSubCategoryId(Number(value))}
+                options={subCategories.map(c => ({ value: String(c.id), label: c.name }))}
+                onChange={(value) => setSelectedSubCategoryId(value)}
                 placeholder="Select Sub Category"
                 value={selectedSubCategoryId}
                 disabled={!selectedRootCategoryId || subCategories.length === 0}
@@ -202,8 +202,8 @@ export default function ProductForm() {
           <div>
             <Label>Brand <span className="text-meta-1">*</span></Label>
             <Select
-              options={brands.map(b => ({ value: b.id, label: b.name }))}
-              onChange={(value) => setBrandId(Number(value))}
+              options={brands.map(b => ({ value: String(b.id), label: b.name }))}
+              onChange={(value) => setBrandId(value)}
               placeholder="Select Brand"
               value={brandId}
             />

@@ -101,7 +101,7 @@ export default function CreateOrder() {
   const [availableShippingMethods, setAvailableShippingMethods] = useState<ShippingMethod[]>(otherProvincesShippingMethods);
   const [selectedShippingMethod, setSelectedShippingMethod] = useState(otherProvincesShippingMethods[0].value);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethods[0].value);
-  const [discountCode, setDiscountCode] = useState("");
+  const [discountCode] = useState("");
   const [note, setNote] = useState("");
 
   // Load users and products

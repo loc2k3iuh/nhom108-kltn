@@ -2,13 +2,7 @@ import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router-dom";
-import {
-  getTokenFromLocalStorage,
-  getTokenFromSessionStorage,
-  removeToken,
-} from "@/services/useTokenService";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { SignOutRequest } from "@/types/requests/authRequest";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 

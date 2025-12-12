@@ -3,7 +3,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { toast, Toaster } from "sonner";
+import { Toaster } from "sonner";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import OtpVerification from "./pages/AuthPages/OtpVerification";

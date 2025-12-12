@@ -7,7 +7,6 @@ import Reloading from "@/components/skeletions/Reloading";
 import { OtpTokenRequest, ResendOtpRequest } from "@/types/requests/authRequest";
 import { setAccessTokenToLocalStorage, setAccessTokenToSessionStorage } from "@/services/useTokenService";
 import { toast } from "sonner";
-import { setUserIdToStorage } from "@/services/useUserService";
 
 
 

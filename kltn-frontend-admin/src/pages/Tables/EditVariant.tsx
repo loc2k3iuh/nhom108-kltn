@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import PageMeta from '../../components/common/PageMeta';
@@ -154,7 +154,7 @@ export default function EditVariant() {
 
     return (
         <div>
-            <PageMeta title="Edit Variant" />
+            <PageMeta title="Edit Variant" description="Edit an existing product variant." />
             <div className="flex justify-between items-center mb-4">
                 <PageBreadcrumb pageTitle="Edit Variant" />
                 <Button variant="outline" onClick={() => navigate(-1)}>
@@ -176,11 +176,11 @@ export default function EditVariant() {
                         </div>
                         <div>
                             <Label htmlFor="stockQuantity">Số lượng tồn kho</Label>
-                            <Input id="stockQuantity" type="number" value={stockQuantity} onChange={e => setStockQuantity(e.target.value)} min={0} required />
+                            <Input id="stockQuantity" type="number" value={stockQuantity} onChange={e => setStockQuantity(e.target.value)} min="0" required />
                         </div>
                         <div>
                             <Label htmlFor="material">Chất liệu</Label>
-                            <Input id="material" type="text" value={material} onChange={e => setMaterial(e.target.value)} maxLength={255} />
+                            <Input id="material" type="text" value={material} onChange={(e: ChangeEvent<HTMLInputElement>) => setMaterial(e.target.value)} maxLength={255} />
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">

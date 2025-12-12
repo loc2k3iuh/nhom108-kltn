@@ -17,7 +17,6 @@ import {
   Edit,
   Save,
   X,
-  Download,
   Eye,
 } from "lucide-react";
 import { orderService } from "@/services/orderService";

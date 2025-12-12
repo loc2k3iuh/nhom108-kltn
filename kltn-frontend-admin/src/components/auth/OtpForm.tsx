@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import OtpInput from "../form/input/OtpInput";
 
 interface OtpFormProps {

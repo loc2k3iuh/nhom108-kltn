@@ -90,18 +90,18 @@ const ProductListPage: React.FC = () => {
         navigate(`/forms/add-product-variant/${productId}`);
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleStatusChange = (value: string | number) => {
-        setFormData(prev => ({ ...prev, status: String(value) }));
+    const handleStatusChange = (value: string) => {
+        setFormData(prev => ({ ...prev, status: value }));
     };
 
     const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            setNewImageFiles(prev => [...prev, ...Array.from(e.target.files)]);
+            setNewImageFiles(prev => [...prev, ...Array.from(e.target.files || [])]);
         }
     };
 
@@ -203,7 +203,7 @@ const ProductListPage: React.FC = () => {
 
     return (
         <>
-            <PageMeta title={`Edit Product | ${product.name}`} />
+            <PageMeta title={`Edit Product | ${product.name}`} description={`Edit details for ${product.name}`} />
             <div className="flex justify-between items-center mb-4">
                 <PageBreadcrumb pageTitle="Edit Product" />
                 <Button variant="outline" onClick={() => navigate('/tables/category-product-list')}>
@@ -226,7 +226,7 @@ const ProductListPage: React.FC = () => {
                         </div>
                         <div>
                             <Label htmlFor="description">Description</Label>
-                            <TextArea id="description" name="description" value={formData.description} onChange={handleInputChange} rows={4} />
+                            <TextArea id="description" name="description" value={formData.description} onChange={(value) => setFormData(prev => ({ ...prev, description: value }))} rows={4} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>

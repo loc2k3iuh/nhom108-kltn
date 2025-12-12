@@ -40,7 +40,7 @@ const CategoryListPage: React.FC = () => {
     const [editingCategory, setEditingCategory] = useState<CategoryResponse | null>(null);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [parentId, setParentId] = useState<number | undefined>(undefined);
+    const [parentId, setParentId] = useState<string>('');
     const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
     const [createType, setCreateType] = useState<'root' | 'sub'>('root');
 
@@ -106,7 +106,7 @@ const CategoryListPage: React.FC = () => {
         setName('');
         setDescription('');
         setCreateType(type);
-        setParentId(undefined);
+        setParentId('');
         setIsModalOpen(true);
     };
 
@@ -114,7 +114,7 @@ const CategoryListPage: React.FC = () => {
         setEditingCategory(c);
         setName(c.name);
         setDescription(c.description || '');
-        setParentId(c.parentCategory?.id);
+        setParentId(c.parentCategory ? String(c.parentCategory.id) : '');
         setCreateType(c.parentCategory ? 'sub' : 'root');
         setIsModalOpen(true);
     };
@@ -124,11 +124,11 @@ const CategoryListPage: React.FC = () => {
 
         try {
             if (editingCategory) {
-                const pid = createType === 'root' ? undefined : parentId;
+                const pid = createType === 'root' ? undefined : (parentId ? Number(parentId) : undefined);
                 await updateCategory(editingCategory.id, name, description, pid);
                 toast.success('Cập nhật danh mục thành công');
             } else {
-                const pid = createType === 'root' ? undefined : parentId;
+                const pid = createType === 'root' ? undefined : (parentId ? Number(parentId) : undefined);
                 await createCategory(name, description, pid);
                 toast.success('Tạo danh mục thành công');
             }
@@ -303,9 +303,9 @@ const CategoryListPage: React.FC = () => {
                         <div>
                             <label className="block text-black dark:text-white mb-1">Danh mục cha (cho danh mục con)</label>
                             <Select
-                                options={[{ value: '', label: '-- Chọn danh mục cha --' }, ...rootCategories.map(r => ({ value: r.id, label: r.name }))]}
+                                options={[{ value: '', label: '-- Chọn danh mục cha --' }, ...rootCategories.map(r => ({ value: String(r.id), label: r.name }))]}
                                 value={parentId}
-                                onChange={(value) => setParentId(value ? Number(value) : undefined)}
+                                onChange={(value) => setParentId(value)}
                                 disabled={createType === 'root'}
                             />
                         </div>

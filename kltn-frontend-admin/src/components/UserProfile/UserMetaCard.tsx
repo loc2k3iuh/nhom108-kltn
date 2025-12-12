@@ -1,16 +1,10 @@
-import { useModal } from "../../hooks/useModal";
+
 import { useAuthStore } from "@/stores/useAuthStore";
 
 
 
 export default function UserMetaCard() {
   const { authUser } = useAuthStore();
-  const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
-  };
 
   return (
     <>

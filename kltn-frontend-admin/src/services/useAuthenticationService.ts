@@ -1,4 +1,4 @@
-import { ChangePasswordRequest, VerifyResetTokenRequest } from './../types/requests/authRequest';
+import { VerifyResetTokenRequest } from './../types/requests/authRequest';
 import {
   LoginResponse,
   PreLoginResponse,
@@ -37,5 +37,3 @@ export const resetPassword = async(email: string): Promise<void> => {
 export const verifyPassword = async(data: VerifyResetTokenRequest ): Promise<void> => {
   await axiosInstance.post("/auth/verify-reset-token", data);
 }
-
-

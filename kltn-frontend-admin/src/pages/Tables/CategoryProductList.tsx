@@ -51,8 +51,8 @@ const CategoryProductList: React.FC = () => {
 
     const [rootCategories, setRootCategories] = useState<CategoryResponse[]>([]);
     const [subCategories, setSubCategories] = useState<CategoryResponse[]>([]);
-    const [selectedRootCatId, setSelectedRootCatId] = useState<number | ''>('');
-    const [selectedSubCatId, setSelectedSubCatId] = useState<number | ''>('');
+    const [selectedRootCatId, setSelectedRootCatId] = useState<string>('');
+    const [selectedSubCatId, setSelectedSubCatId] = useState<string>('');
     const [selectedBrandIds, setSelectedBrandIds] = useState<number[]>([]);
     const [selectedColorIds, setSelectedColorIds] = useState<number[]>([]);
     const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>([]);
@@ -89,10 +89,10 @@ const CategoryProductList: React.FC = () => {
             const payload: any = { page, size: 10, sortBy, sortDirection };
 
             if (selectedSubCatId) {
-                payload.categoryIds = [selectedSubCatId];
+                payload.categoryIds = [Number(selectedSubCatId)];
             } else if (selectedRootCatId) {
-                const subs = await getSubCategories(selectedRootCatId);
-                payload.categoryIds = subs.length > 0 ? subs.map(sc => sc.id) : [selectedRootCatId];
+                const subs = await getSubCategories(Number(selectedRootCatId));
+                payload.categoryIds = subs.length > 0 ? subs.map(sc => sc.id) : [Number(selectedRootCatId)];
             }
             if (selectedBrandIds.length > 0) payload.brandIds = selectedBrandIds;
             if (selectedColorIds.length > 0) payload.colorIds = selectedColorIds;
@@ -117,7 +117,7 @@ const CategoryProductList: React.FC = () => {
 
     useEffect(() => {
         if (selectedRootCatId) {
-            getSubCategories(selectedRootCatId).then(setSubCategories).catch(() => toast.error("Failed to fetch sub-categories."));
+            getSubCategories(Number(selectedRootCatId)).then(setSubCategories).catch(() => toast.error("Failed to fetch sub-categories."));
         } else {
             setSubCategories([]);
         }
@@ -129,8 +129,8 @@ const CategoryProductList: React.FC = () => {
 
     const resetPage = () => setPage(0);
 
-    const handleRootCategoryChange = (value: string | number) => {
-        setSelectedRootCatId(Number(value) || '');
+    const handleRootCategoryChange = (value: string) => {
+        setSelectedRootCatId(value);
         setSelectedSubCatId('');
         resetPage();
     };
@@ -161,7 +161,7 @@ const CategoryProductList: React.FC = () => {
 
     return (
         <div>
-            <PageMeta title="Product Management | Admin Dashboard" />
+            <PageMeta title="Product Management | Admin Dashboard" description="Manage all products in the system." />
             <div className="flex justify-between items-center mb-4">
                 <PageBreadcrumb pageTitle="Product Management" />
                 <Button onClick={handleAddProduct} variant="primary">
@@ -173,20 +173,20 @@ const CategoryProductList: React.FC = () => {
                 <ComponentCard title="Filter Products">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                         <Select
-                            options={[{ value: '', label: 'All Root Categories' }, ...rootCategories.map(cat => ({ value: cat.id, label: cat.name }))]}
+                            options={[{ value: '', label: 'All Root Categories' }, ...rootCategories.map(cat => ({ value: String(cat.id), label: cat.name }))]}
                             value={selectedRootCatId}
                             onChange={handleRootCategoryChange}
                         />
                         <Select
-                            options={[{ value: '', label: 'All Sub-Categories' }, ...subCategories.map(cat => ({ value: cat.id, label: cat.name }))]}
+                            options={[{ value: '', label: 'All Sub-Categories' }, ...subCategories.map(cat => ({ value: String(cat.id), label: cat.name }))]}
                             value={selectedSubCatId}
-                            onChange={(value) => {setSelectedSubCatId(Number(value) || ''); resetPage();}}
+                            onChange={(value) => {setSelectedSubCatId(value); resetPage();}}
                             disabled={!selectedRootCatId}
                         />
                         <Select
                             options={[{ value: '', label: 'All Statuses' }, ...mockStatus.map(s => ({ value: s.name, label: s.name }))]}
                             value={selectedStatus}
-                            onChange={(value) => {setSelectedStatus(String(value)); resetPage();}}
+                            onChange={(value) => {setSelectedStatus(value); resetPage();}}
                         />
 
                         <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ const CategoryProductList: React.FC = () => {
                         <Select
                             options={sortOptions}
                             value={sortOption}
-                            onChange={(value) => {setSortOption(String(value)); resetPage();}}
+                            onChange={(value) => {setSortOption(value); resetPage();}}
                         />
                     </div>
                     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
@@ -40,8 +40,8 @@ export default function AddProductVariantForm() {
   const [discountedPrice, setDiscountedPrice] = useState<number | null>(null);
   const [stockQuantity, setStockQuantity] = useState('');
   const [material, setMaterial] = useState('');
-  const [sizeId, setSizeId] = useState<number | ''>('');
-  const [colorId, setColorId] = useState<number | ''>('');
+  const [sizeId, setSizeId] = useState<string>('');
+  const [colorId, setColorId] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [colors, setColors] = useState<Color[]>([]);
@@ -89,8 +89,8 @@ export default function AddProductVariantForm() {
 
   useEffect(() => {
     if (product && colorId && sizeId) {
-      const color = colors.find(c => c.id === colorId);
-      const size = sizes.find(s => s.id === sizeId);
+      const color = colors.find(c => c.id === Number(colorId));
+      const size = sizes.find(s => s.id === Number(sizeId));
 
       if (color && size) {
         const subCatName = toSkuString(product.category.name);
@@ -144,7 +144,7 @@ export default function AddProductVariantForm() {
 
   return (
     <div>
-      <PageMeta title="Add Product Variant | Admin Dashboard" />
+      <PageMeta title="Add Product Variant | Admin Dashboard" description="Add a new variant for a product" />
       <div className="flex justify-between items-center mb-4">
         <PageBreadcrumb pageTitle="Add New Product Variant" />
         <Button variant="outline" onClick={() => navigate(-1)}>
@@ -201,7 +201,7 @@ export default function AddProductVariantForm() {
                   id="stockQuantity"
                   type="number"
                   value={stockQuantity}
-                  onChange={(e) => setStockQuantity(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setStockQuantity(e.target.value)}
                   placeholder="Enter stock quantity"
                   required
                 />
@@ -212,7 +212,7 @@ export default function AddProductVariantForm() {
                   id="material"
                   type="text"
                   value={material}
-                  onChange={(e) => setMaterial(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setMaterial(e.target.value)}
                   placeholder="Enter material"
                 />
             </div>
@@ -222,8 +222,8 @@ export default function AddProductVariantForm() {
             <div>
               <Label>Color <span className="text-meta-1">*</span></Label>
               <Select
-                options={colors.map(c => ({ value: c.id, label: c.name }))}
-                onChange={(value) => setColorId(Number(value))}
+                options={colors.map(c => ({ value: String(c.id), label: c.name }))}
+                onChange={(value) => setColorId(value)}
                 placeholder="Select Color"
                 value={colorId}
               />
@@ -231,8 +231,8 @@ export default function AddProductVariantForm() {
             <div>
               <Label>Size <span className="text-meta-1">*</span></Label>
               <Select
-                options={sizes.map(s => ({ value: s.id, label: s.name }))}
-                onChange={(value) => setSizeId(Number(value))}
+                options={sizes.map(s => ({ value: String(s.id), label: s.name }))}
+                onChange={(value) => setSizeId(value)}
                 placeholder="Select Size"
                 value={sizeId}
               />
