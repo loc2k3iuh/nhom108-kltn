@@ -237,6 +237,7 @@ const ProductPage = () => {
         setIsLoadingReviews(true);
         try {
             const res = await getReviewsByProduct(productId, page, size);
+    
             const content = res?.content ?? [];
             setReviews(content.map((r: ReviewResponse) => ({
                 id: r.id,
@@ -251,6 +252,8 @@ const ProductPage = () => {
                     avatar_url: r.user?.avatar_url,
                 }
             })));
+
+       
         } catch (error) {
             console.error('Error fetching reviews:', error);
             toast.error('Không thể tải đánh giá');
@@ -1593,213 +1596,273 @@ const ProductPage = () => {
                 </div>
 
                 {/* Product Reviews */}
-                <div className="p-4 mt-6 bg-white md:p-6 rounded-lg shadow-lg">
-                    <h2 className="mb-3 text-lg font-semibold">Đánh giá sản phẩm</h2>
-                    <div className="flex flex-col items-center md:flex-row md:gap-10">
-                        <div className="flex flex-col items-center w-full mb-4 md:w-1/4 md:mb-0">
-                            <p className="text-4xl font-semibold">
+                <div className="p-6 mt-6 bg-white md:p-8 rounded-xl shadow-lg">
+                    {/* Header */}
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-800">Đánh Giá Sản Phẩm</h2>
+                    </div>
+
+                    {/* Review Summary Section */}
+                    <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-3">
+                        {/* Overall Rating */}
+                        <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border border-yellow-200">
+                            <div className="text-6xl font-bold text-gray-800 mb-2">
                                 {reviews.length > 0
                                     ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
                                     : "0"}
-                                <span className="text-xl">/5</span>
-                            </p>
-                            <div className="flex mt-1 space-x-1">
+                            </div>
+                            <div className="flex gap-1 mb-2">
                                 {Array(5).fill(0).map((_, index) => (
                                     <span
                                         key={index}
-                                        className={`text-xl ${reviews.length > 0 && index < Math.round(reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length)
+                                        className={`text-2xl ${reviews.length > 0 && index < Math.round(reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length)
                                             ? "text-yellow-400"
                                             : "text-gray-300"}`}
                                     >
-                    ★
-                  </span>
+                                        ★
+                                    </span>
                                 ))}
                             </div>
-                            <p className="text-sm text-gray-500">({reviews.length} đánh giá)</p>
+                            <p className="text-sm font-medium text-gray-600">Trên {reviews.length} đánh giá</p>
                         </div>
 
-                        <div className="flex flex-col w-full mb-4 space-y-2 md:w-1/4 md:mb-0">
-                            {Array(5).fill(0).map((_, index) => {
-                                const starCount = 5 - index;
-                                const reviewsWithThisStar = reviews.filter(review => review.rating === starCount).length;
-                                const percentage = reviews.length > 0
-                                    ? (reviewsWithThisStar / reviews.length) * 100
-                                    : 0;
+                        {/* Rating Distribution */}
+                        <div className="lg:col-span-2 p-6 bg-gray-50 rounded-xl">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-4">Phân bổ đánh giá</h3>
+                            <div className="space-y-3">
+                                {Array(5).fill(0).map((_, index) => {
+                                    const starCount = 5 - index;
+                                    const reviewsWithThisStar = reviews.filter(review => review.rating === starCount).length;
+                                    const percentage = reviews.length > 0
+                                        ? (reviewsWithThisStar / reviews.length) * 100
+                                        : 0;
 
-                                return (
-                                    <div key={index} className="flex items-center">
-                                        <span className="w-12 text-sm">{starCount} sao</span>
-                                        <div className="w-32 h-2 ml-2 bg-gray-200 rounded md:w-48">
-                                            <div
-                                                className="h-full bg-yellow-400 rounded"
-                                                style={{ width: `${percentage}%` }}
-                                            />
+                                    return (
+                                        <div key={index} className="flex items-center gap-3">
+                                            <div className="flex items-center gap-1 min-w-[80px]">
+                                                <span className="text-sm font-medium text-gray-700">{starCount}</span>
+                                                <span className="text-yellow-400">★</span>
+                                            </div>
+                                            <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full transition-all duration-500"
+                                                    style={{ width: `${percentage}%` }}
+                                                />
+                                            </div>
+                                            <span className="min-w-[60px] text-sm font-medium text-gray-600 text-right">
+                                                {reviewsWithThisStar} ({percentage.toFixed(0)}%)
+                                            </span>
                                         </div>
-                                        <span className="ml-2 text-sm text-gray-500">{percentage.toFixed(0)}%</span>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
+                    </div>
 
-                        {authUser ? (
-                            <div className="w-full p-5 ml-2 bg-white border border-gray-100 rounded-lg shadow-sm md:w-2/4">
-                                <h3 className="flex items-center mb-4 text-base font-semibold">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    {/* Write Review Section */}
+                    {authUser ? (
+                        <div className="p-6 mb-8 bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                     </svg>
-                                    Viết đánh giá của bạn
-                                </h3>
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-800">Viết Đánh Giá Của Bạn</h3>
+                            </div>
 
-                                <form onSubmit={handleSubmitReview} className="space-y-4">
-                                    <div className="p-4 bg-gray-50 rounded-lg">
-                                        <label className="block mb-2 text-sm font-medium text-gray-700">Đánh giá của bạn</label>
-                                        <div className="relative flex items-center gap-1.5 mb-1 group">
+                            <form onSubmit={handleSubmitReview} className="space-y-5">
+                                <div className="p-5 bg-white rounded-lg border border-gray-200">
+                                    <label className="block mb-3 text-sm font-semibold text-gray-700">Mức độ hài lòng</label>
+                                    <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+                                        <div className="flex gap-2">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button
                                                     key={star}
                                                     type="button"
                                                     onClick={() => setRating(star)}
                                                     onMouseEnter={() => setRating(star)}
-                                                    className="text-3xl transition-transform cursor-pointer focus:outline-none hover:scale-110"
+                                                    className="text-4xl transition-all cursor-pointer focus:outline-none hover:scale-125 active:scale-110"
                                                     aria-label={`Đánh giá ${star} sao`}
                                                 >
-                          <span className={`${star <= rating ? "text-yellow-400" : "text-gray-300"} drop-shadow-sm transition-colors`}>
-                            ★
-                          </span>
+                                                    <span className={`${star <= rating ? "text-yellow-400 drop-shadow-lg" : "text-gray-300"} transition-all`}>
+                                                        ★
+                                                    </span>
                                                 </button>
                                             ))}
-
-                                            {/* Rating description */}
-                                            <span className="ml-3 text-sm italic text-gray-600 min-w-[100px]">
-                        {rating === 1 && "Rất tệ"}
-                                                {rating === 2 && "Tệ"}
-                                                {rating === 3 && "Bình thường"}
-                                                {rating === 4 && "Tốt"}
-                                                {rating === 5 && "Xuất sắc"}
-                      </span>
+                                        </div>
+                                        <div className="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg border border-gray-200">
+                                            <span className="text-sm font-semibold text-gray-700">
+                                                {rating === 1 && "😞 Rất tệ"}
+                                                {rating === 2 && "😕 Tệ"}
+                                                {rating === 3 && "😐 Bình thường"}
+                                                {rating === 4 && "😊 Tốt"}
+                                                {rating === 5 && "🤩 Xuất sắc"}
+                                            </span>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="relative">
-                                        <label htmlFor="reviewText" className="block mb-2 text-sm font-medium text-gray-700">
-                                            Nội dung đánh giá
-                                        </label>
-                                        <textarea
-                                            id="reviewText"
-                                            value={reviewText}
-                                            onChange={(e) => setReviewText(e.target.value)}
-                                            className="w-full p-3 text-sm border border-gray-300 rounded-lg min-h-[120px] focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
-                                            placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm này..."
-                                            required
-                                            maxLength={500}
-                                        />
-                                        <div className="absolute text-xs text-gray-500 bottom-3 right-3">
-                                            {reviewText.length}/500
-                                        </div>
+                                <div className="relative">
+                                    <label htmlFor="reviewText" className="block mb-2 text-sm font-semibold text-gray-700">
+                                        Chia sẻ trải nghiệm của bạn
+                                    </label>
+                                    <textarea
+                                        id="reviewText"
+                                        value={reviewText}
+                                        onChange={(e) => setReviewText(e.target.value)}
+                                        className="w-full p-4 text-sm border-2 border-gray-200 rounded-lg min-h-[140px] focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all resize-none bg-white"
+                                        placeholder="Hãy chia sẻ chi tiết cảm nhận của bạn về sản phẩm này: chất lượng, kích cỡ, màu sắc..."
+                                        required
+                                        maxLength={500}
+                                    />
+                                    <div className="absolute bottom-3 right-3 px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">
+                                        {reviewText.length}/500
                                     </div>
+                                </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <button
-                                            type="submit"
-                                            className="flex items-center px-5 py-2.5 text-sm font-medium text-white rounded-lg cursor-pointer bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                            </svg>
-                                            Gửi đánh giá
-                                        </button>
-
-                                        <div className="text-xs text-gray-500">
-                                            * Đánh giá của bạn sẽ được hiển thị công khai
-                                        </div>
-                                    </div>
-                                </form>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmittingReview}
+                                        className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white rounded-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                        {isSubmittingReview ? 'Đang gửi...' : 'Gửi Đánh Giá'}
+                                    </button>
+                                    <p className="text-xs text-gray-500 text-center sm:text-right">
+                                        <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                                        Đánh giá sẽ được hiển thị công khai
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    ) : (
+                        <div className="p-6 mb-8 text-center bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 mx-auto mb-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                            </svg>
+                            <p className="text-sm font-medium text-gray-700 mb-3">
+                                Bạn cần đăng nhập để viết đánh giá
+                            </p>
+                            <div className="flex gap-3 justify-center">
+                                <a href="/login" className="px-5 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                    Đăng Nhập
+                                </a>
+                                <a href="/register" className="px-5 py-2 text-sm font-bold text-blue-600 bg-white border-2 border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                                    Đăng Ký
+                                </a>
                             </div>
-                        ) : (
-                            <div className="w-full text-sm text-center text-gray-700 md:w-1/3 md:text-left">
-                                Chỉ có thành viên mới có thể viết nhận xét. Vui lòng
-                                <a href="/login" className="text-blue-500 cursor-pointer hover:underline"> đăng nhập </a>
-                                hoặc
-                                <a href="/register" className="text-blue-500 cursor-pointer hover:underline"> đăng ký.</a>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
-                    {/* Review List Section */}
-                    <div className="pt-4 mt-8 border-t border-gray-300">
-                        <h3 className="mb-4 text-lg font-semibold">Đánh giá từ khách hàng</h3>
+                    {/* Reviews List */}
+                    <div className="pt-6 border-t-2 border-gray-200">
+                        <div className="flex items-center gap-2 mb-6">
+                            <h3 className="text-xl font-bold text-gray-800">Đánh Giá Từ Khách Hàng</h3>
+                            <span className="px-3 py-1 text-xs font-bold text-red-600 bg-red-100 rounded-full">
+                                {reviews.length}
+                            </span>
+                        </div>
 
                         {isLoadingReviews ? (
-                            <div className="flex justify-center py-6">
-                                <div className="w-10 h-10 border-t-2 border-b-2 border-red-500 rounded-full animate-spin"></div>
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <div className="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-3"></div>
+                                <p className="text-sm text-gray-500 font-medium">Đang tải đánh giá...</p>
                             </div>
                         ) : reviews.length > 0 ? (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {reviews.map(review => (
-                                    <div key={review.id} className="pb-4 border-b border-gray-300">
-                                        <div className="flex justify-between">
-                                            <div className="flex items-center">
+                                    <div key={review.id} className="p-6 bg-gradient-to-br from-white to-gray-50 border-2 border-gray-100 rounded-xl hover:border-gray-300 hover:shadow-lg transition-all duration-300">
+                                        {/* Header với Avatar, Tên, Rating và Actions */}
+                                        <div className="flex items-start justify-between gap-4 mb-4">
+                                            <div className="flex items-start gap-4 flex-1">
                                                 <img
                                                     src={review.user.avatar_url || 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYVcJXjU8HnMTXVmjER0yIET4AwAuHp0LO_YCiQjUsf1228qq0lYbABHFTSasYlk61e6Y-1ygAjWXFLEUTCloPcTvbAwe7nNba7SW9ot9QMce7BYus-H6eDIUvyFXh9UmAmV5eVTMultDo57c048MmDws-a65QYOzoBfUkHLv5OiMhMaUfh2WeP_3ej9du/s1600/istockphoto-1337144146-612x612.jpg'}
-                                                    alt={review.user.full_name}
-                                                    className="object-cover w-10 h-10 rounded-full"
+                                                    alt={review.user.username}
+                                                    className="object-cover w-14 h-14 rounded-full border-3 border-gray-300 shadow-md flex-shrink-0"
                                                 />
-                                                <div className="ml-3">
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-bold text-base text-gray-900 mb-1">{review.user.full_name}</h4>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <div className="flex gap-0.5">
+                                                            {Array(5).fill(0).map((_, index) => (
+                                                                <span
+                                                                    key={index}
+                                                                    className={`text-lg ${index < review.rating ? "text-yellow-400 drop-shadow" : "text-gray-300"}`}
+                                                                >
+                                                                    ★
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                                                            {review.rating}/5
+                                                        </span>
+                                                    </div>
                                                     <p className="text-xs text-gray-500">
-                                                        Đã đánh giá vào: {formatDate(review.createdDate)}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        {formatDate(review.createdDate)}
                                                         {review.createdDate !== review.updatedDate && (
-                                                            <span className="italic"> (đã chỉnh sửa vào: {formatDate(review.updatedDate)})</span>
+                                                            <span className="ml-2 italic text-gray-400">
+                                                                • Đã chỉnh sửa
+                                                            </span>
                                                         )}
                                                     </p>
                                                 </div>
-
-
                                             </div>
 
                                             {authUser && authUser.username === review.user.username && (
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2 flex-shrink-0">
                                                     <button
                                                         onClick={() => handleEditReview(review.id, review.comment)}
-                                                        className="p-1 text-blue-500 hover:text-blue-700"
-                                                        title="Chỉnh sửa đánh giá"
+                                                        className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
+                                                        title="Chỉnh sửa"
                                                     >
-                                                        <Edit size={16} />
+                                                        <Edit size={18} />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteReview(review.id)}
-                                                        className="p-1 text-red-500 hover:text-red-700"
-                                                        title="Xóa đánh giá"
+                                                        className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
+                                                        title="Xóa"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <Trash2 size={18} />
                                                     </button>
                                                 </div>
                                             )}
                                         </div>
 
-                                        <div className="mt-2">
-                                            <div className="flex items-center mb-1">
-                                                {Array(5).fill(0).map((_, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className={`text-sm ${index < review.rating ? "text-yellow-400" : "text-gray-300"}`}
-                                                    >
-                            ★
-                          </span>
-                                                ))}
+                                        {/* Nội dung đánh giá */}
+                                        <div className="mt-4 pt-4 border-t border-gray-200">
+                                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                                                <p className="text-base text-gray-800 leading-relaxed whitespace-pre-wrap font-normal">
+                                                    {review.comment}
+                                                </p>
                                             </div>
-                                            <p className="mt-1 text-sm text-gray-700">{review.comment}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-8 text-center text-gray-500">
-                                Chưa có đánh giá nào cho sản phẩm này.
+                            <div className="flex flex-col items-center justify-center py-16 px-4">
+                                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
+                                <p className="text-base font-semibold text-gray-600 mb-1">Chưa có đánh giá nào</p>
+                                <p className="text-sm text-gray-500">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
                             </div>
                         )}
                     </div>
-
-
                 </div>
 
                 {/* Related Products */}
