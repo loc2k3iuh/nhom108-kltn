@@ -14,18 +14,17 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
   Long countByProductId(@Param("productId") Long productId);
 
   List<OrderDetail> findByOrderId(Long orderId);
-
   @Query(
-      "SELECT p.id, p.name, MIN(pv.imageUrl), SUM(od.quantity), p.basePrice, c.name, b.name "
-          + "FROM OrderDetail od "
-          + "JOIN od.productVariant pv "
-          + "JOIN pv.product p "
-          + "LEFT JOIN p.category c "
-          + "LEFT JOIN p.brand b "
-          + "JOIN od.order o "
-          + "WHERE o.orderStatus = 'COMPLETED' "
-          + "GROUP BY p.id, p.name, p.basePrice, c.name, b.name "
-          + "ORDER BY SUM(od.quantity) DESC "
-          + "LIMIT 10")
+          "SELECT p.id, p.name, MIN(pv.imageUrl), SUM(od.quantity), p.basePrice, c.name, b.name "
+                  + "FROM OrderDetail od "
+                  + "JOIN od.productVariant pv "
+                  + "JOIN pv.product p "
+                  + "LEFT JOIN p.category c "
+                  + "LEFT JOIN p.brand b "
+                  + "JOIN od.order o "
+                  + "WHERE o.orderStatus = 'COMPLETED' "
+                  + "GROUP BY p.id, p.name, p.basePrice, c.name, b.name "
+                  + "ORDER BY SUM(od.quantity) DESC "
+                  + "LIMIT 10")
   List<Object[]> findTop10BestSellingProducts();
 }

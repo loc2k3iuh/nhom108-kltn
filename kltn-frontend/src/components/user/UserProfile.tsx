@@ -56,9 +56,13 @@ const updateSchema = yup.object({
   file: yup
     .mixed<File>()
     .nullable()
-    .transform((value: FileList) =>
-      value && value.length > 0 ? value[0] : null
-    )
+    .transform((value: FileList | File | null) => {
+      if (!value) return null;
+      if (value instanceof FileList) {
+        return value.length > 0 ? value[0] : null;
+      }
+      return value instanceof File ? value : null;
+    })
     .test("fileSize", "Image must be less than 5MB !", (file) => {
       if (!file) return true;
       return file.size <= 5 * 1024 * 1024;
@@ -148,7 +152,6 @@ const UserProfile = () => {
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    setValue("file", file ?? null, { shouldValidate: true });
     if (file) {
       const objectUrl = URL.createObjectURL(file);
       setAvatarPreview(objectUrl);
@@ -226,9 +229,18 @@ const UserProfile = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleFileChange}
+                {...register("file")}
+                onChange={(e) => {
+                  register("file").onChange(e);
+                  handleFileChange(e);
+                }}
               />
             </label>
+            {errors.file && (
+              <p className="mt-1 text-sm text-red-600 text-center">
+                {errors.file.message as string}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

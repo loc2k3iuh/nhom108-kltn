@@ -1,29 +1,9 @@
+version: '3.9'
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql-kltn
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword123
-      MYSQL_DATABASE: defaultdb
-      MYSQL_USER: avnadmin
-      MYSQL_PASSWORD: AVNS_IHpJcljNGvOXydMW2oL
+  backend:
+    image: davinci-shop:0.0.1
+    container_name: davinci-shop
     ports:
-      - "24700:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
-
-  redis:
-    image: redis:7.2
-    container_name: redis-kltn
-    restart: always
-    command: redis-server --requirepass AVNS_hvPD7Cocbe16KQCS4Iw --port 24701
-    ports:
-      - "24701:24701"
-    volumes:
-      - redis-data:/data
-
-volumes:
-  mysql-data:
-  redis-data:
+      - "9999:9999"
+    env_file:
+      - ${PWD}/.env

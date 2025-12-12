@@ -15,6 +15,5 @@ public class TopProductResponse {
   Long totalQuantitySold;
   Double basePrice;
   String categoryName;
-  String brandName; 
+  String brandName;
 }
-

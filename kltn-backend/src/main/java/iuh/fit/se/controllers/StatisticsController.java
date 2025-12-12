@@ -123,7 +123,8 @@ public class StatisticsController {
   @GetMapping("/top-products")
   @Operation(
       summary = "Get top 10 best-selling products",
-      description = "Get the top 10 products with the highest sales quantity based on completed orders")
+      description =
+          "Get the top 10 products with the highest sales quantity based on completed orders")
   public APIResponse<List<TopProductResponse>> getTop10BestSellingProducts() {
     List<TopProductResponse> products = statisticsService.getTop10BestSellingProducts();
     return APIResponse.<List<TopProductResponse>>builder()

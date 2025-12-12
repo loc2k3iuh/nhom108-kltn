@@ -224,8 +224,9 @@ public class UserServiceImpl implements IUserService {
         .filter(f -> !f.isEmpty())
         .map(
             f -> {
-              if (!existUser.getAvatarUrl().isBlank()) {
-                is3Service.deleteFile(existUser.getAvatarUrl());
+              String currentAvatar = existUser.getAvatarUrl();
+              if (currentAvatar != null && !currentAvatar.isBlank()) {
+                is3Service.deleteFile(currentAvatar);
               }
               return safeUpload(f, existUser.getUsername());
             })

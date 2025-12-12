@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faUser, faBell,
-    faClipboardList,
-    faTicketAlt,
-    faHeart,
-    faBook,
-    faStar,
-    faChevronDown,
-    faChevronUp,
+   
     faEdit,
     faTrash,
     faPlus,
@@ -163,7 +156,7 @@ const AddressesPage = () => {
                                     <div key={address.id} className="border border-gray-100 rounded-lg p-5 hover:shadow-lg transition-all duration-300 bg-white relative group">
                                         <div className="absolute right-2 top-2 flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                                             <Link 
-                                                to={`/user/addresses/${address.id}/edit`} 
+                                                to={`/user/addresses/edit/${address.id}`} 
                                                 className="bg-blue-50 hover:bg-blue-100 text-blue-600 p-2 rounded-md transition-colors duration-200"
                                                 title="Chỉnh sửa"
                                             >

@@ -14,12 +14,10 @@ import {
     District,
     Ward
 } from "../services/addressService";
-import { useAuthStore } from "../stores/useAuthStore";
 
 const EditAddress = () => {
     const navigate = useNavigate();
     const { addressId } = useParams<{ addressId: string }>();
-    const { authUser } = useAuthStore();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     
     const [cities, setCities] = useState<Province[]>([]);
@@ -99,10 +97,10 @@ const EditAddress = () => {
     }, []);
 
     useEffect(() => {
-        if (cities.length > 0) {
+        if (cities.length > 0 && addressId) {
             fetchAddressData();
         }
-    }, [cities, addressId]);
+    }, [addressId]); // Only depend on addressId, not cities
 
     const handleChange = (e: React.ChangeEvent<HTMLElement>) => {
         const target = e.target as HTMLInputElement | HTMLSelectElement;

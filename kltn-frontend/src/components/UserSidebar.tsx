@@ -6,7 +6,6 @@ import {
     faClipboardList,
     faTicketAlt,
     faHeart,
-    faBook,
     faStar,
     faChevronDown,
     faChevronUp,

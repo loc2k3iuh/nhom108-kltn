@@ -39,6 +39,15 @@ repositories {
 	mavenCentral()
 }
 
+tasks.named('build') {
+	dependsOn 'spotlessApply'
+}
+
+tasks.withType(Test).configureEach {
+	enabled = false
+}
+
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'

@@ -50,9 +50,11 @@ public class ProductFilterRequest {
 
   // Pagination
   @Min(0)
+  @Builder.Default
   Integer page = 0;
 
   @Min(1)
+  @Builder.Default
   Integer size = 10;
 
   // Additional filters

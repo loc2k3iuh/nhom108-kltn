@@ -13,7 +13,7 @@ import org.springframework.data.domain.Page;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL) // Bỏ qua các trường null khi serialize sang JSON
 public class ChatResponse {
-    String responseMessage;
-    Page<ProductDetailResponse> products;
-    ProductFilterRequest filterPayload; // Thêm trường này để chứa payload
+  String responseMessage;
+  Page<ProductDetailResponse> products;
+  ProductFilterRequest filterPayload; // Thêm trường này để chứa payload
 }

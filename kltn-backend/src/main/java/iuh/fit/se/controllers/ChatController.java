@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ChatController {
 
-    private final IChatService chatService;
+  private final IChatService chatService;
 
-    @PostMapping
-    public ChatResponse chat(@RequestBody ChatRequest chatRequest) {
-        return chatService.processMessage(chatRequest.message());
-    }
+  @PostMapping
+  public ChatResponse chat(@RequestBody ChatRequest chatRequest) {
+    return chatService.processMessage(chatRequest.message());
+  }
 }

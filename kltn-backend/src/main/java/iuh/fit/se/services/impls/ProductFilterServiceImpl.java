@@ -184,7 +184,9 @@ public class ProductFilterServiceImpl implements IProductFilterService {
 
     try {
       String jsonResult = objectMapper.writeValueAsString(responsePage);
-      stringRedisTemplate.opsForValue().set(cacheKey, jsonResult, 10, TimeUnit.MINUTES); // 10-minute TTL
+      stringRedisTemplate
+          .opsForValue()
+          .set(cacheKey, jsonResult, 10, TimeUnit.MINUTES); // 10-minute TTL
       log.info("Result for key {} cached successfully.", cacheKey);
     } catch (JsonProcessingException e) {
       log.error("Error serializing product filter result for caching", e);
@@ -223,8 +225,7 @@ public class ProductFilterServiceImpl implements IProductFilterService {
 
   // A helper class to handle Page deserialization
   static class RestPage<T> extends PageImpl<T> {
-    public RestPage(
-        List<T> content, Pageable pageable, long total) {
+    public RestPage(List<T> content, Pageable pageable, long total) {
       super(content, pageable, total);
     }
 

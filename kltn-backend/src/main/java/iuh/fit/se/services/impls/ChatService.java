@@ -6,6 +6,7 @@ import iuh.fit.se.dtos.requests.ProductFilterRequest;
 import iuh.fit.se.dtos.responses.ChatResponse;
 import iuh.fit.se.dtos.responses.ProductDetailResponse;
 import iuh.fit.se.services.interfaces.IProductFilterService;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -15,18 +16,17 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
 
-    private final IProductFilterService productFilterService;
-    private final ChatClient.Builder chatClientBuilder;
-    private final ObjectMapper objectMapper;
+  private final IProductFilterService productFilterService;
+  private final ChatClient.Builder chatClientBuilder;
+  private final ObjectMapper objectMapper;
 
-    private static final String SYSTEM_PROMPT = """
+  private static final String SYSTEM_PROMPT =
+      """
             You are a helpful AI assistant for an e-commerce website named "DAVINCI".
             Your primary role is to understand user queries in Vietnamese and convert them into a structured JSON format for product filtering.
             You must only respond with a valid JSON object. Do not add any explanatory text, greetings, or any other text outside of the JSON structure.
@@ -131,88 +131,106 @@ public class ChatService {
             User Message 3: "công nghệ AI là gì?" -> Expected JSON: { "keyword": null, "categoryIds": null, "brandIds": null, "colorIds": null, "sizeIds": null, "minPrice": null, "maxPrice": null, "isNew": null, "isBestSeller": null, "sortBy": "basePrice", "sortDirection": "ASC", "page": 0, "size": 10 }
             """;
 
-    public ChatResponse processMessage(String message) {
-        String lowerCaseMessage = message.toLowerCase();
-        if (lowerCaseMessage.contains("xin chào") || lowerCaseMessage.contains("hi") || lowerCaseMessage.contains("hello") || lowerCaseMessage.contains("chào bạn") || lowerCaseMessage.contains("bạn có đó không") || lowerCaseMessage.contains("hãy giúp tôi")) {
-            return ChatResponse.builder()
-                    .responseMessage("Chào bạn! Tôi là trợ lý ảo của DAVINCI. Tôi có thể giúp gì cho bạn hôm nay?")
-                    .build();
-        }
-        if (lowerCaseMessage.contains("bạn là ai") || lowerCaseMessage.contains("tên gì")) {
-            return ChatResponse.builder()
-                    .responseMessage("Tôi là trợ lý ảo của DAVINCI, được thiết kế để giúp bạn tìm kiếm sản phẩm dễ dàng hơn.")
-                    .build();
-        }
-
-        if (lowerCaseMessage.contains("tạm biệt") || lowerCaseMessage.contains("bye") || lowerCaseMessage.contains("see you") || lowerCaseMessage.contains("cảm ơn") ) {
-            return ChatResponse.builder()
-                    .responseMessage("Tôi là trợ lý ảo của DAVINCI, rất hân hạnh được làm việc với bạn.")
-                    .build();
-        }
-
-        try {
-            SystemMessage systemMessage = new SystemMessage(SYSTEM_PROMPT);
-            UserMessage userMessage = new UserMessage(message);
-            Prompt prompt = new Prompt(systemMessage, userMessage);
-            ChatClient chatClient = chatClientBuilder.build();
-
-            String rawResponse = chatClient.prompt(prompt).call().content();
-            log.info("AI Raw Response: {}", rawResponse);
-
-            String cleanedJson = rawResponse.trim().replace("```json", "").replace("```", "").trim();
-            ProductFilterRequest filterRequest = objectMapper.readValue(cleanedJson, ProductFilterRequest.class);
-            log.info("Deserialized ProductFilterRequest: {}", filterRequest);
-
-            // Check if the AI returned an empty/irrelevant filter
-            if (isFilterRequestEmpty(filterRequest)) {
-                log.info("Irrelevant query detected. Responding with guidance.");
-                return ChatResponse.builder()
-                        .responseMessage("Xin lỗi, tôi chưa hiểu yêu cầu của bạn. Tôi có thể giúp bạn tìm kiếm các sản phẩm như áo, quần, hay giày dép. Bạn muốn tìm gì?")
-                        .build();
-            }
-
-            // Fallback for pagination and sorting, just in case the AI misses them
-            if (filterRequest.getPage() == null) filterRequest.setPage(0);
-            if (filterRequest.getSize() == null) filterRequest.setSize(10);
-            if (filterRequest.getSortBy() == null || filterRequest.getSortBy().trim().isEmpty()) {
-                filterRequest.setSortBy("basePrice");
-                filterRequest.setSortDirection("ASC");
-            }
-
-            Page<ProductDetailResponse> products = productFilterService.filterProducts(filterRequest);
-            String responseMessage = products.isEmpty()
-                    ? "Xin lỗi, tôi không tìm thấy sản phẩm nào phù hợp với yêu cầu của bạn."
-                    : "Đây là những sản phẩm tôi tìm được:";
-
-            return ChatResponse.builder()
-                    .responseMessage(responseMessage)
-                    .products(products)
-                    .filterPayload(filterRequest) // Thêm payload vào response
-                    .build();
-
-        } catch (JsonProcessingException e) {
-            log.error("Error processing AI response: Invalid JSON format. Cleaned JSON: {}", e.getMessage());
-            return ChatResponse.builder().responseMessage("Xin lỗi, đã có lỗi xảy ra khi xử lý yêu cầu của bạn. Vui lòng thử lại.").build();
-        } catch (Exception e) {
-            log.error("An unexpected error occurred in ChatService", e);
-            return ChatResponse.builder().responseMessage("Xin lỗi, hệ thống đang gặp sự cố. Vui lòng thử lại sau.").build();
-        }
+  public ChatResponse processMessage(String message) {
+    String lowerCaseMessage = message.toLowerCase();
+    if (lowerCaseMessage.contains("xin chào")
+        || lowerCaseMessage.contains("hi")
+        || lowerCaseMessage.contains("hello")
+        || lowerCaseMessage.contains("chào bạn")
+        || lowerCaseMessage.contains("bạn có đó không")
+        || lowerCaseMessage.contains("hãy giúp tôi")) {
+      return ChatResponse.builder()
+          .responseMessage(
+              "Chào bạn! Tôi là trợ lý ảo của DAVINCI. Tôi có thể giúp gì cho bạn hôm nay?")
+          .build();
+    }
+    if (lowerCaseMessage.contains("bạn là ai") || lowerCaseMessage.contains("tên gì")) {
+      return ChatResponse.builder()
+          .responseMessage(
+              "Tôi là trợ lý ảo của DAVINCI, được thiết kế để giúp bạn tìm kiếm sản phẩm dễ dàng hơn.")
+          .build();
     }
 
-    /**
-     * Checks if the filter request is effectively empty, meaning it contains no specific search criteria.
-     * This is used to detect irrelevant user queries.
-     */
-    private boolean isFilterRequestEmpty(ProductFilterRequest request) {
-        if (request == null) return true;
-        return (request.getKeyword() == null || request.getKeyword().trim().isEmpty()) &&
-               (request.getCategoryIds() == null || request.getCategoryIds().isEmpty()) &&
-               (request.getBrandIds() == null || request.getBrandIds().isEmpty()) &&
-               (request.getColorIds() == null || request.getColorIds().isEmpty()) &&
-               (request.getSizeIds() == null || request.getSizeIds().isEmpty()) &&
-               request.getMinPrice() == null &&
-               request.getMaxPrice() == null &&
-               !Objects.equals(Boolean.TRUE, request.getIsNew()) &&
-               !Objects.equals(Boolean.TRUE, request.getIsBestSeller());
+    if (lowerCaseMessage.contains("tạm biệt")
+        || lowerCaseMessage.contains("bye")
+        || lowerCaseMessage.contains("see you")
+        || lowerCaseMessage.contains("cảm ơn")) {
+      return ChatResponse.builder()
+          .responseMessage("Tôi là trợ lý ảo của DAVINCI, rất hân hạnh được làm việc với bạn.")
+          .build();
     }
+
+    try {
+      SystemMessage systemMessage = new SystemMessage(SYSTEM_PROMPT);
+      UserMessage userMessage = new UserMessage(message);
+      Prompt prompt = new Prompt(systemMessage, userMessage);
+      ChatClient chatClient = chatClientBuilder.build();
+
+      String rawResponse = chatClient.prompt(prompt).call().content();
+      log.info("AI Raw Response: {}", rawResponse);
+
+      String cleanedJson = rawResponse.trim().replace("```json", "").replace("```", "").trim();
+      ProductFilterRequest filterRequest =
+          objectMapper.readValue(cleanedJson, ProductFilterRequest.class);
+      log.info("Deserialized ProductFilterRequest: {}", filterRequest);
+
+      // Check if the AI returned an empty/irrelevant filter
+      if (isFilterRequestEmpty(filterRequest)) {
+        log.info("Irrelevant query detected. Responding with guidance.");
+        return ChatResponse.builder()
+            .responseMessage(
+                "Xin lỗi, tôi chưa hiểu yêu cầu của bạn. Tôi có thể giúp bạn tìm kiếm các sản phẩm như áo, quần, hay giày dép. Bạn muốn tìm gì?")
+            .build();
+      }
+
+      // Fallback for pagination and sorting, just in case the AI misses them
+      if (filterRequest.getPage() == null) filterRequest.setPage(0);
+      if (filterRequest.getSize() == null) filterRequest.setSize(10);
+      if (filterRequest.getSortBy() == null || filterRequest.getSortBy().trim().isEmpty()) {
+        filterRequest.setSortBy("basePrice");
+        filterRequest.setSortDirection("ASC");
+      }
+
+      Page<ProductDetailResponse> products = productFilterService.filterProducts(filterRequest);
+      String responseMessage =
+          products.isEmpty()
+              ? "Xin lỗi, tôi không tìm thấy sản phẩm nào phù hợp với yêu cầu của bạn."
+              : "Đây là những sản phẩm tôi tìm được:";
+
+      return ChatResponse.builder()
+          .responseMessage(responseMessage)
+          .products(products)
+          .filterPayload(filterRequest) // Thêm payload vào response
+          .build();
+
+    } catch (JsonProcessingException e) {
+      log.error(
+          "Error processing AI response: Invalid JSON format. Cleaned JSON: {}", e.getMessage());
+      return ChatResponse.builder()
+          .responseMessage("Xin lỗi, đã có lỗi xảy ra khi xử lý yêu cầu của bạn. Vui lòng thử lại.")
+          .build();
+    } catch (Exception e) {
+      log.error("An unexpected error occurred in ChatService", e);
+      return ChatResponse.builder()
+          .responseMessage("Xin lỗi, hệ thống đang gặp sự cố. Vui lòng thử lại sau.")
+          .build();
+    }
+  }
+
+  /**
+   * Checks if the filter request is effectively empty, meaning it contains no specific search
+   * criteria. This is used to detect irrelevant user queries.
+   */
+  private boolean isFilterRequestEmpty(ProductFilterRequest request) {
+    if (request == null) return true;
+    return (request.getKeyword() == null || request.getKeyword().trim().isEmpty())
+        && (request.getCategoryIds() == null || request.getCategoryIds().isEmpty())
+        && (request.getBrandIds() == null || request.getBrandIds().isEmpty())
+        && (request.getColorIds() == null || request.getColorIds().isEmpty())
+        && (request.getSizeIds() == null || request.getSizeIds().isEmpty())
+        && request.getMinPrice() == null
+        && request.getMaxPrice() == null
+        && !Objects.equals(Boolean.TRUE, request.getIsNew())
+        && !Objects.equals(Boolean.TRUE, request.getIsBestSeller());
+  }
 }

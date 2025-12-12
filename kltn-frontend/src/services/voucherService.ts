@@ -139,14 +139,7 @@ export const getTotalValidVouchersCount = async (userId: number): Promise<number
     }
 };
 
-/**
- * Get claimable vouchers for user
- * @param userId - User ID
- * @param keyword - Search keyword (optional)
- * @param page - Page number (default: 0)
- * @param size - Page size (default: 10)
- * @returns Paginated list of vouchers that user can claim (not yet claimed, has usage limit, active, and not expired)
- */
+
 export const getClaimableVouchers = async (
     userId: number,
     keyword?: string,
