@@ -30,7 +30,7 @@ import {
 } from "@/services/favoriteService";
 import { mapProductToViewModel, ProductViewModel } from "@/mappers/productMapper";
 
-import { formatCurrency } from "@/utils/formatters";
+
 
 interface Brand {
     id: number;

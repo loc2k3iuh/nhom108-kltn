@@ -124,6 +124,7 @@ public class EmailServiceImpl implements IEmailService {
   }
 
   @Override
+  @Async("emailTaskExecutor")
   public void sendEmail(User user) throws MessagingException {
     String key = "verify:email=" + user.getEmail();
     Long ttl = stringRedisTemplate.getExpire(key, TimeUnit.SECONDS);
@@ -205,6 +206,7 @@ public class EmailServiceImpl implements IEmailService {
   }
 
   @Override
+  @Async("emailTaskExecutor")
   public void sendForgotPasswordToken(String email, boolean isAdminPage) throws MessagingException {
 
     User user =
@@ -212,7 +214,7 @@ public class EmailServiceImpl implements IEmailService {
             .findByEmail(email)
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    if (user.getIsOauth2()) {
+    if (user.getIsOauth2() != null && user.getIsOauth2()) {
       throw new AppException(ErrorCode.USER_NOT_FOUND);
     }
 

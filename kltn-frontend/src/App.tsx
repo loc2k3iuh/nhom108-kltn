@@ -242,6 +242,8 @@ export default function App() {
         <Route path="/register" element={!authUser ? <Layout><RegisterPage /></Layout> : <Navigate to="/" />} />
         <Route path="/register-mail" element={!authUser ? <RegisterMailPage /> : <Navigate to="/" />} />
         <Route path="/register-success" element={<RegisterSuccessPage />} />
+           <Route path="/reset-password" element={<ChangeForgotPasswordPage />} />
+             <Route path="/reset-password/success" element={<ForgotPasswordSuccessPage />} />
         <Route path="/authenticate" element={<Authenticate/>}/>
         <Route path="/forgot-password" element={!authUser ?  <Layout><ForgotPasswordPage /></Layout> : <Navigate to="/" />} />
         <Route path="/forgot-password-success" element={<ForgotPasswordSuccessPage />} />

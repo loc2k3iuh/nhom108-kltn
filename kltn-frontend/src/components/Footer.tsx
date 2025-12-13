@@ -57,7 +57,7 @@ const Footer: React.FC = () => {
               <h3 className="font-semibold text-gray-800 mb-1">
                 Giao hàng miễn phí
               </h3>
-              <p className="text-sm text-gray-600">Cho đơn hàng từ 250.000đ</p>
+              <p className="text-sm text-gray-600">Cho đơn hàng trong Tp. HCM (cũ)</p>
             </div>
             <div className="flex flex-col items-center">
               <div className="bg-red-50 p-3 rounded-full mb-3">

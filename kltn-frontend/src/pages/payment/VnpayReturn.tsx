@@ -113,7 +113,7 @@ const VnpayReturn = () => {
 
             <div className="flex flex-col gap-3">
                 <button
-                    onClick={() => navigate('/user/orders')}
+                    onClick={() => navigate('/orders')}
                     className="flex items-center justify-center w-full gap-2 px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
                 >
                     <ShoppingBag size={20} />
